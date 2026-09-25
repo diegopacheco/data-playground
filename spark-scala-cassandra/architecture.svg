@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="980" height="300" viewBox="0 0 980 300">
+  <defs>
+    <style>@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&amp;display=swap'); text { font-family: 'Caveat', 'Comic Sans MS', cursive; fill: #1f2933; }</style>
+    <filter id="wobble"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="3" seed="7"/><feDisplacementMap in="SourceGraphic" scale="4"/></filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1f2933"/></marker>
+  </defs>
+  <rect width="980" height="300" fill="#ffffff"/>
+  <g filter="url(#wobble)" stroke="#1f2933" stroke-width="2.2">
+    <rect x="20" y="100" width="160" height="90" rx="12" fill="#fff4c2"/>
+    <rect x="250" y="100" width="190" height="90" rx="12" fill="#d7ecff"/>
+    <rect x="510" y="100" width="190" height="90" rx="12" fill="#dff5dd"/>
+    <rect x="770" y="40" width="190" height="80" rx="12" fill="#f5e1ff"/>
+    <rect x="770" y="180" width="190" height="80" rx="12" fill="#ffe1e1"/>
+    <path d="M180,145 L248,145" fill="none" marker-end="url(#arrow)"/>
+    <path d="M440,145 L508,145" fill="none" marker-end="url(#arrow)"/>
+    <path d="M770,90 C730,90 730,130 702,135" fill="none" marker-end="url(#arrow)"/>
+    <path d="M865,180 L865,122" fill="none" marker-end="url(#arrow)"/>
+  </g>
+  <text x="100" y="140" font-size="26" font-weight="700" text-anchor="middle">orders.csv</text>
+  <text x="100" y="168" font-size="20" text-anchor="middle">200 orders</text>
+  <text x="345" y="135" font-size="26" font-weight="700" text-anchor="middle">Spark 4.2 batch</text>
+  <text x="345" y="162" font-size="20" text-anchor="middle">local[*], Scala 3</text>
+  <text x="345" y="182" font-size="18" text-anchor="middle">group by category</text>
+  <text x="605" y="138" font-size="26" font-weight="700" text-anchor="middle">Cassandra 5</text>
+  <text x="605" y="165" font-size="18" text-anchor="middle">sales.revenue_by_category</text>
+  <text x="865" y="75" font-size="24" font-weight="700" text-anchor="middle">Scala backend</text>
+  <text x="865" y="100" font-size="18" text-anchor="middle">GET /api/revenue</text>
+  <text x="865" y="215" font-size="24" font-weight="700" text-anchor="middle">index.html</text>
+  <text x="865" y="240" font-size="18" text-anchor="middle">table + SVG bars</text>
+  <text x="214" y="132" font-size="18" text-anchor="middle">read</text>
+  <text x="474" y="132" font-size="18" text-anchor="middle">write</text>
+  <text x="735" y="80" font-size="18" text-anchor="middle">query</text>
+  <text x="900" y="155" font-size="18" text-anchor="middle">fetch</text>
+</svg>

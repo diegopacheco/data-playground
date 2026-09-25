@@ -1,0 +1,47 @@
+services:
+  cassandra:
+    image: docker.io/library/cassandra:5.0.9
+    container_name: p1-cassandra
+    ports:
+      - "11042:9042"
+    environment:
+      MAX_HEAP_SIZE: 512M
+      HEAP_NEWSIZE: 128M
+      CASSANDRA_CLUSTER_NAME: p1-cluster
+    volumes:
+      - p1-cassandra-data:/var/lib/cassandra
+    networks:
+      - p1-net
+  pipeline:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: p1-spark-app
+    container_name: p1-pipeline
+    command: ["Pipeline", "/app/data/orders.csv"]
+    environment:
+      CASSANDRA_HOST: p1-cassandra
+      CASSANDRA_PORT: "9042"
+    volumes:
+      - ./data:/app/data:ro,Z
+    networks:
+      - p1-net
+  ui:
+    image: p1-spark-app
+    container_name: p1-ui
+    command: ["Server"]
+    ports:
+      - "11080:11080"
+    environment:
+      CASSANDRA_HOST: p1-cassandra
+      CASSANDRA_PORT: "9042"
+      UI_PORT: "11080"
+      JDK_JAVA_OPTIONS: "-Xmx256m"
+    networks:
+      - p1-net
+networks:
+  p1-net:
+    name: p1-net
+volumes:
+  p1-cassandra-data:
+    name: p1-cassandra-data

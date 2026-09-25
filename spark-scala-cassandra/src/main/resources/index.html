@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Revenue by Category</title>
+<style>
+  :root { --bg: #f7f8fa; --card: #ffffff; --text: #1f2933; --muted: #6b7280; --line: #e5e7eb; --bar: #3b82f6; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 900px; margin: 0 auto; padding: 32px 16px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  p.sub { color: var(--muted); margin: 0 0 24px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 20px; margin-bottom: 20px; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { padding: 10px 8px; border-bottom: 1px solid var(--line); text-align: right; }
+  th:first-child, td:first-child { text-align: left; }
+  th { color: var(--muted); font-weight: 600; font-size: 13px; text-transform: uppercase; }
+  tfoot td { font-weight: 700; border-bottom: none; }
+  svg text { font-size: 12px; fill: var(--text); }
+  .error { color: #b91c1c; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Revenue by Category</h1>
+  <p class="sub">Spark batch aggregation of orders, read from Cassandra table sales.revenue_by_category</p>
+  <div class="card"><svg id="chart" width="100%" height="260" role="img" aria-label="Revenue by category bar chart"></svg></div>
+  <div class="card">
+    <table>
+      <thead><tr><th>Category</th><th>Orders</th><th>Quantity</th><th>Revenue</th></tr></thead>
+      <tbody id="rows"></tbody>
+      <tfoot id="total"></tfoot>
+    </table>
+  </div>
+</main>
+<script>
+  const money = v => v.toLocaleString("en-US", { style: "currency", currency: "USD" });
+  const svgNs = "http://www.w3.org/2000/svg";
+
+  function el(name, attrs, text) {
+    const node = document.createElementNS(svgNs, name);
+    Object.entries(attrs).forEach(([k, v]) => node.setAttribute(k, v));
+    if (text !== undefined) node.textContent = text;
+    return node;
+  }
+
+  function renderChart(data) {
+    const svg = document.getElementById("chart");
+    const width = svg.clientWidth, rowH = 36, labelW = 100, valueW = 90;
+    svg.setAttribute("height", data.length * rowH + 10);
+    const max = Math.max(...data.map(d => d.total_revenue), 1);
+    data.forEach((d, i) => {
+      const y = i * rowH + 5;
+      const w = Math.max(2, (width - labelW - valueW) * d.total_revenue / max);
+      svg.appendChild(el("text", { x: 0, y: y + 20 }, d.category));
+      svg.appendChild(el("rect", { x: labelW, y: y + 4, width: w, height: 24, rx: 4, fill: "#3b82f6" }));
+      svg.appendChild(el("text", { x: labelW + w + 8, y: y + 20 }, money(d.total_revenue)));
+    });
+  }
+
+  function renderTable(data) {
+    document.getElementById("rows").innerHTML = data.map(d =>
+      `<tr><td>${d.category}</td><td>${d.total_orders}</td><td>${d.total_quantity}</td><td>${money(d.total_revenue)}</td></tr>`).join("");
+    const sum = k => data.reduce((a, d) => a + d[k], 0);
+    document.getElementById("total").innerHTML =
+      `<tr><td>Total</td><td>${sum("total_orders")}</td><td>${sum("total_quantity")}</td><td>${money(sum("total_revenue"))}</td></tr>`;
+  }
+
+  fetch("/api/revenue")
+    .then(r => r.json())
+    .then(data => {
+      if (!Array.isArray(data)) throw new Error(data.error || "unexpected response");
+      renderChart(data);
+      renderTable(data);
+    })
+    .catch(e => { document.getElementById("rows").innerHTML = `<tr><td class="error" colspan="4">${e.message}</td></tr>`; });
+</script>
+</body>
+</html>
