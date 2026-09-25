@@ -1,0 +1,62 @@
+airflow-python-cassandra/scripts/test-all.sh
+  s_9121753c4a3d76::t_9fd7d2e8cf6bbc 1-25
+airflow-python-cassandra/data/orders.csv
+  s_9121753c4a3d76::t_12bdf4b6c67062 1-201
+airflow-python-cassandra/dags/revenue.py
+  s_9121753c4a3d76::t_fdd4a7bbab7d6b 1-44
+airflow-python-cassandra/scripts/stop-all.sh
+  s_9121753c4a3d76::t_2f9becaf019ebe 1-14
+airflow-python-cassandra/podman-compose.yml
+  s_9121753c4a3d76::t_4536b500fd640d 1-59
+airflow-python-cassandra/scripts/ui.sh
+  s_9121753c4a3d76::t_97aef1017b578f 1-9
+airflow-python-cassandra/scripts/common.sh
+  s_9121753c4a3d76::t_d61c472aa8c81e 1-98
+airflow-python-cassandra/dags/revenue_dag.py
+  s_9121753c4a3d76::t_ee9fdebda55c50 1-28
+airflow-python-cassandra/ui/index.html
+  s_9121753c4a3d76::t_bc8e5480dbe336 1-78
+airflow-python-cassandra/tests/test_revenue.py
+  s_9121753c4a3d76::t_15d8bf926479fd 1-40
+airflow-python-cassandra/scripts/setup.sh
+  s_9121753c4a3d76::t_5e62276a33cdac 1-16
+airflow-python-cassandra/ui/Containerfile
+  s_9121753c4a3d76::t_55500c362dbe02 1-5
+airflow-python-cassandra/scripts/start-all.sh
+  s_9121753c4a3d76::t_a2f2ad56390c95 1-24
+airflow-python-cassandra/architecture.svg
+  s_9121753c4a3d76::t_9c9287c2e2ddcc 1-13,17-19,23-33,41
+  s_9121753c4a3d76::t_6c0e27ef577c88 14-16,20-22,34-40
+airflow-python-cassandra/ui/server.py
+  s_9121753c4a3d76::t_346c278d2b1974 1-49
+airflow-python-cassandra/.gitignore
+  s_9121753c4a3d76::t_e43149a6b8f3d7 1-2
+airflow-python-cassandra/scripts/ports.env
+  s_9121753c4a3d76::t_beba62467fda60 1-3
+airflow-python-cassandra/README.md
+  s_9121753c4a3d76::t_eb87f504d8f328 1-128
+airflow-python-cassandra/scripts/sql-console.sh
+  s_9121753c4a3d76::t_2bf5b16a787bed 1-11
+airflow-python-cassandra/scripts/run-pipeline.sh
+  s_9121753c4a3d76::t_01075bdebfb428 1-33
+airflow-python-cassandra/scripts/status.sh
+  s_9121753c4a3d76::t_ac92b3da7367bb 1-18
+airflow-python-cassandra/airflow/Containerfile
+  s_9121753c4a3d76::t_b63575656de9c7 1-3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "25718da55beb40ee32e762c75206ee44c073973d",
+  "prompts": {},
+  "sessions": {
+    "s_9121753c4a3d76": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "39b421dc-22e8-4dc0-93df-749df3c5cb41",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "diegopacheco <diego.pacheco.it@gmail.com>"
+    }
+  }
+}
