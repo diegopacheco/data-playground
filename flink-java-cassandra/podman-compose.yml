@@ -1,0 +1,29 @@
+name: p2-flink-java-cassandra
+
+x-podman:
+  in_pod: false
+
+services:
+  cassandra:
+    image: docker.io/library/cassandra:5.0.9
+    container_name: p2-cassandra
+    ports:
+      - "12042:9042"
+    environment:
+      MAX_HEAP_SIZE: 512M
+      HEAP_NEWSIZE: 128M
+      CASSANDRA_CLUSTER_NAME: p2-cluster
+      CASSANDRA_DC: datacenter1
+      CASSANDRA_ENDPOINT_SNITCH: GossipingPropertyFileSnitch
+    volumes:
+      - p2-cassandra-data:/var/lib/cassandra
+    networks:
+      - p2-net
+
+networks:
+  p2-net:
+    name: p2-net
+
+volumes:
+  p2-cassandra-data:
+    name: p2-cassandra-data

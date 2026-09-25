@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Revenue by Category</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f6f7f9; color: #1f2933; }
+  main { max-width: 960px; margin: 0 auto; padding: 32px 16px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  p.sub { margin: 0 0 24px; color: #616e7c; font-size: 14px; }
+  .card { background: #fff; border: 1px solid #e4e7eb; border-radius: 10px; padding: 20px; margin-bottom: 20px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #edf0f3; }
+  th { color: #616e7c; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  tfoot td { font-weight: 700; border-bottom: none; }
+  svg text { font-size: 12px; fill: #3e4c59; }
+  .err { color: #b42318; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Revenue by Category</h1>
+  <p class="sub">Apache Flink batch aggregation of orders.csv stored in Cassandra table sales.revenue_by_category</p>
+  <div class="card"><svg id="chart" width="100%" height="260" role="img" aria-label="Revenue by category bar chart"></svg></div>
+  <div class="card">
+    <table>
+      <thead><tr><th>Category</th><th class="num">Orders</th><th class="num">Quantity</th><th class="num">Revenue</th></tr></thead>
+      <tbody id="rows"></tbody>
+      <tfoot id="total"></tfoot>
+    </table>
+  </div>
+</main>
+<script>
+const money = v => v.toLocaleString("en-US", { style: "currency", currency: "USD" });
+const NS = "http://www.w3.org/2000/svg";
+
+function el(name, attrs, text) {
+  const e = document.createElementNS(NS, name);
+  Object.entries(attrs).forEach(([k, v]) => e.setAttribute(k, v));
+  if (text !== undefined) e.textContent = text;
+  return e;
+}
+
+function renderTable(data) {
+  document.getElementById("rows").innerHTML = data.map(r =>
+    `<tr><td>${r.category}</td><td class="num">${r.total_orders}</td><td class="num">${r.total_quantity}</td><td class="num">${money(r.total_revenue)}</td></tr>`).join("");
+  const sum = k => data.reduce((a, r) => a + r[k], 0);
+  document.getElementById("total").innerHTML =
+    `<tr><td>Total</td><td class="num">${sum("total_orders")}</td><td class="num">${sum("total_quantity")}</td><td class="num">${money(sum("total_revenue"))}</td></tr>`;
+}
+
+function renderChart(data) {
+  const svg = document.getElementById("chart");
+  svg.innerHTML = "";
+  const width = svg.clientWidth || 800, height = 260, left = 100, right = 90, rowH = height / Math.max(data.length, 1);
+  const max = Math.max(...data.map(r => r.total_revenue), 1);
+  data.forEach((r, i) => {
+    const y = i * rowH + rowH * 0.2, h = rowH * 0.6, w = (width - left - right) * r.total_revenue / max;
+    svg.appendChild(el("text", { x: left - 10, y: y + h / 2 + 4, "text-anchor": "end" }, r.category));
+    svg.appendChild(el("rect", { x: left, y, width: Math.max(w, 1), height: h, rx: 4, fill: "#3b82f6" }));
+    svg.appendChild(el("text", { x: left + w + 8, y: y + h / 2 + 4 }, money(r.total_revenue)));
+  });
+}
+
+fetch("/api/revenue")
+  .then(r => r.ok ? r.json() : Promise.reject(new Error("HTTP " + r.status)))
+  .then(data => { renderTable(data); renderChart(data); window.addEventListener("resize", () => renderChart(data)); })
+  .catch(e => { document.getElementById("rows").innerHTML = `<tr><td colspan="4" class="err">Failed to load data: ${e.message}</td></tr>`; });
+</script>
+</body>
+</html>

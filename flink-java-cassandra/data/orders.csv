@@ -1,0 +1,201 @@
+order_id,customer,product,category,quantity,price,ts
+1001,Isabela Johnson,Building Blocks Set,toys,2,49.99,2026-01-05T08:32:00Z
+1002,Sofia Smith,The Hobbit,books,5,14.25,2026-01-05T10:23:00Z
+1003,Carla Johnson,Coffee Maker,home,2,89.99,2026-01-05T11:00:00Z
+1004,Sofia Johnson,Cycling Helmet,sports,5,59.90,2026-01-05T11:34:00Z
+1005,Thiago Almeida,Ceramic Vase,home,1,27.50,2026-01-05T19:20:00Z
+1006,Karen Almeida,The Hobbit,books,2,14.25,2026-01-06T02:39:00Z
+1007,Carla Ferreira,Dune,books,1,18.99,2026-01-06T04:30:00Z
+1008,Bruno Davis,Wool Sweater,clothing,4,64.50,2026-01-06T09:07:00Z
+1009,Carla Lima,Yoga Mat,sports,3,25.99,2026-01-06T15:41:00Z
+1010,Thiago Johnson,Board Game,toys,1,34.99,2026-01-06T21:58:00Z
+1011,Jonas Smith,Smartwatch,electronics,2,149.95,2026-01-07T01:58:00Z
+1012,Otavio Rocha,Noise Cancelling Headphones,electronics,3,199.00,2026-01-07T06:49:00Z
+1013,Grace Rocha,Dune,books,3,18.99,2026-01-07T12:59:00Z
+1014,Vera Rocha,Kite,toys,2,13.75,2026-01-07T14:19:00Z
+1015,Felipe Garcia,Water Bottle,sports,4,12.49,2026-01-07T18:36:00Z
+1016,Karen Silva,Leather Belt,clothing,2,34.90,2026-01-07T22:27:00Z
+1017,Isabela Smith,USB-C Hub,electronics,2,39.50,2026-01-08T05:24:00Z
+1018,Grace Rocha,Water Bottle,sports,4,12.49,2026-01-08T10:53:00Z
+1019,Elena Almeida,Bath Towel Set,home,2,32.99,2026-01-08T18:49:00Z
+1020,Thiago Ferreira,The Hobbit,books,5,14.25,2026-01-08T23:25:00Z
+1021,Elena Lima,Throw Blanket,home,4,45.00,2026-01-09T03:16:00Z
+1022,Elena Rocha,Wireless Mouse,electronics,2,24.99,2026-01-09T05:15:00Z
+1023,Marina Ferreira,Plush Bear,toys,5,16.50,2026-01-09T06:27:00Z
+1024,Sofia Silva,Chef Knife,home,1,69.90,2026-01-09T10:51:00Z
+1025,Karen Smith,Board Game,toys,3,34.99,2026-01-09T15:31:00Z
+1026,Alice Davis,Ceramic Vase,home,3,27.50,2026-01-09T23:22:00Z
+1027,Daniel Rocha,Tennis Racket,sports,3,129.00,2026-01-10T08:08:00Z
+1028,Elena Brown,Board Game,toys,2,34.99,2026-01-10T11:38:00Z
+1029,Vera Brown,Cycling Helmet,sports,4,59.90,2026-01-10T11:45:00Z
+1030,Jonas Johnson,Wireless Mouse,electronics,1,24.99,2026-01-10T18:03:00Z
+1031,Carla Davis,Designing Data-Intensive Applications,books,4,54.95,2026-01-10T19:30:00Z
+1032,Elena Rocha,27in Monitor,electronics,4,279.99,2026-01-10T21:45:00Z
+1033,Rafael Miller,Tennis Racket,sports,4,129.00,2026-01-11T02:23:00Z
+1034,Jonas Ferreira,Designing Data-Intensive Applications,books,3,54.95,2026-01-11T05:55:00Z
+1035,Daniel Johnson,Chef Knife,home,2,69.90,2026-01-11T13:44:00Z
+1036,Thiago Lima,USB-C Hub,electronics,2,39.50,2026-01-11T14:12:00Z
+1037,Carla Davis,Tennis Racket,sports,1,129.00,2026-01-11T14:26:00Z
+1038,Karen Smith,The Pragmatic Programmer,books,5,42.50,2026-01-11T15:05:00Z
+1039,Grace Lima,Dune,books,2,18.99,2026-01-11T23:29:00Z
+1040,Hugo Garcia,Board Game,toys,4,34.99,2026-01-12T07:40:00Z
+1041,Nina Brown,The Pragmatic Programmer,books,4,42.50,2026-01-12T09:26:00Z
+1042,Daniel Silva,Desk Lamp,home,4,38.75,2026-01-12T10:28:00Z
+1043,Hugo Johnson,RC Car,toys,2,74.00,2026-01-12T12:26:00Z
+1044,Nina Costa,Soccer Ball,sports,3,21.99,2026-01-12T14:56:00Z
+1045,Otavio Lima,Ceramic Vase,home,1,27.50,2026-01-12T16:20:00Z
+1046,Carla Johnson,Smartwatch,electronics,2,149.95,2026-01-12T16:42:00Z
+1047,Grace Ferreira,Desk Lamp,home,1,38.75,2026-01-13T01:01:00Z
+1048,Marina Almeida,Sapiens,books,4,22.40,2026-01-13T01:10:00Z
+1049,Elena Johnson,Cotton T-Shirt,clothing,3,15.99,2026-01-13T09:35:00Z
+1050,Karen Silva,The Pragmatic Programmer,books,1,42.50,2026-01-13T10:44:00Z
+1051,Rafael Costa,Soccer Ball,sports,1,21.99,2026-01-13T19:25:00Z
+1052,Carla Miller,Yoga Mat,sports,1,25.99,2026-01-13T22:42:00Z
+1053,Daniel Miller,Puzzle 1000 Pieces,toys,2,19.95,2026-01-14T05:42:00Z
+1054,Vera Smith,Cycling Helmet,sports,4,59.90,2026-01-14T06:29:00Z
+1055,Isabela Johnson,Board Game,toys,3,34.99,2026-01-14T11:59:00Z
+1056,Elena Rocha,Dune,books,3,18.99,2026-01-14T18:51:00Z
+1057,Alice Garcia,Throw Blanket,home,5,45.00,2026-01-14T20:12:00Z
+1058,Sofia Johnson,Yoga Mat,sports,5,25.99,2026-01-14T21:34:00Z
+1059,Carla Johnson,Running Shorts,clothing,3,29.99,2026-01-15T03:38:00Z
+1060,Sofia Davis,Running Shorts,clothing,3,29.99,2026-01-15T11:13:00Z
+1061,Sofia Almeida,Water Bottle,sports,1,12.49,2026-01-15T11:28:00Z
+1062,Daniel Davis,Dune,books,5,18.99,2026-01-15T13:33:00Z
+1063,Vera Johnson,Dune,books,3,18.99,2026-01-15T18:28:00Z
+1064,Rafael Garcia,The Hobbit,books,3,14.25,2026-01-15T23:05:00Z
+1065,Isabela Silva,Wireless Mouse,electronics,1,24.99,2026-01-16T06:25:00Z
+1066,Felipe Davis,Running Shorts,clothing,4,29.99,2026-01-16T11:00:00Z
+1067,Sofia Silva,Water Bottle,sports,1,12.49,2026-01-16T18:24:00Z
+1068,Sofia Silva,Smartwatch,electronics,3,149.95,2026-01-16T21:03:00Z
+1069,Nina Costa,Cycling Helmet,sports,1,59.90,2026-01-16T23:41:00Z
+1070,Lucas Johnson,Wool Sweater,clothing,2,64.50,2026-01-17T00:28:00Z
+1071,Sofia Ferreira,Building Blocks Set,toys,5,49.99,2026-01-17T06:37:00Z
+1072,Felipe Costa,Puzzle 1000 Pieces,toys,4,19.95,2026-01-17T10:46:00Z
+1073,Nina Rocha,Mechanical Keyboard,electronics,2,89.90,2026-01-17T16:33:00Z
+1074,Marina Silva,Running Shorts,clothing,4,29.99,2026-01-17T18:30:00Z
+1075,Lucas Almeida,Clean Code,books,2,37.99,2026-01-18T02:28:00Z
+1076,Marina Brown,The Pragmatic Programmer,books,3,42.50,2026-01-18T05:52:00Z
+1077,Rafael Ferreira,USB-C Hub,electronics,5,39.50,2026-01-18T11:58:00Z
+1078,Isabela Costa,Denim Jacket,clothing,5,79.00,2026-01-18T14:03:00Z
+1079,Vera Ferreira,Denim Jacket,clothing,3,79.00,2026-01-18T16:01:00Z
+1080,Vera Lima,RC Car,toys,1,74.00,2026-01-18T23:34:00Z
+1081,Isabela Silva,Chef Knife,home,4,69.90,2026-01-19T02:55:00Z
+1082,Lucas Ferreira,27in Monitor,electronics,1,279.99,2026-01-19T06:23:00Z
+1083,Daniel Davis,RC Car,toys,3,74.00,2026-01-19T11:51:00Z
+1084,Karen Ferreira,Dumbbell Set,sports,3,99.50,2026-01-19T18:56:00Z
+1085,Nina Rocha,Tennis Racket,sports,4,129.00,2026-01-19T22:19:00Z
+1086,Vera Miller,Kite,toys,3,13.75,2026-01-20T01:24:00Z
+1087,Jonas Almeida,Chef Knife,home,2,69.90,2026-01-20T01:31:00Z
+1088,Otavio Garcia,Chef Knife,home,4,69.90,2026-01-20T07:07:00Z
+1089,Paula Davis,Puzzle 1000 Pieces,toys,2,19.95,2026-01-20T15:57:00Z
+1090,Rafael Rocha,Building Blocks Set,toys,5,49.99,2026-01-20T20:54:00Z
+1091,Jonas Johnson,Denim Jacket,clothing,2,79.00,2026-01-21T01:01:00Z
+1092,Hugo Garcia,The Pragmatic Programmer,books,5,42.50,2026-01-21T01:55:00Z
+1093,Thiago Johnson,Noise Cancelling Headphones,electronics,4,199.00,2026-01-21T09:06:00Z
+1094,Elena Rocha,Desk Lamp,home,1,38.75,2026-01-21T13:22:00Z
+1095,Felipe Davis,Noise Cancelling Headphones,electronics,5,199.00,2026-01-21T17:13:00Z
+1096,Daniel Garcia,Coffee Maker,home,2,89.99,2026-01-21T21:35:00Z
+1097,Otavio Miller,Bath Towel Set,home,5,32.99,2026-01-22T03:06:00Z
+1098,Felipe Davis,Chef Knife,home,4,69.90,2026-01-22T10:49:00Z
+1099,Isabela Lima,Throw Blanket,home,4,45.00,2026-01-22T15:09:00Z
+1100,Otavio Smith,Puzzle 1000 Pieces,toys,3,19.95,2026-01-22T19:57:00Z
+1101,Karen Lima,Dune,books,1,18.99,2026-01-23T01:47:00Z
+1102,Marina Davis,Clean Code,books,2,37.99,2026-01-23T05:50:00Z
+1103,Nina Ferreira,Puzzle 1000 Pieces,toys,3,19.95,2026-01-23T07:02:00Z
+1104,Bruno Johnson,Soccer Ball,sports,4,21.99,2026-01-23T14:14:00Z
+1105,Thiago Ferreira,Chef Knife,home,4,69.90,2026-01-23T14:41:00Z
+1106,Marina Ferreira,USB-C Hub,electronics,5,39.50,2026-01-23T19:53:00Z
+1107,Paula Johnson,Kite,toys,3,13.75,2026-01-23T23:45:00Z
+1108,Marina Brown,Desk Lamp,home,4,38.75,2026-01-24T00:21:00Z
+1109,Elena Miller,Puzzle 1000 Pieces,toys,5,19.95,2026-01-24T08:26:00Z
+1110,Carla Rocha,Noise Cancelling Headphones,electronics,4,199.00,2026-01-24T09:00:00Z
+1111,Bruno Almeida,Sapiens,books,4,22.40,2026-01-24T12:13:00Z
+1112,Karen Brown,Running Shorts,clothing,4,29.99,2026-01-24T20:05:00Z
+1113,Carla Garcia,Cotton T-Shirt,clothing,1,15.99,2026-01-25T00:30:00Z
+1114,Lucas Johnson,Board Game,toys,1,34.99,2026-01-25T01:30:00Z
+1115,Hugo Johnson,Building Blocks Set,toys,1,49.99,2026-01-25T02:08:00Z
+1116,Elena Garcia,Tennis Racket,sports,1,129.00,2026-01-25T06:19:00Z
+1117,Isabela Brown,Tennis Racket,sports,2,129.00,2026-01-25T14:22:00Z
+1118,Felipe Almeida,Cycling Helmet,sports,1,59.90,2026-01-25T16:26:00Z
+1119,Thiago Rocha,Yoga Mat,sports,4,25.99,2026-01-25T21:52:00Z
+1120,Carla Miller,Bath Towel Set,home,2,32.99,2026-01-26T01:22:00Z
+1121,Vera Smith,Smartwatch,electronics,5,149.95,2026-01-26T06:37:00Z
+1122,Lucas Smith,USB-C Hub,electronics,5,39.50,2026-01-26T14:02:00Z
+1123,Nina Garcia,RC Car,toys,1,74.00,2026-01-26T14:21:00Z
+1124,Elena Ferreira,Throw Blanket,home,2,45.00,2026-01-26T22:18:00Z
+1125,Vera Lima,Board Game,toys,4,34.99,2026-01-27T03:01:00Z
+1126,Karen Johnson,Desk Lamp,home,1,38.75,2026-01-27T07:42:00Z
+1127,Otavio Miller,Cotton T-Shirt,clothing,5,15.99,2026-01-27T11:58:00Z
+1128,Alice Garcia,Plush Bear,toys,3,16.50,2026-01-27T17:49:00Z
+1129,Lucas Almeida,Sapiens,books,3,22.40,2026-01-27T21:33:00Z
+1130,Sofia Silva,Rain Coat,clothing,5,119.00,2026-01-28T02:22:00Z
+1131,Nina Garcia,The Pragmatic Programmer,books,5,42.50,2026-01-28T06:36:00Z
+1132,Paula Garcia,The Hobbit,books,1,14.25,2026-01-28T14:50:00Z
+1133,Marina Davis,USB-C Hub,electronics,2,39.50,2026-01-28T18:43:00Z
+1134,Paula Lima,Leather Belt,clothing,5,34.90,2026-01-29T01:07:00Z
+1135,Lucas Davis,Cotton T-Shirt,clothing,4,15.99,2026-01-29T06:52:00Z
+1136,Hugo Smith,Wool Sweater,clothing,2,64.50,2026-01-29T11:16:00Z
+1137,Grace Johnson,Denim Jacket,clothing,4,79.00,2026-01-29T14:32:00Z
+1138,Daniel Johnson,Leather Belt,clothing,3,34.90,2026-01-29T19:28:00Z
+1139,Jonas Silva,Dune,books,5,18.99,2026-01-29T22:38:00Z
+1140,Bruno Lima,Dune,books,3,18.99,2026-01-29T23:31:00Z
+1141,Daniel Silva,Puzzle 1000 Pieces,toys,5,19.95,2026-01-30T08:00:00Z
+1142,Otavio Brown,Cotton T-Shirt,clothing,2,15.99,2026-01-30T16:17:00Z
+1143,Daniel Smith,USB-C Hub,electronics,4,39.50,2026-01-31T00:33:00Z
+1144,Elena Costa,Coffee Maker,home,5,89.99,2026-01-31T01:34:00Z
+1145,Daniel Lima,Denim Jacket,clothing,4,79.00,2026-01-31T05:55:00Z
+1146,Rafael Ferreira,Cycling Helmet,sports,4,59.90,2026-01-31T09:53:00Z
+1147,Jonas Miller,Throw Blanket,home,5,45.00,2026-01-31T17:19:00Z
+1148,Grace Rocha,27in Monitor,electronics,2,279.99,2026-01-31T19:07:00Z
+1149,Felipe Johnson,Leather Belt,clothing,2,34.90,2026-01-31T20:37:00Z
+1150,Alice Ferreira,Yoga Mat,sports,4,25.99,2026-01-31T23:24:00Z
+1151,Jonas Silva,Board Game,toys,2,34.99,2026-02-01T07:32:00Z
+1152,Otavio Smith,Leather Belt,clothing,2,34.90,2026-02-01T12:28:00Z
+1153,Nina Smith,Leather Belt,clothing,5,34.90,2026-02-01T15:57:00Z
+1154,Isabela Costa,The Hobbit,books,1,14.25,2026-02-01T18:36:00Z
+1155,Vera Davis,Mechanical Keyboard,electronics,5,89.90,2026-02-01T23:57:00Z
+1156,Otavio Davis,Cotton T-Shirt,clothing,3,15.99,2026-02-02T02:11:00Z
+1157,Rafael Lima,Plush Bear,toys,4,16.50,2026-02-02T06:56:00Z
+1158,Nina Davis,Coffee Maker,home,3,89.99,2026-02-02T07:43:00Z
+1159,Carla Johnson,Dumbbell Set,sports,5,99.50,2026-02-02T08:16:00Z
+1160,Thiago Silva,Yoga Mat,sports,2,25.99,2026-02-02T12:58:00Z
+1161,Isabela Costa,Chef Knife,home,5,69.90,2026-02-02T20:37:00Z
+1162,Carla Garcia,Bath Towel Set,home,3,32.99,2026-02-03T05:07:00Z
+1163,Daniel Costa,Throw Blanket,home,3,45.00,2026-02-03T10:42:00Z
+1164,Jonas Rocha,Bath Towel Set,home,4,32.99,2026-02-03T19:16:00Z
+1165,Carla Brown,Yoga Mat,sports,3,25.99,2026-02-04T03:08:00Z
+1166,Rafael Silva,Denim Jacket,clothing,5,79.00,2026-02-04T10:08:00Z
+1167,Grace Lima,Desk Lamp,home,3,38.75,2026-02-04T11:10:00Z
+1168,Bruno Johnson,Soccer Ball,sports,3,21.99,2026-02-04T18:49:00Z
+1169,Otavio Davis,Tennis Racket,sports,4,129.00,2026-02-04T23:50:00Z
+1170,Felipe Almeida,Wireless Mouse,electronics,5,24.99,2026-02-05T04:02:00Z
+1171,Carla Johnson,27in Monitor,electronics,1,279.99,2026-02-05T11:06:00Z
+1172,Paula Davis,Coffee Maker,home,3,89.99,2026-02-05T13:50:00Z
+1173,Nina Garcia,Water Bottle,sports,4,12.49,2026-02-05T18:36:00Z
+1174,Marina Johnson,Sapiens,books,5,22.40,2026-02-05T21:11:00Z
+1175,Carla Almeida,Water Bottle,sports,4,12.49,2026-02-05T23:37:00Z
+1176,Alice Almeida,Rain Coat,clothing,3,119.00,2026-02-06T04:17:00Z
+1177,Elena Garcia,Cycling Helmet,sports,5,59.90,2026-02-06T12:45:00Z
+1178,Sofia Lima,Throw Blanket,home,4,45.00,2026-02-06T18:32:00Z
+1179,Hugo Miller,Throw Blanket,home,4,45.00,2026-02-06T21:52:00Z
+1180,Karen Davis,Sapiens,books,4,22.40,2026-02-06T22:43:00Z
+1181,Elena Garcia,Plush Bear,toys,1,16.50,2026-02-07T05:25:00Z
+1182,Daniel Garcia,Designing Data-Intensive Applications,books,1,54.95,2026-02-07T11:11:00Z
+1183,Elena Ferreira,Soccer Ball,sports,2,21.99,2026-02-07T11:33:00Z
+1184,Karen Miller,Noise Cancelling Headphones,electronics,4,199.00,2026-02-07T16:11:00Z
+1185,Sofia Ferreira,Building Blocks Set,toys,3,49.99,2026-02-07T21:54:00Z
+1186,Sofia Silva,Kite,toys,5,13.75,2026-02-08T06:20:00Z
+1187,Hugo Davis,Mechanical Keyboard,electronics,1,89.90,2026-02-08T11:21:00Z
+1188,Otavio Costa,Coffee Maker,home,3,89.99,2026-02-08T13:10:00Z
+1189,Bruno Almeida,Wireless Mouse,electronics,3,24.99,2026-02-08T18:49:00Z
+1190,Hugo Lima,Cotton T-Shirt,clothing,4,15.99,2026-02-08T21:25:00Z
+1191,Felipe Costa,Water Bottle,sports,1,12.49,2026-02-09T00:36:00Z
+1192,Paula Miller,Soccer Ball,sports,2,21.99,2026-02-09T04:49:00Z
+1193,Otavio Almeida,Sapiens,books,1,22.40,2026-02-09T09:16:00Z
+1194,Carla Garcia,Throw Blanket,home,3,45.00,2026-02-09T12:04:00Z
+1195,Isabela Garcia,Dumbbell Set,sports,3,99.50,2026-02-09T19:25:00Z
+1196,Daniel Johnson,Sapiens,books,4,22.40,2026-02-10T03:46:00Z
+1197,Jonas Silva,Dumbbell Set,sports,4,99.50,2026-02-10T08:55:00Z
+1198,Vera Davis,Denim Jacket,clothing,4,79.00,2026-02-10T09:52:00Z
+1199,Hugo Rocha,Running Shorts,clothing,2,29.99,2026-02-10T15:59:00Z
+1200,Daniel Rocha,Dumbbell Set,sports,1,99.50,2026-02-10T18:26:00Z
