@@ -1,0 +1,66 @@
+flink-java-cassandra/scripts/test-all.sh
+  s_9121753c4a3d76::t_57f6311fa932a7 1-23
+flink-java-cassandra/src/main/java/com/github/diegopacheco/flinkcassandra/Pipeline.java
+  s_9121753c4a3d76::t_d544adb1c162f8 1-32
+flink-java-cassandra/scripts/pipeline.sh
+  s_9121753c4a3d76::t_47a95e0080c556 1-9,11
+  s_9121753c4a3d76::t_1bf566b7310f79 10
+flink-java-cassandra/src/main/java/com/github/diegopacheco/flinkcassandra/CassandraSink.java
+  s_9121753c4a3d76::t_717e3f0ff13a80 1-28
+flink-java-cassandra/scripts/ui.sh
+  s_9121753c4a3d76::t_c0e3d562df243f 1-12
+flink-java-cassandra/scripts/status.sh
+  s_9121753c4a3d76::t_b98f1de7d8a2f5 1-18
+flink-java-cassandra/scripts/setup.sh
+  s_9121753c4a3d76::t_7a148bba7e9ee2 1-20
+flink-java-cassandra/src/main/java/com/github/diegopacheco/flinkcassandra/CassandraStore.java
+  s_9121753c4a3d76::t_8bb0f8319c6176 1-52
+flink-java-cassandra/src/main/java/com/github/diegopacheco/flinkcassandra/CategoryStats.java
+  s_9121753c4a3d76::t_4064ada2904058 1-19
+flink-java-cassandra/.gitignore
+  s_9121753c4a3d76::t_b6da0de7c0339e 1-2
+flink-java-cassandra/src/main/java/com/github/diegopacheco/flinkcassandra/UiServer.java
+  s_9121753c4a3d76::t_15b1ab39d88e7a 1-10,12-27,29-43,45-55
+  s_9121753c4a3d76::t_e300d575f1fc47 44
+  s_9121753c4a3d76::t_d041ac449e46d0 28
+  s_9121753c4a3d76::t_c6dfa49c9668f7 11
+flink-java-cassandra/scripts/ports.env
+  s_9121753c4a3d76::t_dbf0581ea656e5 1-2
+flink-java-cassandra/podman-compose.yml
+  s_9121753c4a3d76::t_5094e993a57d22 6-29
+  s_9121753c4a3d76::t_5203316c9ca949 1-5
+flink-java-cassandra/data/orders.csv
+  s_9121753c4a3d76::t_4eb83dc48a6245 1-201
+flink-java-cassandra/src/main/resources/index.html
+  s_9121753c4a3d76::t_62d27b22992778 1-74
+flink-java-cassandra/scripts/start-all.sh
+  s_9121753c4a3d76::t_54580bbede6652 1-27
+flink-java-cassandra/scripts/sql-console.sh
+  s_9121753c4a3d76::t_8b5ff4f0f7d5ae 1-9
+flink-java-cassandra/scripts/stop-all.sh
+  s_9121753c4a3d76::t_06ec968858931f 1-17
+flink-java-cassandra/architecture.svg
+  s_9121753c4a3d76::t_f067da5a376ffc 1-32
+flink-java-cassandra/pom.xml
+  s_9121753c4a3d76::t_62e1e2b0620274 1-69
+flink-java-cassandra/README.md
+  s_9121753c4a3d76::t_ac2fad5c9be9ad 1-114
+flink-java-cassandra/scripts/common.sh
+  s_9121753c4a3d76::t_b4a4cc3b5232d1 1-146
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "0f11ae1f5efaf80e7d35277d0e0c6cffe2ce6437",
+  "prompts": {},
+  "sessions": {
+    "s_9121753c4a3d76": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "39b421dc-22e8-4dc0-93df-749df3c5cb41",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "diegopacheco <diego.pacheco.it@gmail.com>"
+    }
+  }
+}
