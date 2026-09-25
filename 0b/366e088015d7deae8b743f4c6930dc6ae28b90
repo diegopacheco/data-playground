@@ -1,0 +1,79 @@
+dbt-python-cassandra/scripts/setup.sh
+  s_9121753c4a3d76::t_37897909b803d3 1-14
+dbt-python-cassandra/.containerignore
+  s_9121753c4a3d76::t_6d66aa8f32f515 1-6
+dbt-python-cassandra/data/orders.csv
+  s_9121753c4a3d76::t_20c9f95a30fef2 1-201
+dbt-python-cassandra/scripts/test-all.sh
+  s_9121753c4a3d76::t_e35ea5fddb4461 1-20
+dbt-python-cassandra/.gitignore
+  s_9121753c4a3d76::t_a9b2475e12192b 1-10
+dbt-python-cassandra/app/server.py
+  s_9121753c4a3d76::t_09d14ac3fbfa6a 1-34
+dbt-python-cassandra/pipeline.sh
+  s_9121753c4a3d76::t_8d53c1f2433e79 1-8
+dbt-python-cassandra/dbt/dbt_project.yml
+  s_9121753c4a3d76::t_7f34e77931d1de 1-25
+dbt-python-cassandra/dbt/models/revenue_by_category.sql
+  s_9121753c4a3d76::t_fcdb38a44fc928 1-8
+dbt-python-cassandra/dbt/profiles.yml
+  s_9121753c4a3d76::t_4a2b251f8a4f6d 1-7
+dbt-python-cassandra/start.sh
+  s_9121753c4a3d76::t_75fc60b1f7efac 1-3
+dbt-python-cassandra/scripts/common.sh
+  s_9121753c4a3d76::t_32b9d61d07d668 1-101
+dbt-python-cassandra/app/cassandra_store.py
+  s_9121753c4a3d76::t_e18bfddefb416f 1-25
+dbt-python-cassandra/README.md
+  s_9121753c4a3d76::t_b8680edd57b933 23
+  s_9121753c4a3d76::t_303127ecc29c27 1-22,24-137
+dbt-python-cassandra/stop.sh
+  s_9121753c4a3d76::t_c01efb60b45579 1-3
+dbt-python-cassandra/Containerfile
+  s_9121753c4a3d76::t_ea234707999251 1-10
+dbt-python-cassandra/scripts/status.sh
+  s_9121753c4a3d76::t_9ac8395216c7e6 1-18
+dbt-python-cassandra/test.sh
+  s_9121753c4a3d76::t_9a51416ccee073 1-3
+dbt-python-cassandra/scripts/start-all.sh
+  s_9121753c4a3d76::t_62d9caef7c4014 1-27
+dbt-python-cassandra/app/index.html
+  s_9121753c4a3d76::t_d6cadefdb83baa 1-87
+dbt-python-cassandra/scripts/ui.sh
+  s_9121753c4a3d76::t_054ad47180f2a2 1-6
+dbt-python-cassandra/dbt/models/schema.yml
+  s_9121753c4a3d76::t_927d98dfdc4653 1-24
+dbt-python-cassandra/scripts/ports.env
+  s_9121753c4a3d76::t_d0d7debe28b82b 1-2
+dbt-python-cassandra/app/loader.py
+  s_9121753c4a3d76::t_e748a2c2cfa402 1-32
+dbt-python-cassandra/requirements.txt
+  s_9121753c4a3d76::t_568dffafa5d7cd 1-4
+dbt-python-cassandra/scripts/sql-console.sh
+  s_9121753c4a3d76::t_94a495c8f4fcab 1-6
+dbt-python-cassandra/dbt/models/stg_orders.sql
+  s_9121753c4a3d76::t_2e7cd30d6ddc36 1-9
+dbt-python-cassandra/podman-compose.yml
+  s_9121753c4a3d76::t_5f5eb76fc46b43 1-21,25-34,38-39,41-58
+  s_9121753c4a3d76::t_19d89c4bb9c833 22-24,35-37,40
+dbt-python-cassandra/scripts/stop-all.sh
+  s_9121753c4a3d76::t_6f66c72b42fd18 1-15
+dbt-python-cassandra/printscreens/architecture.svg
+  s_9121753c4a3d76::t_0c06b5d0072545 1-33
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "0b366e088015d7deae8b743f4c6930dc6ae28b90",
+  "prompts": {},
+  "sessions": {
+    "s_9121753c4a3d76": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "39b421dc-22e8-4dc0-93df-749df3c5cb41",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "diegopacheco <diego.pacheco.it@gmail.com>"
+    }
+  }
+}
