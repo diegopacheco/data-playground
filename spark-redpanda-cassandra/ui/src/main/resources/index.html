@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Revenue by Category</title>
+<style>
+  :root { --bg: #f7f8fa; --card: #ffffff; --text: #1f2933; --muted: #6b7785; --line: #e4e7eb; --bar: #4f7cff; --accent: #eef3ff; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); }
+  main { max-width: 960px; margin: 0 auto; padding: 32px 16px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  p.sub { margin: 0 0 24px; color: var(--muted); font-size: 14px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 20px; margin-bottom: 20px; }
+  .card h2 { font-size: 16px; margin: 0 0 16px; }
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .kpi { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
+  .kpi span { display: block; color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+  .kpi strong { font-size: 22px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { padding: 10px 12px; border-bottom: 1px solid var(--line); text-align: right; }
+  th:first-child, td:first-child { text-align: left; }
+  th { color: var(--muted); font-weight: 600; background: var(--accent); }
+  tbody tr:hover { background: #fafbff; }
+  svg text { font-size: 12px; fill: var(--text); }
+  svg .val { fill: var(--muted); }
+  .error { color: #b42318; }
+  .wrap { overflow-x: auto; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Revenue by Category</h1>
+  <p class="sub">Redpanda topic <code>orders</code> aggregated by Spark and stored in Cassandra <code>sales.revenue_by_category</code></p>
+  <div class="kpis">
+    <div class="kpi"><span>Categories</span><strong id="k-cat">-</strong></div>
+    <div class="kpi"><span>Orders</span><strong id="k-orders">-</strong></div>
+    <div class="kpi"><span>Quantity</span><strong id="k-qty">-</strong></div>
+    <div class="kpi"><span>Revenue</span><strong id="k-rev">-</strong></div>
+  </div>
+  <div class="card">
+    <h2>Total revenue</h2>
+    <div class="wrap"><svg id="chart" width="100%" height="0" role="img" aria-label="Revenue per category"></svg></div>
+  </div>
+  <div class="card">
+    <h2>Details</h2>
+    <div class="wrap">
+      <table>
+        <thead><tr><th>Category</th><th>Total orders</th><th>Total quantity</th><th>Total revenue</th></tr></thead>
+        <tbody id="rows"><tr><td colspan="4">Loading...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+<script>
+  const money = n => n.toLocaleString("en-US", { style: "currency", currency: "USD" });
+  const num = n => n.toLocaleString("en-US");
+
+  function renderTable(data) {
+    document.getElementById("rows").innerHTML = data.map(r =>
+      `<tr><td>${r.category}</td><td>${num(r.total_orders)}</td><td>${num(r.total_quantity)}</td><td>${money(r.total_revenue)}</td></tr>`
+    ).join("") || `<tr><td colspan="4">No data yet, run the pipeline</td></tr>`;
+  }
+
+  function renderKpis(data) {
+    const total = key => data.reduce((a, r) => a + r[key], 0);
+    document.getElementById("k-cat").textContent = data.length;
+    document.getElementById("k-orders").textContent = num(total("total_orders"));
+    document.getElementById("k-qty").textContent = num(total("total_quantity"));
+    document.getElementById("k-rev").textContent = money(Math.round(total("total_revenue") * 100) / 100);
+  }
+
+  function renderChart(data) {
+    const svg = document.getElementById("chart");
+    const rowH = 34, labelW = 110, valueW = 110, width = Math.max(svg.clientWidth, 420);
+    const max = Math.max(1, ...data.map(r => r.total_revenue));
+    const barMax = width - labelW - valueW;
+    const sorted = [...data].sort((a, b) => b.total_revenue - a.total_revenue);
+    svg.setAttribute("height", sorted.length * rowH);
+    svg.setAttribute("viewBox", `0 0 ${width} ${sorted.length * rowH}`);
+    svg.innerHTML = sorted.map((r, i) => {
+      const y = i * rowH, w = Math.max(2, (r.total_revenue / max) * barMax);
+      return `<text x="0" y="${y + 21}">${r.category}</text>` +
+        `<rect x="${labelW}" y="${y + 6}" width="${w}" height="22" rx="4" fill="var(--bar)"></rect>` +
+        `<text class="val" x="${labelW + w + 8}" y="${y + 21}">${money(r.total_revenue)}</text>`;
+    }).join("");
+  }
+
+  fetch("/api/revenue")
+    .then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(new Error(e.error))))
+    .then(data => { renderKpis(data); renderTable(data); renderChart(data); })
+    .catch(e => { document.getElementById("rows").innerHTML = `<tr><td colspan="4" class="error">${e.message}</td></tr>`; });
+</script>
+</body>
+</html>
