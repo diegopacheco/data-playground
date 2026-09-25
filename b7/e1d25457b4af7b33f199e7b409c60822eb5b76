@@ -1,0 +1,72 @@
+spark-scala-cassandra/architecture.svg
+  s_9121753c4a3d76::t_a8a24622cb6d02 1-34
+spark-scala-cassandra/src/main/resources/index.html
+  s_9121753c4a3d76::t_7ee7359501694a 1-80
+spark-scala-cassandra/src/main/scala/Server.scala
+  s_9121753c4a3d76::t_a68d1ab10eefb7 1-44,46-47
+  s_9121753c4a3d76::t_228e42d8d65d25 45
+spark-scala-cassandra/scripts/start-all.sh
+  s_9121753c4a3d76::t_97e051e248bc5b 1-35
+spark-scala-cassandra/stop.sh
+  s_9121753c4a3d76::t_2a5c7e6de43358 1-3
+spark-scala-cassandra/README.md
+  s_9121753c4a3d76::t_4f986fc4d5b5fd 1-109
+spark-scala-cassandra/scripts/ui.sh
+  s_9121753c4a3d76::t_e65639ddc7b202 1-11
+spark-scala-cassandra/project/build.properties
+  s_9121753c4a3d76::t_35dc2d17327fd2 1
+spark-scala-cassandra/scripts/ports.env
+  s_9121753c4a3d76::t_683ad02fed5c2c 1-2
+spark-scala-cassandra/scripts/sql-console.sh
+  s_9121753c4a3d76::t_4e6f2886ecf66e 1-13
+spark-scala-cassandra/scripts/stop-all.sh
+  s_9121753c4a3d76::t_e503f236a85789 1-14
+spark-scala-cassandra/src/main/scala/Pipeline.scala
+  s_9121753c4a3d76::t_445415fca0ee27 1-2,4-44
+  s_9121753c4a3d76::t_b31b4cbcf43313 3
+spark-scala-cassandra/test.sh
+  s_9121753c4a3d76::t_3bacf89db281d8 1-3
+spark-scala-cassandra/.gitignore
+  s_9121753c4a3d76::t_ff4d27d7a53cc7 1-5
+  s_9121753c4a3d76::t_85c754bd3993c3 6
+spark-scala-cassandra/start.sh
+  s_9121753c4a3d76::t_8d040acc04dc4b 1-3
+spark-scala-cassandra/scripts/status.sh
+  s_9121753c4a3d76::t_3056726bccb254 1-18
+spark-scala-cassandra/build.sbt
+  s_9121753c4a3d76::t_1617417426d964 1
+  s_9121753c4a3d76::t_826385fcf82537 7-8
+  s_9121753c4a3d76::t_79ad07246573b4 10-17
+  s_9121753c4a3d76::t_17ce2489295f55 2-6,9
+spark-scala-cassandra/podman-compose.yml
+  s_9121753c4a3d76::t_8fbaabbca6f47b 1-47
+spark-scala-cassandra/src/main/scala/Cassandra.scala
+  s_9121753c4a3d76::t_8beaba5a3cb2c0 1-19
+spark-scala-cassandra/scripts/setup.sh
+  s_9121753c4a3d76::t_4e073835585c4f 1-15
+spark-scala-cassandra/scripts/common.sh
+  s_9121753c4a3d76::t_079dcb8c10e409 1-111
+spark-scala-cassandra/data/orders.csv
+  s_9121753c4a3d76::t_1a930442894eb8 1-201
+spark-scala-cassandra/Containerfile
+  s_9121753c4a3d76::t_3295427c79933f 1-7,9-11
+  s_9121753c4a3d76::t_e67d4fb1e9d196 8
+spark-scala-cassandra/scripts/test-all.sh
+  s_9121753c4a3d76::t_dedde871ca3805 1-22
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "b7e1d25457b4af7b33f199e7b409c60822eb5b76",
+  "prompts": {},
+  "sessions": {
+    "s_9121753c4a3d76": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "39b421dc-22e8-4dc0-93df-749df3c5cb41",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "diegopacheco <diego.pacheco.it@gmail.com>"
+    }
+  }
+}
