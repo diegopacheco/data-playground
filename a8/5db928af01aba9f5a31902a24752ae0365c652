@@ -1,0 +1,65 @@
+spark-redpanda-cassandra/scripts/status.sh
+  s_9121753c4a3d76::t_f446ba210ba72b 1-18
+spark-redpanda-cassandra/podman-compose.yml
+  s_9121753c4a3d76::t_bb7fca1705ac19 17
+  s_9121753c4a3d76::t_7a8d169be5560a 1-16,18-48
+spark-redpanda-cassandra/scripts/ui.sh
+  s_9121753c4a3d76::t_9ca0b90497d9e4 1-12
+spark-redpanda-cassandra/build.sbt
+  s_9121753c4a3d76::t_484638c4dde80b 2-33,36-45
+  s_9121753c4a3d76::t_76eb357b7b9e18 34-35
+  s_9121753c4a3d76::t_5076793547d0f7 1
+spark-redpanda-cassandra/.gitignore
+  s_9121753c4a3d76::t_8cd545624bf47c 1-7
+spark-redpanda-cassandra/scripts/test-all.sh
+  s_9121753c4a3d76::t_669db9da74b47b 1-25
+spark-redpanda-cassandra/scripts/ports.env
+  s_9121753c4a3d76::t_d7c0d153ed9738 1-3
+spark-redpanda-cassandra/job/src/main/scala/RevenueJob.scala
+  s_9121753c4a3d76::t_85d8c5262a6c5e 33
+  s_9121753c4a3d76::t_d858c01aa6f381 1-32,34-49
+spark-redpanda-cassandra/cassandra/schema.cql
+  s_9121753c4a3d76::t_ecb709da195df1 1-2
+spark-redpanda-cassandra/scripts/setup.sh
+  s_9121753c4a3d76::t_883df21d061b32 1-24
+spark-redpanda-cassandra/ui/src/main/scala/UiServer.scala
+  s_9121753c4a3d76::t_a340022ed1ea1e 1-45
+spark-redpanda-cassandra/project/build.properties
+  s_9121753c4a3d76::t_355e6d71812e81 1
+spark-redpanda-cassandra/scripts/pipeline.sh
+  s_9121753c4a3d76::t_690647c3c8c453 1-23
+spark-redpanda-cassandra/scripts/sql-console.sh
+  s_9121753c4a3d76::t_9060ddcd121fcc 1-15
+spark-redpanda-cassandra/data/orders.csv
+  s_9121753c4a3d76::t_5972f844fd90b0 1-201
+spark-redpanda-cassandra/scripts/stop-all.sh
+  s_9121753c4a3d76::t_6121357a0bd433 1-22
+spark-redpanda-cassandra/scripts/start-all.sh
+  s_9121753c4a3d76::t_ed19eb2347350a 1-33
+spark-redpanda-cassandra/README.md
+  s_9121753c4a3d76::t_83b2cc2e34facf 1-137
+spark-redpanda-cassandra/scripts/common.sh
+  s_9121753c4a3d76::t_99f356fe54c8f4 1-159
+spark-redpanda-cassandra/ui/src/main/resources/index.html
+  s_9121753c4a3d76::t_cfb39581bd066f 1-95
+spark-redpanda-cassandra/printscreens/architecture.svg
+  s_9121753c4a3d76::t_d0d6385c7ce518 1-11,14-16,20-26,31-34,38
+  s_9121753c4a3d76::t_9fcf6b69e29a44 35
+  s_9121753c4a3d76::t_eb35863313b641 12-13,17-19,27-30,36-37
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "a85db928af01aba9f5a31902a24752ae0365c652",
+  "prompts": {},
+  "sessions": {
+    "s_9121753c4a3d76": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "39b421dc-22e8-4dc0-93df-749df3c5cb41",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "diegopacheco <diego.pacheco.it@gmail.com>"
+    }
+  }
+}
