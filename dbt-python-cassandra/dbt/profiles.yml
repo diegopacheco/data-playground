@@ -1,0 +1,7 @@
+sales:
+  target: local
+  outputs:
+    local:
+      type: duckdb
+      path: "{{ env_var('DUCKDB_PATH', 'sales.duckdb') }}"
+      threads: 1

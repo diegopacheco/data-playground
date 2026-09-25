@@ -1,0 +1,58 @@
+services:
+  p5-cassandra:
+    image: docker.io/library/cassandra:5.0.9
+    container_name: p5-cassandra
+    environment:
+      MAX_HEAP_SIZE: 512M
+      HEAP_NEWSIZE: 128M
+      CASSANDRA_CLUSTER_NAME: p5-cluster
+    ports:
+      - "${cassandra:-15042}:9042"
+    volumes:
+      - p5-cassandra-data:/var/lib/cassandra
+    networks:
+      - p5-net
+    healthcheck:
+      test: ["CMD-SHELL", "cqlsh -e 'describe keyspaces' >/dev/null 2>&1"]
+      interval: 5s
+      timeout: 10s
+      retries: 30
+
+  p5-pipeline:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: p5-dbt-python-cassandra:latest
+    container_name: p5-pipeline
+    command: ["bash", "pipeline.sh"]
+    environment:
+      CASSANDRA_HOST: p5-cassandra
+      CASSANDRA_PORT: "9042"
+    networks:
+      - p5-net
+
+  p5-ui:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: p5-dbt-python-cassandra:latest
+    container_name: p5-ui
+    restart: unless-stopped
+    environment:
+      CASSANDRA_HOST: p5-cassandra
+      CASSANDRA_PORT: "9042"
+      UI_PORT: "${ui:-15080}"
+    ports:
+      - "${ui:-15080}:${ui:-15080}"
+    networks:
+      - p5-net
+    depends_on:
+      - p5-cassandra
+
+networks:
+  p5-net:
+    name: p5-net
+
+volumes:
+  p5-cassandra-data:
+    name: p5-cassandra-data

@@ -1,0 +1,25 @@
+name: sales
+version: "1.0.0"
+config-version: 2
+profile: sales
+
+model-paths: ["models"]
+seed-paths: ["../data"]
+target-path: "target"
+clean-targets: ["target", "dbt_packages"]
+
+seeds:
+  sales:
+    orders:
+      +column_types:
+        order_id: bigint
+        customer: varchar
+        product: varchar
+        category: varchar
+        quantity: bigint
+        price: decimal(10,2)
+        ts: timestamp
+
+models:
+  sales:
+    +materialized: table

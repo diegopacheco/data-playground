@@ -1,0 +1,10 @@
+FROM python:3.14.7-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY data data
+COPY dbt dbt
+COPY app app
+COPY pipeline.sh .
+ENV DBT_PROFILES_DIR=/app/dbt DUCKDB_PATH=/app/dbt/sales.duckdb PYTHONUNBUFFERED=1
+CMD ["python", "app/server.py"]

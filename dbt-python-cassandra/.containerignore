@@ -1,0 +1,6 @@
+.venv
+dbt/target
+dbt/logs
+dbt/dbt_packages
+dbt/*.duckdb
+printscreens
