@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 360" width="980" height="360">
+<defs>
+<style>@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&amp;display=swap'); text { font-family: 'Caveat', 'Comic Sans MS', cursive; fill: #2d2d2d; }</style>
+<filter id="wobble"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="3" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="3"/></filter>
+<marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2d2d2d"/></marker>
+</defs>
+<rect width="980" height="360" fill="#ffffff"/>
+<g filter="url(#wobble)" stroke="#2d2d2d" stroke-width="2">
+<rect x="20" y="130" width="140" height="80" rx="10" fill="#fff4c2"/>
+<rect x="210" y="40" width="440" height="200" rx="14" fill="#f3f0ff" stroke-dasharray="8 6"/>
+<rect x="235" y="130" width="115" height="80" rx="10" fill="#d8f3dc"/>
+<rect x="375" y="130" width="115" height="80" rx="10" fill="#d8f3dc"/>
+<rect x="515" y="130" width="115" height="80" rx="10" fill="#d8f3dc"/>
+<rect x="688" y="130" width="175" height="80" rx="10" fill="#cfe8ff"/>
+<rect x="710" y="270" width="130" height="70" rx="10" fill="#ffd6e0"/>
+<rect x="878" y="270" width="92" height="70" rx="10" fill="#e9ecef"/>
+<path d="M160,170 L233,170" fill="none" marker-end="url(#arrow)"/>
+<path d="M350,170 L373,170" fill="none" marker-end="url(#arrow)"/>
+<path d="M490,170 L513,170" fill="none" marker-end="url(#arrow)"/>
+<path d="M630,170 L686,170" fill="none" marker-end="url(#arrow)"/>
+<path d="M775,268 L775,212" fill="none" marker-end="url(#arrow)"/>
+<path d="M876,305 L842,305" fill="none" marker-end="url(#arrow)"/>
+</g>
+<text x="90" y="165" text-anchor="middle" font-size="24" font-weight="700">orders.csv</text>
+<text x="90" y="192" text-anchor="middle" font-size="18">200 rows</text>
+<text x="430" y="72" text-anchor="middle" font-size="26" font-weight="700">Airflow 3.3.2 DAG revenue_pipeline</text>
+<text x="430" y="100" text-anchor="middle" font-size="18">p4-airflow, Python 3.14, standalone</text>
+<text x="292" y="165" text-anchor="middle" font-size="24" font-weight="700">extract</text>
+<text x="292" y="192" text-anchor="middle" font-size="18">csv to rows</text>
+<text x="432" y="165" text-anchor="middle" font-size="24" font-weight="700">transform</text>
+<text x="432" y="192" text-anchor="middle" font-size="18">sum per category</text>
+<text x="572" y="165" text-anchor="middle" font-size="24" font-weight="700">load</text>
+<text x="572" y="192" text-anchor="middle" font-size="18">upsert rows</text>
+<text x="775" y="162" text-anchor="middle" font-size="24" font-weight="700">Cassandra 5.0.9</text>
+<text x="775" y="190" text-anchor="middle" font-size="18">sales.revenue_by_category</text>
+<text x="775" y="300" text-anchor="middle" font-size="22" font-weight="700">UI server</text>
+<text x="775" y="325" text-anchor="middle" font-size="18">GET /api/revenue</text>
+<text x="924" y="312" text-anchor="middle" font-size="22" font-weight="700">browser</text>
+<text x="658" y="160" text-anchor="middle" font-size="16">CQL</text>
+<text x="808" y="245" text-anchor="middle" font-size="16">SELECT</text>
+</svg>

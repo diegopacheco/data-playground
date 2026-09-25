@@ -1,0 +1,201 @@
+order_id,customer,product,category,quantity,price,ts
+1001,David Kim,Nonstick Pan,home,2,27.80,2026-09-01T10:23:00
+1002,Alice Johnson,Chef Knife,home,2,54.00,2026-09-01T11:42:00
+1003,David Kim,Noise Cancelling Headphones,electronics,2,199.99,2026-09-01T11:49:00
+1004,Maria Garcia,Tennis Racket,sports,5,119.00,2026-09-01T14:36:00
+1005,Carla Mendes,Bath Towel Set,home,3,29.95,2026-09-01T16:12:00
+1006,David Kim,Hoodie,clothing,5,39.99,2026-09-01T16:57:00
+1007,Isabela Rocha,Noise Cancelling Headphones,electronics,3,199.99,2026-09-01T17:26:00
+1008,Bruno Silva,27in Monitor,electronics,3,249.00,2026-09-01T18:45:00
+1009,Pedro Alves,Coffee Maker,home,2,69.99,2026-09-01T20:52:00
+1010,Hiro Tanaka,Designing Data-Intensive Applications,books,1,45.99,2026-09-01T22:03:00
+1011,Noah Smith,27in Monitor,electronics,1,249.00,2026-09-02T01:02:00
+1012,Pedro Alves,RC Car,toys,4,89.00,2026-09-02T02:41:00
+1013,Hiro Tanaka,Cycling Helmet,sports,4,74.90,2026-09-02T03:24:00
+1014,Bruno Silva,Bath Towel Set,home,3,29.95,2026-09-02T06:06:00
+1015,Alice Johnson,Clean Code,books,5,37.49,2026-09-02T07:08:00
+1016,Jack Wilson,Cycling Helmet,sports,3,74.90,2026-09-02T09:32:00
+1017,David Kim,Dumbbell Pair,sports,3,64.99,2026-09-02T11:20:00
+1018,Thomas Muller,Cotton T-Shirt,clothing,1,14.99,2026-09-02T12:22:00
+1019,Thomas Muller,Coffee Maker,home,4,69.99,2026-09-02T15:20:00
+1020,Alice Johnson,USB-C Hub,electronics,5,39.90,2026-09-02T16:10:00
+1021,Carla Mendes,RC Car,toys,3,89.00,2026-09-02T19:00:00
+1022,Isabela Rocha,Wireless Mouse,electronics,2,24.99,2026-09-02T20:56:00
+1023,Grace Lee,Board Game,toys,1,34.99,2026-09-02T23:41:00
+1024,Carla Mendes,Wool Socks,clothing,5,9.50,2026-09-03T00:53:00
+1025,Pedro Alves,Tennis Racket,sports,1,119.00,2026-09-03T03:17:00
+1026,Maria Garcia,Wool Socks,clothing,4,9.50,2026-09-03T04:38:00
+1027,Carla Mendes,Hoodie,clothing,3,39.99,2026-09-03T06:38:00
+1028,Emma Brown,Denim Jeans,clothing,1,49.90,2026-09-03T07:16:00
+1029,Lucas Pereira,Desk Lamp,home,4,34.50,2026-09-03T10:07:00
+1030,Emma Brown,Bluetooth Speaker,electronics,3,59.00,2026-09-03T12:39:00
+1031,Lucas Pereira,Board Game,toys,2,34.99,2026-09-03T14:52:00
+1032,Rafael Souza,27in Monitor,electronics,4,249.00,2026-09-03T15:56:00
+1033,Noah Smith,Noise Cancelling Headphones,electronics,2,199.99,2026-09-03T17:10:00
+1034,Hiro Tanaka,Bath Towel Set,home,5,29.95,2026-09-03T17:48:00
+1035,Karen Davis,Hoodie,clothing,3,39.99,2026-09-03T18:21:00
+1036,Carla Mendes,Chef Knife,home,4,54.00,2026-09-03T18:27:00
+1037,Sofia Rossi,Plush Bear,toys,5,15.50,2026-09-03T20:09:00
+1038,Felipe Costa,Chef Knife,home,2,54.00,2026-09-03T21:10:00
+1039,Jack Wilson,Building Blocks Set,toys,1,49.99,2026-09-03T22:40:00
+1040,Emma Brown,Dumbbell Pair,sports,2,64.99,2026-09-04T01:20:00
+1041,Carla Mendes,Sapiens,books,1,18.75,2026-09-04T01:29:00
+1042,Quinn Taylor,Mechanical Keyboard,electronics,1,89.50,2026-09-04T03:50:00
+1043,Emma Brown,RC Car,toys,3,89.00,2026-09-04T05:38:00
+1044,Thomas Muller,Puzzle 1000 Pieces,toys,1,19.99,2026-09-04T08:36:00
+1045,Karen Davis,Hoodie,clothing,5,39.99,2026-09-04T11:12:00
+1046,Grace Lee,Cotton T-Shirt,clothing,1,14.99,2026-09-04T11:25:00
+1047,Carla Mendes,Clean Code,books,2,37.49,2026-09-04T12:12:00
+1048,Noah Smith,Yoga Mat,sports,3,25.00,2026-09-04T12:57:00
+1049,Sofia Rossi,Bath Towel Set,home,3,29.95,2026-09-04T14:05:00
+1050,Maria Garcia,The Pragmatic Programmer,books,2,42.00,2026-09-04T15:17:00
+1051,Felipe Costa,Puzzle 1000 Pieces,toys,3,19.99,2026-09-04T17:24:00
+1052,Jack Wilson,Desk Lamp,home,3,34.50,2026-09-04T19:29:00
+1053,Pedro Alves,Board Game,toys,4,34.99,2026-09-04T21:27:00
+1054,Isabela Rocha,Desk Lamp,home,5,34.50,2026-09-04T22:00:00
+1055,Pedro Alves,The Pragmatic Programmer,books,2,42.00,2026-09-04T23:02:00
+1056,Hiro Tanaka,Cotton T-Shirt,clothing,4,14.99,2026-09-05T00:40:00
+1057,Isabela Rocha,Bath Towel Set,home,5,29.95,2026-09-05T00:53:00
+1058,Alice Johnson,Plush Bear,toys,2,15.50,2026-09-05T01:22:00
+1059,Felipe Costa,Tennis Racket,sports,2,119.00,2026-09-05T01:31:00
+1060,Karen Davis,RC Car,toys,4,89.00,2026-09-05T04:24:00
+1061,Sofia Rossi,Coffee Maker,home,1,69.99,2026-09-05T06:55:00
+1062,Hiro Tanaka,Denim Jeans,clothing,5,49.90,2026-09-05T09:47:00
+1063,Felipe Costa,Cotton T-Shirt,clothing,1,14.99,2026-09-05T11:21:00
+1064,Carla Mendes,Plush Bear,toys,3,15.50,2026-09-05T11:38:00
+1065,Olivia Martin,Coffee Maker,home,3,69.99,2026-09-05T12:24:00
+1066,Alice Johnson,USB-C Hub,electronics,3,39.90,2026-09-05T14:44:00
+1067,Alice Johnson,Wireless Mouse,electronics,5,24.99,2026-09-05T15:02:00
+1068,Pedro Alves,Board Game,toys,1,34.99,2026-09-05T16:33:00
+1069,Hiro Tanaka,Tennis Racket,sports,5,119.00,2026-09-05T18:32:00
+1070,Alice Johnson,Coffee Maker,home,4,69.99,2026-09-05T18:48:00
+1071,Carla Mendes,27in Monitor,electronics,1,249.00,2026-09-05T21:15:00
+1072,Thomas Muller,Dumbbell Pair,sports,5,64.99,2026-09-06T00:01:00
+1073,Bruno Silva,Football,sports,4,22.49,2026-09-06T02:28:00
+1074,Grace Lee,Nonstick Pan,home,1,27.80,2026-09-06T04:46:00
+1075,Quinn Taylor,Football,sports,2,22.49,2026-09-06T05:19:00
+1076,Isabela Rocha,Clean Code,books,3,37.49,2026-09-06T06:29:00
+1077,Carla Mendes,Sapiens,books,5,18.75,2026-09-06T08:01:00
+1078,Alice Johnson,Football,sports,3,22.49,2026-09-06T10:26:00
+1079,Olivia Martin,Dune,books,4,12.99,2026-09-06T10:34:00
+1080,Hiro Tanaka,Clean Code,books,2,37.49,2026-09-06T12:20:00
+1081,Noah Smith,Sapiens,books,3,18.75,2026-09-06T13:46:00
+1082,Maria Garcia,Bath Towel Set,home,3,29.95,2026-09-06T14:01:00
+1083,Isabela Rocha,Nonstick Pan,home,5,27.80,2026-09-06T16:23:00
+1084,Pedro Alves,Denim Jeans,clothing,4,49.90,2026-09-06T16:38:00
+1085,David Kim,Board Game,toys,3,34.99,2026-09-06T19:31:00
+1086,Sofia Rossi,Denim Jeans,clothing,5,49.90,2026-09-06T20:49:00
+1087,Alice Johnson,Dumbbell Pair,sports,5,64.99,2026-09-06T22:50:00
+1088,Jack Wilson,USB-C Hub,electronics,2,39.90,2026-09-07T01:00:00
+1089,Felipe Costa,Dumbbell Pair,sports,3,64.99,2026-09-07T02:28:00
+1090,Carla Mendes,Wireless Mouse,electronics,4,24.99,2026-09-07T04:50:00
+1091,Hiro Tanaka,Nonstick Pan,home,5,27.80,2026-09-07T07:31:00
+1092,Pedro Alves,Sapiens,books,3,18.75,2026-09-07T08:27:00
+1093,Maria Garcia,Tennis Racket,sports,3,119.00,2026-09-07T09:08:00
+1094,Maria Garcia,Board Game,toys,3,34.99,2026-09-07T11:50:00
+1095,Isabela Rocha,Yoga Mat,sports,1,25.00,2026-09-07T13:30:00
+1096,Lucas Pereira,Wireless Mouse,electronics,5,24.99,2026-09-07T15:55:00
+1097,Pedro Alves,Mechanical Keyboard,electronics,3,89.50,2026-09-07T18:20:00
+1098,Felipe Costa,Puzzle 1000 Pieces,toys,3,19.99,2026-09-07T18:27:00
+1099,Isabela Rocha,Desk Lamp,home,5,34.50,2026-09-07T18:40:00
+1100,Maria Garcia,Wireless Mouse,electronics,3,24.99,2026-09-07T20:05:00
+1101,Olivia Martin,USB-C Hub,electronics,3,39.90,2026-09-07T20:36:00
+1102,Bruno Silva,The Pragmatic Programmer,books,2,42.00,2026-09-07T20:48:00
+1103,Jack Wilson,Wool Socks,clothing,4,9.50,2026-09-07T22:41:00
+1104,Alice Johnson,Yoga Mat,sports,4,25.00,2026-09-08T00:02:00
+1105,Olivia Martin,Clean Code,books,4,37.49,2026-09-08T02:49:00
+1106,Hiro Tanaka,Nonstick Pan,home,2,27.80,2026-09-08T05:48:00
+1107,Alice Johnson,Running Jacket,clothing,2,79.00,2026-09-08T07:32:00
+1108,Jack Wilson,Hoodie,clothing,5,39.99,2026-09-08T09:40:00
+1109,Hiro Tanaka,Coffee Maker,home,5,69.99,2026-09-08T12:12:00
+1110,Quinn Taylor,Bath Towel Set,home,4,29.95,2026-09-08T12:21:00
+1111,Thomas Muller,Bluetooth Speaker,electronics,4,59.00,2026-09-08T13:10:00
+1112,Jack Wilson,Building Blocks Set,toys,1,49.99,2026-09-08T16:07:00
+1113,Thomas Muller,Yoga Mat,sports,1,25.00,2026-09-08T16:49:00
+1114,Bruno Silva,27in Monitor,electronics,2,249.00,2026-09-08T17:17:00
+1115,Alice Johnson,Designing Data-Intensive Applications,books,4,45.99,2026-09-08T18:27:00
+1116,Quinn Taylor,Cotton T-Shirt,clothing,5,14.99,2026-09-08T19:22:00
+1117,Hiro Tanaka,27in Monitor,electronics,4,249.00,2026-09-08T21:48:00
+1118,David Kim,Wireless Mouse,electronics,4,24.99,2026-09-08T22:36:00
+1119,Grace Lee,Wool Socks,clothing,3,9.50,2026-09-09T00:58:00
+1120,Carla Mendes,Denim Jeans,clothing,4,49.90,2026-09-09T03:48:00
+1121,Hiro Tanaka,Wireless Mouse,electronics,3,24.99,2026-09-09T05:35:00
+1122,Lucas Pereira,RC Car,toys,4,89.00,2026-09-09T07:26:00
+1123,Alice Johnson,Board Game,toys,4,34.99,2026-09-09T08:44:00
+1124,Felipe Costa,The Pragmatic Programmer,books,3,42.00,2026-09-09T11:19:00
+1125,Bruno Silva,The Pragmatic Programmer,books,2,42.00,2026-09-09T12:32:00
+1126,Alice Johnson,Noise Cancelling Headphones,electronics,4,199.99,2026-09-09T15:28:00
+1127,Noah Smith,Hoodie,clothing,1,39.99,2026-09-09T17:17:00
+1128,Olivia Martin,Chef Knife,home,2,54.00,2026-09-09T17:45:00
+1129,Felipe Costa,Noise Cancelling Headphones,electronics,2,199.99,2026-09-09T18:12:00
+1130,Alice Johnson,Cotton T-Shirt,clothing,3,14.99,2026-09-09T20:52:00
+1131,David Kim,27in Monitor,electronics,5,249.00,2026-09-09T22:45:00
+1132,Isabela Rocha,RC Car,toys,2,89.00,2026-09-10T01:35:00
+1133,Noah Smith,Designing Data-Intensive Applications,books,5,45.99,2026-09-10T02:53:00
+1134,Isabela Rocha,USB-C Hub,electronics,3,39.90,2026-09-10T03:27:00
+1135,Emma Brown,Building Blocks Set,toys,1,49.99,2026-09-10T04:30:00
+1136,Maria Garcia,Football,sports,1,22.49,2026-09-10T04:43:00
+1137,Thomas Muller,RC Car,toys,1,89.00,2026-09-10T05:51:00
+1138,Jack Wilson,Puzzle 1000 Pieces,toys,4,19.99,2026-09-10T06:10:00
+1139,Grace Lee,Board Game,toys,2,34.99,2026-09-10T07:46:00
+1140,Bruno Silva,The Pragmatic Programmer,books,3,42.00,2026-09-10T10:29:00
+1141,Hiro Tanaka,Puzzle 1000 Pieces,toys,4,19.99,2026-09-10T12:20:00
+1142,Emma Brown,Noise Cancelling Headphones,electronics,1,199.99,2026-09-10T13:48:00
+1143,Alice Johnson,Clean Code,books,3,37.49,2026-09-10T16:02:00
+1144,Noah Smith,Tennis Racket,sports,4,119.00,2026-09-10T16:07:00
+1145,Noah Smith,Nonstick Pan,home,5,27.80,2026-09-10T18:02:00
+1146,Lucas Pereira,Cycling Helmet,sports,5,74.90,2026-09-10T19:46:00
+1147,Noah Smith,Football,sports,1,22.49,2026-09-10T19:59:00
+1148,Pedro Alves,Desk Lamp,home,4,34.50,2026-09-10T22:46:00
+1149,Hiro Tanaka,Desk Lamp,home,4,34.50,2026-09-11T00:35:00
+1150,David Kim,Puzzle 1000 Pieces,toys,2,19.99,2026-09-11T02:45:00
+1151,Quinn Taylor,Designing Data-Intensive Applications,books,5,45.99,2026-09-11T03:26:00
+1152,Bruno Silva,Coffee Maker,home,5,69.99,2026-09-11T05:37:00
+1153,Sofia Rossi,Cycling Helmet,sports,4,74.90,2026-09-11T06:47:00
+1154,Quinn Taylor,Coffee Maker,home,2,69.99,2026-09-11T08:24:00
+1155,Felipe Costa,27in Monitor,electronics,5,249.00,2026-09-11T08:44:00
+1156,Karen Davis,Wool Socks,clothing,2,9.50,2026-09-11T09:33:00
+1157,Alice Johnson,Bath Towel Set,home,1,29.95,2026-09-11T10:01:00
+1158,Thomas Muller,The Pragmatic Programmer,books,5,42.00,2026-09-11T11:43:00
+1159,Hiro Tanaka,Bath Towel Set,home,1,29.95,2026-09-11T12:37:00
+1160,Noah Smith,Running Jacket,clothing,3,79.00,2026-09-11T14:23:00
+1161,Thomas Muller,Mechanical Keyboard,electronics,2,89.50,2026-09-11T16:29:00
+1162,Grace Lee,Nonstick Pan,home,5,27.80,2026-09-11T17:15:00
+1163,Carla Mendes,Cycling Helmet,sports,4,74.90,2026-09-11T18:40:00
+1164,Jack Wilson,USB-C Hub,electronics,1,39.90,2026-09-11T20:31:00
+1165,Grace Lee,Nonstick Pan,home,3,27.80,2026-09-11T22:44:00
+1166,Felipe Costa,Nonstick Pan,home,2,27.80,2026-09-12T00:09:00
+1167,Emma Brown,Bath Towel Set,home,4,29.95,2026-09-12T01:08:00
+1168,Isabela Rocha,Coffee Maker,home,2,69.99,2026-09-12T02:27:00
+1169,Alice Johnson,Desk Lamp,home,1,34.50,2026-09-12T04:50:00
+1170,Karen Davis,Coffee Maker,home,5,69.99,2026-09-12T06:20:00
+1171,Hiro Tanaka,Yoga Mat,sports,3,25.00,2026-09-12T07:09:00
+1172,Thomas Muller,Designing Data-Intensive Applications,books,3,45.99,2026-09-12T07:33:00
+1173,Noah Smith,Puzzle 1000 Pieces,toys,2,19.99,2026-09-12T09:59:00
+1174,Sofia Rossi,Cotton T-Shirt,clothing,1,14.99,2026-09-12T12:48:00
+1175,Rafael Souza,USB-C Hub,electronics,2,39.90,2026-09-12T14:55:00
+1176,Lucas Pereira,Football,sports,2,22.49,2026-09-12T17:23:00
+1177,Sofia Rossi,RC Car,toys,2,89.00,2026-09-12T20:03:00
+1178,Alice Johnson,27in Monitor,electronics,3,249.00,2026-09-12T21:36:00
+1179,Rafael Souza,The Pragmatic Programmer,books,5,42.00,2026-09-12T21:58:00
+1180,Noah Smith,Cotton T-Shirt,clothing,3,14.99,2026-09-12T22:32:00
+1181,Emma Brown,Noise Cancelling Headphones,electronics,4,199.99,2026-09-12T23:44:00
+1182,Pedro Alves,Yoga Mat,sports,5,25.00,2026-09-13T01:53:00
+1183,Grace Lee,The Pragmatic Programmer,books,4,42.00,2026-09-13T03:20:00
+1184,Hiro Tanaka,Yoga Mat,sports,5,25.00,2026-09-13T05:41:00
+1185,Felipe Costa,Running Jacket,clothing,4,79.00,2026-09-13T07:51:00
+1186,Hiro Tanaka,Bath Towel Set,home,3,29.95,2026-09-13T08:40:00
+1187,Olivia Martin,Mechanical Keyboard,electronics,5,89.50,2026-09-13T08:46:00
+1188,Karen Davis,Coffee Maker,home,3,69.99,2026-09-13T11:22:00
+1189,Thomas Muller,Board Game,toys,5,34.99,2026-09-13T12:07:00
+1190,Jack Wilson,Bath Towel Set,home,4,29.95,2026-09-13T12:56:00
+1191,Alice Johnson,Building Blocks Set,toys,1,49.99,2026-09-13T14:28:00
+1192,Alice Johnson,Designing Data-Intensive Applications,books,5,45.99,2026-09-13T16:08:00
+1193,Emma Brown,Football,sports,1,22.49,2026-09-13T18:45:00
+1194,Carla Mendes,Dune,books,5,12.99,2026-09-13T19:17:00
+1195,Carla Mendes,Football,sports,1,22.49,2026-09-13T20:39:00
+1196,Sofia Rossi,Sapiens,books,1,18.75,2026-09-13T22:06:00
+1197,Hiro Tanaka,Cycling Helmet,sports,4,74.90,2026-09-13T22:12:00
+1198,Emma Brown,27in Monitor,electronics,2,249.00,2026-09-13T22:49:00
+1199,Pedro Alves,Sapiens,books,2,18.75,2026-09-14T00:00:00
+1200,Thomas Muller,Tennis Racket,sports,3,119.00,2026-09-14T01:43:00
