@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Doris Orders OLAP</title>
+<style>
+  :root { --bg: #f7f8fa; --card: #ffffff; --text: #1f2933; --muted: #6b7785; --line: #e4e7eb; --bar: #4f7cff; --day: #2fb383; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 1040px; margin: 0 auto; padding: 32px 16px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  p.sub { color: var(--muted); margin: 0 0 24px; }
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 20px; }
+  .kpi { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px 20px; }
+  .kpi span { display: block; color: var(--muted); font-size: 13px; }
+  .kpi b { font-size: 24px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 20px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 20px; margin-bottom: 20px; }
+  .card h2 { font-size: 16px; margin: 0 0 4px; }
+  .card p { color: var(--muted); font-size: 12px; margin: 0 0 14px; font-family: ui-monospace, Menlo, monospace; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { padding: 8px; border-bottom: 1px solid var(--line); text-align: right; }
+  th:first-child, td:first-child { text-align: left; }
+  th { color: var(--muted); font-weight: 600; }
+  tfoot td { font-weight: 700; border-bottom: none; }
+  svg text { font-size: 12px; fill: var(--text); }
+  .error { color: #c0392b; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Orders OLAP on Apache Doris</h1>
+  <p class="sub">data/orders.csv loaded with Stream Load into sales.orders, queried over the MySQL protocol</p>
+  <div class="kpis" id="kpis"></div>
+  <div class="card">
+    <h2>Revenue per category</h2>
+    <p>served by the synchronous materialized view mv_revenue_by_category</p>
+    <svg id="chart" width="100%" role="img" aria-label="Revenue per category bar chart"></svg>
+    <table>
+      <thead><tr><th>Category</th><th>Orders</th><th>Quantity</th><th>Revenue</th></tr></thead>
+      <tbody id="rows"></tbody>
+      <tfoot id="total"></tfoot>
+    </table>
+  </div>
+  <div class="card">
+    <h2>Daily revenue</h2>
+    <p>GROUP BY date(ts)</p>
+    <svg id="daily" width="100%" height="200" role="img" aria-label="Daily revenue column chart"></svg>
+  </div>
+  <div class="grid">
+    <div class="card">
+      <h2>Top 5 products</h2>
+      <p>GROUP BY product ORDER BY revenue DESC LIMIT 5</p>
+      <table>
+        <thead><tr><th>Product</th><th>Category</th><th>Qty</th><th>Revenue</th></tr></thead>
+        <tbody id="products"></tbody>
+      </table>
+    </div>
+    <div class="card">
+      <h2>Top 5 customers</h2>
+      <p>GROUP BY customer ORDER BY revenue DESC LIMIT 5</p>
+      <table>
+        <thead><tr><th>Customer</th><th>Orders</th><th>Revenue</th></tr></thead>
+        <tbody id="customers"></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+<script>
+const money = v => v.toLocaleString("en-US", { style: "currency", currency: "USD" });
+const NS = "http://www.w3.org/2000/svg";
+const sum = (data, key) => data.reduce((acc, d) => acc + d[key], 0);
+
+function el(name, attrs, text) {
+  const node = document.createElementNS(NS, name);
+  Object.entries(attrs).forEach(([k, v]) => node.setAttribute(k, v));
+  if (text !== undefined) node.textContent = text;
+  return node;
+}
+
+async function api(path) {
+  const data = await (await fetch(path)).json();
+  if (data.error) throw new Error(data.error);
+  return data;
+}
+
+function renderKpis(data) {
+  const kpis = [
+    ["Orders", sum(data, "total_orders")],
+    ["Items", sum(data, "total_quantity")],
+    ["Revenue", money(sum(data, "total_revenue"))],
+    ["Categories", data.length],
+  ];
+  document.getElementById("kpis").innerHTML = kpis.map(([k, v]) => `<div class="kpi"><span>${k}</span><b>${v}</b></div>`).join("");
+}
+
+function renderChart(data) {
+  const svg = document.getElementById("chart");
+  const width = svg.clientWidth || 900;
+  const rowHeight = 32, labelWidth = 110, valueWidth = 110;
+  const max = Math.max(...data.map(d => d.total_revenue));
+  svg.setAttribute("height", data.length * rowHeight + 8);
+  svg.replaceChildren();
+  data.forEach((d, i) => {
+    const y = i * rowHeight;
+    const barWidth = Math.max(2, (width - labelWidth - valueWidth) * d.total_revenue / max);
+    svg.appendChild(el("text", { x: 0, y: y + 20 }, d.category));
+    svg.appendChild(el("rect", { x: labelWidth, y: y + 6, width: barWidth, height: 20, rx: 4, fill: "var(--bar)" }));
+    svg.appendChild(el("text", { x: labelWidth + barWidth + 8, y: y + 20 }, money(d.total_revenue)));
+  });
+}
+
+function renderTable(data) {
+  document.getElementById("rows").innerHTML = data.map(d =>
+    `<tr><td>${d.category}</td><td>${d.total_orders}</td><td>${d.total_quantity}</td><td>${money(d.total_revenue)}</td></tr>`).join("");
+  document.getElementById("total").innerHTML =
+    `<tr><td>Total</td><td>${sum(data, "total_orders")}</td><td>${sum(data, "total_quantity")}</td><td>${money(sum(data, "total_revenue"))}</td></tr>`;
+}
+
+function renderDaily(data) {
+  const svg = document.getElementById("daily");
+  const width = svg.clientWidth || 900, height = 200, bottom = 36, top = 10;
+  const max = Math.max(...data.map(d => d.total_revenue));
+  const step = width / data.length;
+  svg.replaceChildren();
+  data.forEach((d, i) => {
+    const h = (height - bottom - top) * d.total_revenue / max;
+    const x = i * step + 2;
+    const bar = el("rect", { x, y: height - bottom - h, width: step - 4, height: h, rx: 2, fill: "var(--day)" });
+    bar.appendChild(el("title", {}, `${d.day}: ${money(d.total_revenue)} in ${d.total_orders} orders`));
+    svg.appendChild(bar);
+    if (i % 5 === 0) svg.appendChild(el("text", { x, y: height - 14 }, d.day.slice(5)));
+  });
+}
+
+function renderRows(id, data, cols) {
+  document.getElementById(id).innerHTML = data.map(d =>
+    `<tr>${cols.map(c => `<td>${c === "total_revenue" ? money(d[c]) : d[c]}</td>`).join("")}</tr>`).join("");
+}
+
+async function load() {
+  try {
+    const [revenue, daily, products, customers] = await Promise.all(
+      ["/api/revenue", "/api/daily", "/api/top-products", "/api/top-customers"].map(api));
+    renderKpis(revenue);
+    renderChart(revenue);
+    renderTable(revenue);
+    renderDaily(daily);
+    renderRows("products", products, ["product", "category", "total_quantity", "total_revenue"]);
+    renderRows("customers", customers, ["customer", "total_orders", "total_revenue"]);
+  } catch (e) {
+    document.getElementById("rows").innerHTML = `<tr><td colspan="4" class="error">${e.message}</td></tr>`;
+  }
+}
+
+load();
+</script>
+</body>
+</html>

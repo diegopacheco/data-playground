@@ -1,0 +1,201 @@
+order_id,customer,product,category,quantity,price,ts
+1001,isabel,Building Blocks Set,toys,2,49.99,2026-08-02 11:19:00
+1002,rafaela,The Pragmatic Programmer,books,1,42.00,2026-08-05 23:57:00
+1003,alice,Soccer Ball,sports,1,22.99,2026-08-02 18:42:00
+1004,tiago,The Pragmatic Programmer,books,1,42.00,2026-08-24 07:58:00
+1005,rafaela,Dumbbell Set,sports,4,119.99,2026-08-30 21:50:00
+1006,isabel,Sapiens,books,1,18.75,2026-08-28 03:38:00
+1007,karen,The Hobbit,books,3,10.49,2026-08-20 13:36:00
+1008,diego,The Pragmatic Programmer,books,1,42.00,2026-08-16 15:39:00
+1009,lucas,Coffee Maker,home,5,59.99,2026-08-17 16:06:00
+1010,rafaela,Denim Jacket,clothing,1,69.00,2026-08-22 05:48:00
+1011,joao,Coffee Maker,home,5,59.99,2026-08-26 10:58:00
+1012,carla,Rain Coat,clothing,1,99.00,2026-08-10 02:01:00
+1013,carla,Remote Control Car,toys,2,39.50,2026-08-14 12:05:00
+1014,olivia,4K Monitor,electronics,3,329.00,2026-08-13 23:37:00
+1015,gabriela,Dune,books,3,12.99,2026-08-17 12:03:00
+1016,carla,Model Train,toys,5,89.00,2026-08-30 19:49:00
+1017,hugo,Remote Control Car,toys,2,39.50,2026-08-25 15:25:00
+1018,rafaela,Throw Blanket,home,2,27.50,2026-08-13 14:51:00
+1019,hugo,Puzzle 1000 Pieces,toys,1,17.99,2026-08-03 21:05:00
+1020,carla,Wool Sweater,clothing,2,54.50,2026-08-13 12:26:00
+1021,gabriela,Water Bottle,sports,4,15.49,2026-08-15 15:42:00
+1022,elena,Scented Candle,home,3,11.99,2026-08-22 05:11:00
+1023,rafaela,The Pragmatic Programmer,books,3,42.00,2026-08-26 21:09:00
+1024,sofia,Board Game,toys,4,34.99,2026-08-20 19:57:00
+1025,quinn,Running Shoes,clothing,4,89.99,2026-08-07 15:05:00
+1026,elena,Wireless Headphones,electronics,2,79.99,2026-08-06 07:45:00
+1027,carla,Plush Bear,toys,4,21.00,2026-08-28 11:26:00
+1028,quinn,Air Purifier,home,3,149.00,2026-08-22 15:14:00
+1029,rafaela,Yoga Mat,sports,3,25.00,2026-08-06 13:07:00
+1030,joao,Puzzle 1000 Pieces,toys,4,17.99,2026-08-06 09:50:00
+1031,isabel,Sapiens,books,5,18.75,2026-08-01 11:32:00
+1032,joao,Designing Data-Intensive Applications,books,5,45.99,2026-08-06 04:13:00
+1033,lucas,Dumbbell Set,sports,2,119.99,2026-08-08 06:56:00
+1034,tiago,Cycling Helmet,sports,3,64.00,2026-08-01 08:37:00
+1035,lucas,Coffee Maker,home,3,59.99,2026-08-06 10:11:00
+1036,sofia,Clean Code,books,1,37.50,2026-08-12 07:05:00
+1037,carla,Gaming Mouse,electronics,5,39.95,2026-08-23 10:49:00
+1038,rafaela,The Pragmatic Programmer,books,2,42.00,2026-08-22 23:08:00
+1039,nicolas,Rain Coat,clothing,2,99.00,2026-08-28 22:33:00
+1040,joao,Water Bottle,sports,4,15.49,2026-08-10 11:42:00
+1041,olivia,Model Train,toys,5,89.00,2026-08-18 07:52:00
+1042,hugo,Coffee Maker,home,1,59.99,2026-08-12 14:46:00
+1043,rafaela,Denim Jacket,clothing,2,69.00,2026-08-28 02:35:00
+1044,carla,Dumbbell Set,sports,1,119.99,2026-08-01 15:51:00
+1045,karen,Clean Code,books,1,37.50,2026-08-02 18:18:00
+1046,pedro,Dumbbell Set,sports,2,119.99,2026-08-14 00:10:00
+1047,sofia,Dumbbell Set,sports,4,119.99,2026-08-27 07:43:00
+1048,gabriela,Sapiens,books,1,18.75,2026-08-19 20:37:00
+1049,lucas,Gaming Mouse,electronics,4,39.95,2026-08-20 22:49:00
+1050,diego,Throw Blanket,home,1,27.50,2026-08-03 19:10:00
+1051,diego,Scented Candle,home,2,11.99,2026-08-16 18:36:00
+1052,olivia,The Pragmatic Programmer,books,2,42.00,2026-08-25 17:46:00
+1053,olivia,Desk Lamp,home,2,29.90,2026-08-14 00:14:00
+1054,diego,4K Monitor,electronics,1,329.00,2026-08-26 09:06:00
+1055,carla,Board Game,toys,2,34.99,2026-08-02 00:07:00
+1056,pedro,Sapiens,books,2,18.75,2026-08-23 10:26:00
+1057,marina,Coffee Maker,home,1,59.99,2026-08-08 19:49:00
+1058,joao,Cast Iron Skillet,home,4,34.95,2026-08-22 00:59:00
+1059,pedro,Model Train,toys,2,89.00,2026-08-26 15:02:00
+1060,bruno,Dune,books,5,12.99,2026-08-11 05:47:00
+1061,karen,Board Game,toys,1,34.99,2026-08-04 02:34:00
+1062,quinn,Mechanical Keyboard,electronics,5,109.99,2026-08-23 00:46:00
+1063,carla,Clean Code,books,2,37.50,2026-08-24 10:41:00
+1064,hugo,Mechanical Keyboard,electronics,4,109.99,2026-08-04 10:13:00
+1065,sofia,Mechanical Keyboard,electronics,5,109.99,2026-08-12 12:55:00
+1066,nicolas,Mechanical Keyboard,electronics,5,109.99,2026-08-05 01:32:00
+1067,isabel,Cycling Helmet,sports,2,64.00,2026-08-15 17:33:00
+1068,hugo,Model Train,toys,3,89.00,2026-08-15 15:10:00
+1069,joao,Desk Lamp,home,4,29.90,2026-08-30 17:03:00
+1070,olivia,Denim Jacket,clothing,5,69.00,2026-08-01 18:10:00
+1071,rafaela,Yoga Mat,sports,2,25.00,2026-08-04 16:01:00
+1072,lucas,Tennis Racket,sports,1,89.50,2026-08-07 08:40:00
+1073,felipe,Dune,books,4,12.99,2026-08-14 07:16:00
+1074,tiago,Water Bottle,sports,5,15.49,2026-08-15 02:25:00
+1075,joao,Gaming Mouse,electronics,1,39.95,2026-08-26 13:46:00
+1076,diego,Dune,books,5,12.99,2026-08-06 14:04:00
+1077,tiago,Dune,books,2,12.99,2026-08-14 03:45:00
+1078,isabel,Puzzle 1000 Pieces,toys,5,17.99,2026-08-10 14:22:00
+1079,carla,Cast Iron Skillet,home,4,34.95,2026-08-03 15:29:00
+1080,karen,Denim Jacket,clothing,2,69.00,2026-08-01 11:52:00
+1081,olivia,Puzzle 1000 Pieces,toys,5,17.99,2026-08-08 16:29:00
+1082,alice,Plush Bear,toys,1,21.00,2026-08-26 20:39:00
+1083,rafaela,Gaming Mouse,electronics,1,39.95,2026-08-08 02:48:00
+1084,elena,Rain Coat,clothing,4,99.00,2026-08-26 11:30:00
+1085,lucas,Clean Code,books,1,37.50,2026-08-15 08:42:00
+1086,diego,Running Shoes,clothing,3,89.99,2026-08-12 16:33:00
+1087,elena,Soccer Ball,sports,2,22.99,2026-08-29 13:55:00
+1088,alice,The Pragmatic Programmer,books,2,42.00,2026-08-20 02:20:00
+1089,hugo,Puzzle 1000 Pieces,toys,3,17.99,2026-08-20 01:42:00
+1090,marina,The Hobbit,books,1,10.49,2026-08-06 06:04:00
+1091,olivia,Desk Lamp,home,3,29.90,2026-08-10 09:59:00
+1092,alice,Running Shoes,clothing,2,89.99,2026-08-11 11:29:00
+1093,carla,Cast Iron Skillet,home,3,34.95,2026-08-14 00:18:00
+1094,marina,Baseball Cap,clothing,5,19.95,2026-08-24 12:24:00
+1095,isabel,Denim Jacket,clothing,2,69.00,2026-08-06 13:59:00
+1096,diego,Tennis Racket,sports,5,89.50,2026-08-03 01:47:00
+1097,nicolas,Cast Iron Skillet,home,5,34.95,2026-08-15 14:37:00
+1098,sofia,Yoga Mat,sports,2,25.00,2026-08-18 20:44:00
+1099,alice,Denim Jacket,clothing,5,69.00,2026-08-21 04:17:00
+1100,lucas,Water Bottle,sports,4,15.49,2026-08-10 07:12:00
+1101,tiago,Gaming Mouse,electronics,3,39.95,2026-08-16 08:39:00
+1102,quinn,Building Blocks Set,toys,3,49.99,2026-08-15 00:01:00
+1103,marina,Plush Bear,toys,3,21.00,2026-08-16 04:16:00
+1104,nicolas,Dumbbell Set,sports,4,119.99,2026-08-10 01:32:00
+1105,tiago,Model Train,toys,5,89.00,2026-08-09 06:05:00
+1106,alice,Wool Sweater,clothing,3,54.50,2026-08-26 06:29:00
+1107,sofia,Running Shoes,clothing,5,89.99,2026-08-20 21:33:00
+1108,olivia,Puzzle 1000 Pieces,toys,4,17.99,2026-08-22 11:53:00
+1109,pedro,Remote Control Car,toys,2,39.50,2026-08-24 14:20:00
+1110,quinn,Building Blocks Set,toys,5,49.99,2026-08-14 05:58:00
+1111,joao,Denim Jacket,clothing,2,69.00,2026-08-12 00:32:00
+1112,bruno,The Pragmatic Programmer,books,2,42.00,2026-08-02 10:40:00
+1113,olivia,Air Purifier,home,4,149.00,2026-08-04 15:32:00
+1114,marina,Board Game,toys,4,34.99,2026-08-10 04:22:00
+1115,alice,Desk Lamp,home,1,29.90,2026-08-08 01:11:00
+1116,quinn,Desk Lamp,home,4,29.90,2026-08-09 08:06:00
+1117,diego,Mechanical Keyboard,electronics,4,109.99,2026-08-12 16:11:00
+1118,rafaela,Sapiens,books,5,18.75,2026-08-25 12:08:00
+1119,quinn,Wool Sweater,clothing,4,54.50,2026-08-29 05:10:00
+1120,pedro,Soccer Ball,sports,4,22.99,2026-08-08 13:50:00
+1121,isabel,Running Shoes,clothing,5,89.99,2026-08-30 08:29:00
+1122,isabel,Scented Candle,home,4,11.99,2026-08-12 05:19:00
+1123,hugo,Gaming Mouse,electronics,3,39.95,2026-08-14 08:05:00
+1124,carla,Cotton T-Shirt,clothing,2,14.99,2026-08-25 21:59:00
+1125,elena,The Pragmatic Programmer,books,2,42.00,2026-08-18 18:22:00
+1126,karen,4K Monitor,electronics,5,329.00,2026-08-19 21:12:00
+1127,gabriela,Throw Blanket,home,4,27.50,2026-08-04 04:00:00
+1128,sofia,Air Purifier,home,4,149.00,2026-08-02 05:20:00
+1129,joao,Coffee Maker,home,4,59.99,2026-08-17 08:12:00
+1130,tiago,Air Purifier,home,2,149.00,2026-08-26 04:31:00
+1131,nicolas,Desk Lamp,home,4,29.90,2026-08-13 18:07:00
+1132,marina,4K Monitor,electronics,2,329.00,2026-08-16 15:08:00
+1133,rafaela,Desk Lamp,home,1,29.90,2026-08-29 15:40:00
+1134,alice,Air Purifier,home,1,149.00,2026-08-27 00:27:00
+1135,olivia,Plush Bear,toys,2,21.00,2026-08-07 12:13:00
+1136,karen,Bluetooth Speaker,electronics,2,49.90,2026-08-18 14:04:00
+1137,marina,Cast Iron Skillet,home,3,34.95,2026-08-16 16:38:00
+1138,pedro,Cast Iron Skillet,home,1,34.95,2026-08-05 01:27:00
+1139,lucas,Board Game,toys,2,34.99,2026-08-03 16:53:00
+1140,bruno,Building Blocks Set,toys,1,49.99,2026-08-30 23:53:00
+1141,tiago,The Pragmatic Programmer,books,2,42.00,2026-08-02 06:15:00
+1142,diego,The Pragmatic Programmer,books,5,42.00,2026-08-22 21:15:00
+1143,lucas,Sapiens,books,2,18.75,2026-08-12 23:53:00
+1144,felipe,Cycling Helmet,sports,3,64.00,2026-08-06 13:06:00
+1145,joao,Mechanical Keyboard,electronics,5,109.99,2026-08-02 12:02:00
+1146,gabriela,Plush Bear,toys,1,21.00,2026-08-19 09:15:00
+1147,hugo,Water Bottle,sports,1,15.49,2026-08-29 21:06:00
+1148,diego,Puzzle 1000 Pieces,toys,5,17.99,2026-08-28 15:48:00
+1149,nicolas,Bluetooth Speaker,electronics,3,49.90,2026-08-25 13:53:00
+1150,karen,Mechanical Keyboard,electronics,1,109.99,2026-08-30 19:17:00
+1151,nicolas,Throw Blanket,home,3,27.50,2026-08-06 03:16:00
+1152,nicolas,Plush Bear,toys,2,21.00,2026-08-08 07:06:00
+1153,isabel,Board Game,toys,5,34.99,2026-08-30 22:28:00
+1154,nicolas,Soccer Ball,sports,5,22.99,2026-08-22 11:45:00
+1155,carla,Cotton T-Shirt,clothing,3,14.99,2026-08-12 12:08:00
+1156,sofia,Desk Lamp,home,5,29.90,2026-08-22 11:35:00
+1157,alice,Plush Bear,toys,4,21.00,2026-08-16 15:26:00
+1158,gabriela,Running Shoes,clothing,3,89.99,2026-08-23 12:32:00
+1159,tiago,Cotton T-Shirt,clothing,3,14.99,2026-08-14 01:27:00
+1160,gabriela,Yoga Mat,sports,1,25.00,2026-08-24 20:17:00
+1161,pedro,The Hobbit,books,5,10.49,2026-08-19 19:55:00
+1162,pedro,The Hobbit,books,4,10.49,2026-08-23 00:01:00
+1163,hugo,Wireless Headphones,electronics,4,79.99,2026-08-14 17:23:00
+1164,sofia,Remote Control Car,toys,3,39.50,2026-08-15 06:27:00
+1165,lucas,Air Purifier,home,4,149.00,2026-08-25 11:54:00
+1166,lucas,Board Game,toys,4,34.99,2026-08-16 09:18:00
+1167,hugo,Cotton T-Shirt,clothing,1,14.99,2026-08-12 18:35:00
+1168,diego,Remote Control Car,toys,5,39.50,2026-08-15 16:39:00
+1169,gabriela,Remote Control Car,toys,4,39.50,2026-08-10 01:12:00
+1170,quinn,Baseball Cap,clothing,5,19.95,2026-08-28 03:59:00
+1171,joao,Denim Jacket,clothing,2,69.00,2026-08-10 04:01:00
+1172,alice,Running Shoes,clothing,5,89.99,2026-08-15 02:09:00
+1173,bruno,Dune,books,5,12.99,2026-08-03 09:42:00
+1174,pedro,Baseball Cap,clothing,1,19.95,2026-08-07 01:55:00
+1175,pedro,Mechanical Keyboard,electronics,4,109.99,2026-08-14 06:34:00
+1176,bruno,Cast Iron Skillet,home,3,34.95,2026-08-09 17:22:00
+1177,marina,Coffee Maker,home,4,59.99,2026-08-04 07:22:00
+1178,bruno,Mechanical Keyboard,electronics,2,109.99,2026-08-29 23:31:00
+1179,carla,Designing Data-Intensive Applications,books,2,45.99,2026-08-15 03:52:00
+1180,tiago,Mechanical Keyboard,electronics,5,109.99,2026-08-20 06:34:00
+1181,marina,Dumbbell Set,sports,4,119.99,2026-08-25 02:47:00
+1182,nicolas,Cast Iron Skillet,home,3,34.95,2026-08-28 02:49:00
+1183,tiago,Cycling Helmet,sports,1,64.00,2026-08-04 01:47:00
+1184,isabel,The Hobbit,books,1,10.49,2026-08-10 22:29:00
+1185,rafaela,The Pragmatic Programmer,books,1,42.00,2026-08-09 05:51:00
+1186,olivia,Clean Code,books,5,37.50,2026-08-19 22:12:00
+1187,hugo,Cast Iron Skillet,home,3,34.95,2026-08-02 19:39:00
+1188,carla,Puzzle 1000 Pieces,toys,2,17.99,2026-08-21 23:55:00
+1189,gabriela,Baseball Cap,clothing,4,19.95,2026-08-28 04:12:00
+1190,elena,Mechanical Keyboard,electronics,3,109.99,2026-08-11 13:33:00
+1191,felipe,Clean Code,books,3,37.50,2026-08-04 01:08:00
+1192,joao,Water Bottle,sports,4,15.49,2026-08-27 05:43:00
+1193,marina,4K Monitor,electronics,3,329.00,2026-08-15 04:08:00
+1194,olivia,Cycling Helmet,sports,1,64.00,2026-08-23 19:21:00
+1195,karen,Yoga Mat,sports,5,25.00,2026-08-20 23:53:00
+1196,hugo,Denim Jacket,clothing,5,69.00,2026-08-05 11:45:00
+1197,sofia,Yoga Mat,sports,1,25.00,2026-08-13 14:22:00
+1198,olivia,Sapiens,books,3,18.75,2026-08-24 22:50:00
+1199,pedro,Designing Data-Intensive Applications,books,1,45.99,2026-08-21 04:06:00
+1200,karen,Cast Iron Skillet,home,3,34.95,2026-08-19 22:01:00

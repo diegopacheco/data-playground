@@ -1,0 +1,14 @@
+CREATE DATABASE IF NOT EXISTS sales;
+
+CREATE TABLE IF NOT EXISTS sales.orders (
+  order_id INT NOT NULL,
+  customer VARCHAR(64) NOT NULL,
+  product VARCHAR(128) NOT NULL,
+  category VARCHAR(32) NOT NULL,
+  quantity INT NOT NULL,
+  price DECIMAL(10, 2) NOT NULL,
+  ts DATETIME NOT NULL
+)
+DUPLICATE KEY(order_id)
+DISTRIBUTED BY HASH(order_id) BUCKETS 1
+PROPERTIES ("replication_num" = "1");

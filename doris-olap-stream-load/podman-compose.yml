@@ -1,0 +1,76 @@
+services:
+  q3-doris-fe:
+    image: docker.io/apache/doris:fe-4.1.4
+    container_name: q3-doris-fe
+    hostname: q3-doris-fe
+    entrypoint:
+      - bash
+      - -c
+      - sed -i 's/-Xmx8192m -Xms8192m/-Xmx1024m -Xms1024m/' /opt/apache-doris/fe/conf/fe.conf && exec bash /usr/local/bin/init_fe.sh
+    environment:
+      FE_SERVERS: fe1:172.30.62.10:9010
+      FE_ID: "1"
+    mem_limit: 1600m
+    ports:
+      - "${fe_http:-26230}:8030"
+      - "${mysql:-26231}:9030"
+    volumes:
+      - q3-doris-fe-meta:/opt/apache-doris/fe/doris-meta
+    networks:
+      q3-net:
+        ipv4_address: 172.30.62.10
+
+  q3-doris-be:
+    image: docker.io/apache/doris:be-4.1.4
+    container_name: q3-doris-be
+    hostname: q3-doris-be
+    entrypoint:
+      - bash
+      - -c
+      - sed -i 's/-Xmx2048m/-Xmx256m/' /opt/apache-doris/be/conf/be.conf && grep -q '^mem_limit' /opt/apache-doris/be/conf/be.conf || echo 'mem_limit = 2G' >> /opt/apache-doris/be/conf/be.conf && exec bash /usr/local/bin/entry_point.sh
+    environment:
+      FE_SERVERS: fe1:172.30.62.10:9010
+      BE_ADDR: 172.30.62.11:9050
+    mem_limit: 2600m
+    ports:
+      - "${be_http:-26240}:8040"
+    volumes:
+      - q3-doris-be-storage:/opt/apache-doris/be/storage
+    networks:
+      q3-net:
+        ipv4_address: 172.30.62.11
+    depends_on:
+      - q3-doris-fe
+
+  q3-ui:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: q3-doris-olap-ui:latest
+    container_name: q3-ui
+    restart: unless-stopped
+    environment:
+      DORIS_HOST: 172.30.62.10
+      DORIS_PORT: "9030"
+      UI_PORT: "${ui:-26280}"
+    mem_limit: 128m
+    ports:
+      - "${ui:-26280}:${ui:-26280}"
+    networks:
+      q3-net:
+        ipv4_address: 172.30.62.20
+    depends_on:
+      - q3-doris-fe
+
+networks:
+  q3-net:
+    name: q3-net
+    ipam:
+      config:
+        - subnet: 172.30.62.0/24
+
+volumes:
+  q3-doris-fe-meta:
+    name: q3-doris-fe-meta
+  q3-doris-be-storage:
+    name: q3-doris-be-storage
