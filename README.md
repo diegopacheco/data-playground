@@ -35,6 +35,7 @@ They range from one laptop process to a whole cluster.
 * [beam-java-pipeline](beam-java-pipeline/) - Apache Beam + Java 25 batch job into Postgres
 * [trino-federated-join](trino-federated-join/) - One Trino query joining Postgres, Cassandra and Iceberg
 * [duckdb-vs-polars-vs-datafusion](duckdb-vs-polars-vs-datafusion/) - Same queries on 10M rows, three engines benchmarked
+* [daft-multimodal-dataframe](daft-multimodal-dataframe/) - Daft dataframe mixing tables, images and embeddings
 
 ## 🌊 Stream Processing
 

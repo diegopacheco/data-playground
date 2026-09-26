@@ -1,0 +1,54 @@
+name: r5-daft-multimodal-dataframe
+
+services:
+  r5-pipeline:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: r5-daft-multimodal-dataframe:latest
+    container_name: r5-pipeline
+    command: ["python", "pipeline.py"]
+    mem_limit: 1g
+    volumes:
+      - r5-daft-output:/app/output
+    networks:
+      - r5-net
+
+  r5-ui:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: r5-daft-multimodal-dataframe:latest
+    container_name: r5-ui
+    restart: unless-stopped
+    environment:
+      UI_PORT: "8080"
+    mem_limit: 1g
+    ports:
+      - "${ui:-27000}:8080"
+    volumes:
+      - r5-daft-output:/app/output
+    networks:
+      - r5-net
+
+  r5-tests:
+    image: r5-daft-multimodal-dataframe:latest
+    container_name: r5-tests
+    command: ["python", "-m", "unittest", "discover", "-v", "-s", "/app/tests"]
+    environment:
+      UI_URL: http://r5-ui:8080
+      PYTHON_COLORS: "0"
+    mem_limit: 512m
+    volumes:
+      - r5-daft-output:/app/output:ro
+      - ./tests:/app/tests:ro
+    networks:
+      - r5-net
+
+networks:
+  r5-net:
+    name: r5-net
+
+volumes:
+  r5-daft-output:
+    name: r5-daft-output

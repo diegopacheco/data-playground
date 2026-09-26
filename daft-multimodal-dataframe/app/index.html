@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Daft Multimodal Catalog</title>
+<style>
+  :root { --bg: #f6f7fb; --card: #fff; --ink: #1f2933; --muted: #6b7280; --line: #e5e7eb; --accent: #4f46e5; --accent-soft: #eef2ff; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  header { background: var(--card); border-bottom: 1px solid var(--line); padding: 14px 24px; display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+  header h1 { font-size: 18px; margin: 0; }
+  .badges { display: flex; gap: 8px; flex-wrap: wrap; }
+  .badge { background: var(--accent-soft); color: var(--accent); border-radius: 999px; padding: 3px 10px; font-size: 12px; font-weight: 600; }
+  nav { display: flex; gap: 4px; margin-left: auto; }
+  nav button { border: 1px solid var(--line); background: var(--card); padding: 7px 14px; border-radius: 8px; cursor: pointer; font-weight: 600; color: var(--muted); }
+  nav button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  main { padding: 18px 24px; max-width: 1400px; margin: 0 auto; }
+  .panel { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+  .panel h2 { font-size: 15px; margin: 0 0 12px; }
+  form { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; align-items: end; }
+  label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--muted); font-weight: 600; }
+  label.check { flex-direction: row; align-items: center; gap: 6px; }
+  input, select { border: 1px solid var(--line); border-radius: 8px; padding: 7px 9px; font: inherit; color: var(--ink); background: #fff; }
+  label.wide { grid-column: span 2; }
+  .btn { border: 0; background: var(--accent); color: #fff; padding: 8px 14px; border-radius: 8px; font-weight: 700; cursor: pointer; }
+  .btn.ghost { background: #fff; color: var(--ink); border: 1px solid var(--line); }
+  .presets { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+  .chip { border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 6px 12px; cursor: pointer; font-size: 13px; }
+  .chip.active { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+  .summary { display: flex; gap: 16px; color: var(--muted); font-size: 13px; margin-bottom: 10px; flex-wrap: wrap; }
+  .summary b { color: var(--ink); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+  .item { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: #fff; display: flex; flex-direction: column; }
+  .item .thumb { background: #f1f3f5; display: flex; justify-content: center; padding: 12px 0; border-bottom: 1px solid var(--line); }
+  .item img { width: 128px; height: 128px; display: block; border-radius: 6px; }
+  .item .body { padding: 8px 10px 10px; display: flex; flex-direction: column; gap: 4px; }
+  .item .name { font-weight: 700; font-size: 13px; }
+  .item .meta { color: var(--muted); font-size: 12px; }
+  .row { display: flex; justify-content: space-between; font-size: 12px; }
+  .swatch { display: inline-block; width: 11px; height: 11px; border-radius: 3px; border: 1px solid #0002; vertical-align: -1px; margin-right: 4px; }
+  .price s { color: var(--muted); margin-right: 4px; }
+  .sale { color: #b91c1c; font-weight: 700; }
+  .sim { color: var(--accent); font-weight: 700; }
+  pre { background: #0f172a; color: #e2e8f0; padding: 14px; border-radius: 10px; overflow: auto; max-height: 460px; font-size: 12px; line-height: 1.4; margin: 0; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; }
+  th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--line); }
+  th { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .03em; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .bar { height: 14px; background: var(--accent); border-radius: 4px; min-width: 2px; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .hidden { display: none; }
+  .error { color: #b91c1c; font-weight: 600; }
+  @media (max-width: 900px) { .cols { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Daft multimodal catalog</h1>
+  <div class="badges" id="badges"></div>
+  <nav>
+    <button data-tab="catalog" class="active">Catalog</button>
+    <button data-tab="groupby">Group by</button>
+    <button data-tab="pipeline">Pipeline</button>
+  </nav>
+</header>
+<main>
+  <section id="tab-catalog">
+    <div class="panel">
+      <form id="filters">
+        <label class="wide">Semantic text (embedding cosine)<input name="q" placeholder="describe what you need"></label>
+        <label>Dominant color<select name="color"><option value="">any</option></select></label>
+        <label>Category<select name="category"><option value="">any</option></select></label>
+        <label>Max price<input name="max_price" type="number" step="1"></label>
+        <label>Min brightness<input name="min_brightness" type="number" min="0" max="100"></label>
+        <label>Max brightness<input name="max_brightness" type="number" min="0" max="100"></label>
+        <label class="check"><input type="checkbox" name="promo" value="true">On promotion</label>
+        <label class="check"><input type="checkbox" name="in_stock" value="true">In stock</label>
+        <button class="btn" type="submit">Run query</button>
+        <button class="btn ghost" type="button" id="clear">Reset</button>
+      </form>
+      <div class="presets" id="presets"></div>
+    </div>
+    <div class="panel">
+      <div class="summary" id="summary"></div>
+      <div class="grid" id="grid"></div>
+    </div>
+    <div class="panel">
+      <h2>Query plan (unoptimized, optimized, physical)</h2>
+      <pre id="query-plan"></pre>
+    </div>
+  </section>
+  <section id="tab-groupby" class="hidden">
+    <div class="cols">
+      <div class="panel">
+        <h2>groupby(category, dominant_color)</h2>
+        <div class="summary" id="groupby-summary"></div>
+        <table id="groupby-table"></table>
+      </div>
+      <div class="panel">
+        <h2>Query plan</h2>
+        <pre id="groupby-plan"></pre>
+      </div>
+    </div>
+  </section>
+  <section id="tab-pipeline" class="hidden">
+    <div class="cols">
+      <div class="panel">
+        <h2>Stage timings (native runner)</h2>
+        <div class="summary" id="pipeline-summary"></div>
+        <table id="stages"></table>
+      </div>
+      <div class="panel">
+        <h2>Output schema (Parquet)</h2>
+        <table id="schema"></table>
+      </div>
+    </div>
+    <div class="panel">
+      <h2>Lazy plan of the whole pipeline</h2>
+      <pre id="pipeline-plan"></pre>
+    </div>
+  </section>
+</main>
+<script>
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"})[c]);
+const money = (v) => "$" + Number(v).toFixed(2);
+const COLORS = ["red", "orange", "yellow", "green", "blue", "purple", "pink", "white", "gray", "black"];
+const CATEGORIES = ["electronics", "kitchen", "outdoor", "books", "apparel", "home", "fitness"];
+let info = null;
+
+async function getJson(url) {
+  const r = await fetch(url);
+  const body = await r.json();
+  if (!r.ok) throw new Error(body.error || r.statusText);
+  return body;
+}
+
+function showTab(name) {
+  document.querySelectorAll("nav button").forEach((b) => b.classList.toggle("active", b.dataset.tab === name));
+  document.querySelectorAll("main > section").forEach((s) => s.classList.toggle("hidden", s.id !== "tab-" + name));
+  if (name === "groupby") loadGroupby();
+  if (location.hash !== "#" + name) history.replaceState(null, "", "#" + name);
+}
+
+function fillSelect(name, values) {
+  const select = document.querySelector(`select[name=${name}]`);
+  values.forEach((v) => select.insertAdjacentHTML("beforeend", `<option>${v}</option>`));
+}
+
+function formParams() {
+  const params = new URLSearchParams();
+  new FormData($("filters")).forEach((v, k) => { if (String(v).trim()) params.set(k, v); });
+  return params;
+}
+
+function setForm(params) {
+  const form = $("filters");
+  form.reset();
+  Object.entries(params).forEach(([k, v]) => {
+    const el = form.elements[k];
+    if (el.type === "checkbox") el.checked = v === "true"; else el.value = v;
+  });
+}
+
+function card(p) {
+  const price = p.discount_pct > 0
+    ? `<span class="price"><s>${money(p.price)}</s><span class="sale">${money(p.sale_price)}</span></span>`
+    : `<span class="price">${money(p.price)}</span>`;
+  const sim = p.similarity !== undefined ? `<span class="sim">sim ${p.similarity.toFixed(3)}</span>` : "";
+  return `<div class="item">
+    <div class="thumb"><img src="${p.thumbnail}" alt="${esc(p.name)}"></div>
+    <div class="body">
+      <div class="name">#${p.id} ${esc(p.name)}</div>
+      <div class="meta">${esc(p.category)} · ${esc(p.brand)} · ${p.in_stock ? "in stock" : "out of stock"}</div>
+      <div class="row"><span><span class="swatch" style="background:${p.dominant_hex}"></span>${p.dominant_color} ${p.dominant_hex}</span>${sim}</div>
+      <div class="row"><span>brightness ${p.brightness}</span><span>sat ${p.saturation}</span></div>
+      <div class="row"><span>source ${p.width}x${p.height}</span>${price}</div>
+      ${p.campaign ? `<div class="meta">${esc(p.campaign)} -${p.discount_pct}%</div>` : ""}
+    </div>
+  </div>`;
+}
+
+async function runQuery(params, presetId) {
+  document.querySelectorAll(".chip").forEach((c) => c.classList.toggle("active", c.dataset.id === presetId));
+  $("summary").innerHTML = "running...";
+  try {
+    const r = await getJson("/api/products?" + params.toString());
+    const filters = [...params.entries()].map(([k, v]) => `${k}=${v}`).join(", ") || "none";
+    $("summary").innerHTML = `<span><b>${r.count}</b> of ${info.rows} products</span><span>filters: <b>${esc(filters)}</b></span><span>daft query <b>${r.elapsed_ms} ms</b></span>`;
+    $("grid").innerHTML = r.rows.map(card).join("");
+    $("query-plan").textContent = r.plan;
+  } catch (e) {
+    $("summary").innerHTML = `<span class="error">${esc(e.message)}</span>`;
+  }
+}
+
+let groupbyLoaded = false;
+async function loadGroupby() {
+  if (groupbyLoaded) return;
+  groupbyLoaded = true;
+  const r = await getJson("/api/groupby");
+  const total = r.rows.reduce((a, g) => a + g.products, 0);
+  $("groupby-summary").innerHTML = `<span><b>${r.rows.length}</b> groups</span><span><b>${total}</b> products</span><span>daft query <b>${r.elapsed_ms} ms</b></span>`;
+  $("groupby-table").innerHTML = `<tr><th>category</th><th>dominant color</th><th class="num">products</th><th class="num">total price</th><th class="num">total sale price</th><th class="num">avg brightness</th></tr>` +
+    r.rows.map((g) => `<tr><td>${g.category}</td><td>${g.dominant_color}</td><td class="num">${g.products}</td><td class="num">${money(g.total_price)}</td><td class="num">${money(g.total_sale_price)}</td><td class="num">${g.avg_brightness}</td></tr>`).join("");
+  $("groupby-plan").textContent = r.plan;
+}
+
+function renderPipeline(run) {
+  const max = Math.max(...run.stages.map((s) => s.ms));
+  $("pipeline-summary").innerHTML = `<span><b>${run.rows}</b> rows</span><span>total <b>${run.total_ms} ms</b></span><span>runner <b>${run.runner}</b></span><span>thumbnail <b>${run.thumbnail}x${run.thumbnail}</b></span>`;
+  $("stages").innerHTML = `<tr><th>stage</th><th class="num">ms</th><th class="num">rows</th><th class="num">cols</th><th style="width:40%"></th></tr>` +
+    run.stages.map((s) => `<tr><td>${esc(s.stage)}</td><td class="num">${s.ms}</td><td class="num">${s.rows}</td><td class="num">${s.columns}</td><td><div class="bar" style="width:${(s.ms / max) * 100}%"></div></td></tr>`).join("");
+  $("pipeline-plan").textContent = run.plan;
+}
+
+async function init() {
+  fillSelect("color", COLORS);
+  fillSelect("category", CATEGORIES);
+  info = await getJson("/api/info");
+  $("badges").innerHTML = [`Daft ${info.daft_version}`, `${info.runner} runner`, `${info.rows} rows`, info.model]
+    .map((b) => `<span class="badge">${esc(b)}</span>`).join("");
+  $("presets").innerHTML = info.presets.map((p) => `<button class="chip" data-id="${p.id}">${esc(p.title)}</button>`).join("");
+  document.querySelectorAll(".chip").forEach((chip) => chip.addEventListener("click", () => {
+    const preset = info.presets.find((p) => p.id === chip.dataset.id);
+    setForm(preset.params);
+    runQuery(new URLSearchParams(preset.params), preset.id);
+  }));
+  $("schema").innerHTML = `<tr><th>column</th><th>daft type</th></tr>` + info.schema.map((f) => `<tr><td>${f.name}</td><td>${esc(f.dtype)}</td></tr>`).join("");
+  renderPipeline(info.pipeline);
+  document.querySelectorAll("nav button").forEach((b) => b.addEventListener("click", () => showTab(b.dataset.tab)));
+  $("filters").addEventListener("submit", (e) => { e.preventDefault(); runQuery(formParams()); });
+  $("clear").addEventListener("click", () => { $("filters").reset(); runQuery(new URLSearchParams()); });
+  const tab = location.hash.slice(1);
+  showTab(["catalog", "groupby", "pipeline"].includes(tab) ? tab : "catalog");
+  runQuery(new URLSearchParams());
+}
+
+init().catch((e) => { $("summary").innerHTML = `<span class="error">${esc(e.message)}</span>`; });
+</script>
+</body>
+</html>

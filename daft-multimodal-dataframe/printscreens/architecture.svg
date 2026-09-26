@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="440" viewBox="0 0 1200 440">
+  <defs>
+    <style>@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&amp;display=swap'); text { font-family: 'Caveat', 'Comic Sans MS', cursive; fill: #1f2933; }</style>
+    <filter id="wobble"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="3"/></filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1f2933"/></marker>
+  </defs>
+  <rect width="1200" height="440" fill="#ffffff"/>
+  <g filter="url(#wobble)" stroke="#1f2933" stroke-width="2">
+    <rect x="20" y="95" width="175" height="150" rx="10" fill="#fff3bf"/>
+    <rect x="240" y="75" width="320" height="200" rx="10" fill="#d0ebff"/>
+    <rect x="605" y="105" width="185" height="130" rx="10" fill="#fcc2d7"/>
+    <rect x="835" y="105" width="185" height="130" rx="10" fill="#d3f9d8"/>
+    <rect x="1060" y="120" width="125" height="100" rx="10" fill="#e5dbff"/>
+    <rect x="300" y="330" width="200" height="75" rx="10" fill="#ffd8a8"/>
+    <rect x="720" y="330" width="200" height="75" rx="10" fill="#f1f3f5"/>
+    <line x1="195" y1="170" x2="238" y2="170" marker-end="url(#arrow)"/>
+    <line x1="560" y1="170" x2="603" y2="170" marker-end="url(#arrow)"/>
+    <line x1="790" y1="170" x2="833" y2="170" marker-end="url(#arrow)"/>
+    <line x1="1020" y1="170" x2="1058" y2="170" marker-end="url(#arrow)"/>
+    <line x1="400" y1="330" x2="400" y2="277" marker-end="url(#arrow)"/>
+    <line x1="820" y1="330" x2="720" y2="237" marker-end="url(#arrow)"/>
+    <line x1="820" y1="330" x2="910" y2="237" marker-end="url(#arrow)"/>
+  </g>
+  <text x="600" y="42" font-size="32" font-weight="700" text-anchor="middle">daft-multimodal-dataframe</text>
+  <text x="107" y="125" font-size="24" text-anchor="middle">data/</text>
+  <text x="107" y="152" font-size="18" text-anchor="middle">products.csv (44)</text>
+  <text x="107" y="176" font-size="18" text-anchor="middle">promotions.csv</text>
+  <text x="107" y="200" font-size="18" text-anchor="middle">44 PNG cards</text>
+  <text x="107" y="224" font-size="16" text-anchor="middle">drawn by Pillow at build</text>
+  <text x="400" y="103" font-size="24" text-anchor="middle">pipeline.py (Daft 0.7.25)</text>
+  <text x="400" y="132" font-size="18" text-anchor="middle">read_csv, url download</text>
+  <text x="400" y="157" font-size="18" text-anchor="middle">decode_image, resize 128x128</text>
+  <text x="400" y="182" font-size="18" text-anchor="middle">color + brightness @daft.func</text>
+  <text x="400" y="207" font-size="18" text-anchor="middle">embeddings @daft.func.batch</text>
+  <text x="400" y="232" font-size="18" text-anchor="middle">left join promotions on color</text>
+  <text x="400" y="258" font-size="16" text-anchor="middle">native runner, stage timings + explain()</text>
+  <text x="697" y="140" font-size="24" text-anchor="middle">Parquet</text>
+  <text x="697" y="166" font-size="18" text-anchor="middle">volume r5-daft-output</text>
+  <text x="697" y="190" font-size="18" text-anchor="middle">Image + Embedding types</text>
+  <text x="697" y="214" font-size="18" text-anchor="middle">run.json (plan, timings)</text>
+  <text x="927" y="140" font-size="24" text-anchor="middle">server.py</text>
+  <text x="927" y="166" font-size="18" text-anchor="middle">Daft read_parquet</text>
+  <text x="927" y="190" font-size="18" text-anchor="middle">filter / cosine / groupby</text>
+  <text x="927" y="214" font-size="18" text-anchor="middle">pushdowns in the plan</text>
+  <text x="1122" y="160" font-size="24" text-anchor="middle">index.html</text>
+  <text x="1122" y="186" font-size="17" text-anchor="middle">grid, plan,</text>
+  <text x="1122" y="206" font-size="17" text-anchor="middle">timings</text>
+  <text x="400" y="360" font-size="22" text-anchor="middle">fastembed on CPU</text>
+  <text x="400" y="386" font-size="17" text-anchor="middle">bge-small-en-v1.5, 384 dims</text>
+  <text x="820" y="360" font-size="22" text-anchor="middle">tests (r5-tests)</text>
+  <text x="820" y="386" font-size="17" text-anchor="middle">pyarrow + Pillow + REST</text>
+  <text x="1122" y="250" font-size="18" text-anchor="middle">port 27000</text>
+</svg>

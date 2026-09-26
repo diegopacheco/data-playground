@@ -1,0 +1,45 @@
+id,name,category,brand,price,rating,in_stock,color,tone,image_path,description
+1,Wireless Noise Cancelling Headphones,electronics,Sonora,249.00,4.7,true,black,dark,images/product-01.png,Over ear headphones with active noise cancellation that silence airplane engines and office chatter with 30 hours of battery life
+2,Mechanical Keyboard,electronics,Keyforge,119.00,4.6,true,gray,dark,images/product-02.png,Tactile brown switches and a solid aluminum frame for programmers who type all day with hot swappable keys
+3,4K Action Camera,electronics,Vantix,299.00,4.4,true,orange,light,images/product-03.png,Waterproof camera that records stabilized 4K video while surfing mountain biking or skiing
+4,Portable Bluetooth Speaker,electronics,Sonora,79.00,4.3,false,blue,light,images/product-04.png,Small rugged speaker that floats in the pool and plays music for 12 hours at a beach party
+5,E-Reader with Warm Light,electronics,Pagelight,139.00,4.8,true,white,light,images/product-05.png,Glare free paper like screen with adjustable warm light for reading novels in bed without eye strain
+6,USB-C Charging Hub,electronics,Voltrix,45.00,4.1,true,gray,dark,images/product-06.png,Seven port hub that charges a laptop phone and tablet at the same time from one wall outlet
+7,Smart Fitness Watch,electronics,Pulsewise,199.00,4.5,true,green,light,images/product-07.png,Tracks heart rate sleep and running pace with built in GPS and a week of battery
+8,Insulated Travel Mug,kitchen,Thermocraft,29.00,4.8,true,red,light,images/product-08.png,Double wall vacuum steel mug that keeps coffee hot for six hours on the morning commute
+9,Chef Knife 8 inch,kitchen,Blade and Grain,89.00,4.9,true,black,dark,images/product-09.png,Forged high carbon steel blade that slices tomatoes onions and herbs with precision
+10,Cast Iron Skillet,kitchen,Hearthstone,39.00,4.7,true,black,dark,images/product-10.png,Pre seasoned pan that sears steak and bakes cornbread and lasts for generations
+11,Espresso Machine,kitchen,Baristo,549.00,4.4,false,red,light,images/product-11.png,Fifteen bar pump and steam wand to pull cafe quality espresso shots and froth milk for lattes at home
+12,Sourdough Starter Kit,kitchen,Hearthstone,24.00,4.2,true,yellow,light,images/product-12.png,Dried wild yeast culture jar and banneton basket for baking crusty artisan bread
+13,Electric Kettle,kitchen,Thermocraft,49.00,4.5,true,red,dark,images/product-13.png,Gooseneck kettle with temperature control for pour over coffee and green tea
+14,Non Stick Frying Pan,kitchen,Hearthstone,34.00,4.0,true,red,light,images/product-14.png,Ceramic coated pan for eggs and pancakes that slide right off with no oil
+15,Four Season Tent,outdoor,Nordvik,429.00,4.8,true,orange,light,images/product-15.png,Two person tent that stands up to snow wind and storms on high altitude mountain expeditions
+16,Down Sleeping Bag,outdoor,Nordvik,319.00,4.7,true,blue,dark,images/product-16.png,Goose down mummy bag rated to minus 20 degrees for sleeping warm in freezing winter camps
+17,Trekking Poles,outdoor,Ridgeline,69.00,4.5,true,gray,dark,images/product-17.png,Collapsible carbon poles that save your knees on steep descents and river crossings
+18,Water Filter Bottle,outdoor,Clearstream,39.00,4.3,true,blue,light,images/product-18.png,Drink safely from streams and lakes with a built in filter that removes bacteria
+19,Headlamp,outdoor,Ridgeline,35.00,4.6,true,yellow,light,images/product-19.png,Bright rechargeable head torch for night hikes and finding things in a dark tent
+20,Camping Stove,outdoor,Nordvik,59.00,4.4,false,green,dark,images/product-20.png,Compact gas burner that boils water in three minutes for backcountry meals
+21,Hiking Backpack 45L,outdoor,Ridgeline,179.00,4.6,true,green,light,images/product-21.png,Ventilated back panel and rain cover for multi day treks on long trails
+22,Dune,books,Chilton Press,18.00,4.8,true,orange,dark,images/product-22.png,Science fiction epic about politics religion and ecology on a desert planet with giant sandworms
+23,Sapiens,books,Harper Lane,22.00,4.6,true,white,light,images/product-23.png,A brief history of humankind from hunter gatherers to the modern economy
+24,The Pragmatic Programmer,books,Addison Row,45.00,4.7,true,purple,dark,images/product-24.png,Practical advice for software engineers on writing maintainable code and growing a career
+25,Designing Data-Intensive Applications,books,Oriel Media,52.00,4.9,true,red,dark,images/product-25.png,Deep dive into distributed databases replication partitioning and stream processing at scale
+26,Salt Fat Acid Heat,books,Simon Page,32.00,4.7,false,yellow,light,images/product-26.png,Cookbook that teaches the four elements of good cooking instead of fixed recipes
+27,The Hobbit,books,Chilton Press,12.00,4.8,true,green,dark,images/product-27.png,Fantasy adventure of a hobbit a wizard and dwarves on a quest to reclaim treasure from a dragon
+28,Atomic Habits,books,Avery House,16.00,4.6,true,white,light,images/product-28.png,Small daily changes that compound into remarkable results for productivity and self improvement
+29,Merino Wool Base Layer,apparel,Nordvik,85.00,4.6,true,gray,dark,images/product-29.png,Thin thermal shirt that keeps you warm and dry under a jacket on cold ski days
+30,Waterproof Rain Jacket,apparel,Stormline,159.00,4.5,true,yellow,light,images/product-30.png,Breathable shell with taped seams that keeps you dry in heavy rain and wind
+31,Running Shoes,apparel,Pulsewise,129.00,4.4,true,pink,light,images/product-31.png,Lightweight cushioned sneakers for marathon training and daily jogging on roads
+32,Wool Beanie,apparel,Nordvik,25.00,4.3,true,red,light,images/product-32.png,Soft knitted hat that keeps your head and ears warm in snowy winter weather
+33,Denim Jacket,apparel,Bluefold,79.00,4.1,false,blue,dark,images/product-33.png,Classic blue jean jacket for casual spring evenings and weekend outings
+34,Linen Shirt,apparel,Bluefold,49.00,4.2,true,white,light,images/product-34.png,Airy breathable shirt for hot summer days at the beach or on vacation
+35,Memory Foam Pillow,home,Dreamnest,59.00,4.5,true,white,light,images/product-35.png,Contoured pillow that supports your neck for a deeper night of sleep
+36,Blackout Curtains,home,Dreamnest,42.00,4.3,true,black,dark,images/product-36.png,Thick panels that block street lights and sunrise so you can sleep in late
+37,Robot Vacuum,home,Cleanbot,329.00,4.2,true,black,dark,images/product-37.png,Self driving vacuum that cleans dog hair and dust from floors and carpets while you are away
+38,Air Purifier,home,Clearstream,189.00,4.6,true,white,light,images/product-38.png,HEPA filter removes pollen smoke and allergens from the air in bedrooms and offices
+39,Scented Soy Candle,home,Wickwood,19.00,4.4,true,purple,light,images/product-39.png,Hand poured lavender candle for a calm and cozy evening atmosphere
+40,Yoga Mat,fitness,Pulsewise,39.00,4.5,true,purple,light,images/product-40.png,Non slip cushioned mat for yoga pilates and stretching at home
+41,Adjustable Dumbbells,fitness,Ironpeak,299.00,4.7,true,black,dark,images/product-41.png,Dial weights from 2 to 24 kg to build muscle with strength training in a small apartment
+42,Resistance Bands Set,fitness,Ironpeak,27.00,4.4,true,red,light,images/product-42.png,Five elastic bands of different tension for home workouts physical therapy and travel
+43,Foam Roller,fitness,Pulsewise,29.00,4.3,false,blue,light,images/product-43.png,Dense roller that massages sore muscles and speeds recovery after running
+44,Jump Rope,fitness,Ironpeak,15.00,4.2,true,orange,light,images/product-44.png,Speed rope with ball bearings for cardio conditioning and boxing footwork
