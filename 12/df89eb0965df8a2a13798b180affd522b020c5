@@ -1,0 +1,80 @@
+lance-vs-vortex-vs-parquet/scripts/ports.env
+  s_dde22dd2cd9c7d::t_f6fedf43d11a0d 1
+lance-vs-vortex-vs-parquet/printscreens/architecture.svg
+  s_dde22dd2cd9c7d::t_015a2d9cdef408 1-63
+lance-vs-vortex-vs-parquet/podman-compose.yml
+  s_dde22dd2cd9c7d::t_f6fedf43d11a0d 1-16,18-33,35-43
+  s_dde22dd2cd9c7d::t_48f4ad361a5b49 17,34
+lance-vs-vortex-vs-parquet/Containerfile
+  s_dde22dd2cd9c7d::t_f6fedf43d11a0d 8
+  s_dde22dd2cd9c7d::t_8c615a3a39f631 1-7,9-10
+lance-vs-vortex-vs-parquet/app/server.py
+  s_dde22dd2cd9c7d::t_b70701bcf8d015 1-98
+lance-vs-vortex-vs-parquet/tests/test_formats.py
+  s_dde22dd2cd9c7d::t_b70f98a34c4deb 1-16,18-139
+  s_dde22dd2cd9c7d::t_024973f6f49b4c 17
+lance-vs-vortex-vs-parquet/app/vector.py
+  s_dde22dd2cd9c7d::t_c9c16b56561470 1-29
+lance-vs-vortex-vs-parquet/README.md
+  s_dde22dd2cd9c7d::t_1d575f16a90504 159
+  s_dde22dd2cd9c7d::t_485512bb779aca 1-58,62-158,160-207
+  s_dde22dd2cd9c7d::t_700f6b2d68b2e5 59-61
+lance-vs-vortex-vs-parquet/app/index.html
+  s_dde22dd2cd9c7d::t_c8cedc67ba4973 1-20,24-94,96-100,102-107,109-111,113-137,139-197,199-213
+  s_dde22dd2cd9c7d::t_6df3b6d6461b08 198
+  s_dde22dd2cd9c7d::t_afb7fc0a4115fd 21-23,95,101,108,112,138
+lance-vs-vortex-vs-parquet/.gitignore
+  s_dde22dd2cd9c7d::t_f6fedf43d11a0d 1-7
+lance-vs-vortex-vs-parquet/results/results.json
+  s_dde22dd2cd9c7d::t_0bbed9248147d1 1-472
+lance-vs-vortex-vs-parquet/app/dataset.py
+  s_dde22dd2cd9c7d::t_7dae9018243a53 1-81
+lance-vs-vortex-vs-parquet/scripts/test-all.sh
+  s_dde22dd2cd9c7d::t_9b12d6690919b2 1-21
+lance-vs-vortex-vs-parquet/app/formats.py
+  s_dde22dd2cd9c7d::t_c48cf1b78337a6 1-89
+lance-vs-vortex-vs-parquet/data/orders.csv
+  s_dde22dd2cd9c7d::t_f18068f9d49b52 1-201
+lance-vs-vortex-vs-parquet/app/bench.py
+  s_dde22dd2cd9c7d::t_48f4ad361a5b49 6
+  s_dde22dd2cd9c7d::t_ea84bcad65c87a 159-160,172,174-202
+  s_dde22dd2cd9c7d::t_3a891626e4f074 214-216
+  s_dde22dd2cd9c7d::t_69ea63865ef665 1-5,7-158,161-171,173,203-213,217
+lance-vs-vortex-vs-parquet/scripts/bench.sh
+  s_dde22dd2cd9c7d::t_9b12d6690919b2 1-13
+lance-vs-vortex-vs-parquet/tests/test_api.py
+  s_dde22dd2cd9c7d::t_9b12d6690919b2 64
+  s_dde22dd2cd9c7d::t_76e6408c2c21ff 1-63,65-68
+README.md
+  s_dde22dd2cd9c7d::t_ebc1aa2c5ef0dd 112
+lance-vs-vortex-vs-parquet/requirements.txt
+  s_dde22dd2cd9c7d::t_d3cbd5282eaf25 1-4
+lance-vs-vortex-vs-parquet/scripts/common.sh
+  s_dde22dd2cd9c7d::t_5a1ef7da9e3073 1-86
+lance-vs-vortex-vs-parquet/scripts/setup.sh
+  s_dde22dd2cd9c7d::t_516c290f86ba70 1-16
+lance-vs-vortex-vs-parquet/scripts/start-all.sh
+  s_dde22dd2cd9c7d::t_2743e16ffdf737 1-27
+lance-vs-vortex-vs-parquet/scripts/status.sh
+  s_dde22dd2cd9c7d::t_b8cab1098c6481 1-13
+lance-vs-vortex-vs-parquet/scripts/stop-all.sh
+  s_dde22dd2cd9c7d::t_b28b91a466fb12 1-15
+lance-vs-vortex-vs-parquet/scripts/ui.sh
+  s_dde22dd2cd9c7d::t_a71b9e0ea4b70d 1-7
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "12df89eb0965df8a2a13798b180affd522b020c5",
+  "prompts": {},
+  "sessions": {
+    "s_dde22dd2cd9c7d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2d754554-d602-4dbd-8996-a2c4d4376a54",
+        "model": "unknown"
+      },
+      "human_author": "diegopacheco <diego.pacheco.it@gmail.com>"
+    }
+  }
+}
