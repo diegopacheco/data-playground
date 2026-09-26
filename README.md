@@ -128,3 +128,4 @@ Here: wide-column storage and a financial ledger.
 
 * [scylladb-vs-cassandra-bench](scylladb-vs-cassandra-bench/) - ScyllaDB vs Cassandra on the same workload
 * [tigerbeetle-ledger-ingest](tigerbeetle-ledger-ingest/) - TigerBeetle double-entry ledger for orders
+* [sql-playground](sql-playground/) - PostgreSQL 18 workbench with plans, timing, hints, 8 contention races and every join type

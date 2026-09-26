@@ -1,0 +1,67 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>SQL Playground</title>
+<style>
+  :root { color-scheme: light; }
+  body { margin: 0; height: 100vh; display: grid; place-items: center; background: #f4f2ec; background-image: linear-gradient(#1f5f9910 1px, transparent 1px), linear-gradient(90deg, #1f5f9910 1px, transparent 1px); background-size: 24px 24px; font-family: -apple-system, "SF Pro Text", sans-serif; color: #1d2127; -webkit-app-region: drag; user-select: none; }
+  .card { width: 480px; background: #fbfaf6; border: 1px solid #dcdad2; border-radius: 18px; padding: 28px 30px; box-shadow: 0 18px 50px #23281e1f; }
+  .brand { display: flex; align-items: center; gap: 14px; margin-bottom: 22px; }
+  .brand img { width: 52px; height: 52px; border-radius: 13px; }
+  .brand h1 { margin: 0; font-size: 22px; }
+  .brand p { margin: 2px 0 0; font-size: 12px; color: #6c7169; }
+  ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+  li { display: grid; grid-template-columns: 14px 1fr auto; gap: 12px; align-items: center; padding: 10px 12px; border: 1px solid #ebe9e2; border-radius: 10px; background: #fff; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: #c9c7bd; }
+  .label { font-size: 13px; font-weight: 600; }
+  .detail { font-size: 11px; color: #6c7169; }
+  .state { font: 600 11px ui-monospace, "SF Mono", monospace; text-transform: uppercase; color: #6c7169; }
+  li[data-state="starting"] .dot { background: #b0662a; animation: pulse 1s ease-in-out infinite; }
+  li[data-state="ready"] .dot { background: #2f8a5b; }
+  li[data-state="ready"] .state { color: #2f8a5b; }
+  li[data-state="failed"] .dot { background: #b23a48; }
+  li[data-state="failed"] .state { color: #b23a48; }
+  .log { margin-top: 14px; height: 64px; overflow: hidden; font: 11px ui-monospace, "SF Mono", monospace; color: #9a9d94; white-space: pre-wrap; }
+  .error { margin-top: 12px; font-size: 12px; color: #b23a48; white-space: pre-wrap; -webkit-app-region: no-drag; user-select: text; }
+  @keyframes pulse { 50% { opacity: 0.35; transform: scale(0.8); } }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="brand">
+      <img src="../assets/icon.png" alt="">
+      <div><h1>SQL Playground</h1><p>Starting PostgreSQL 18, the API and the UI</p></div>
+    </div>
+    <ul id="services"></ul>
+    <div class="log" id="log"></div>
+    <div class="error" id="error"></div>
+  </div>
+  <script>
+    const list = document.getElementById("services")
+    const log = document.getElementById("log")
+    const error = document.getElementById("error")
+    window.sqlPlayground.onBoot(message => {
+      if (message.kind === "plan") {
+        list.replaceChildren(...message.services.map(service => {
+          const item = document.createElement("li")
+          item.id = `service-${service.id}`
+          item.dataset.state = "pending"
+          item.innerHTML = `<span class="dot"></span><span><div class="label"></div><div class="detail"></div></span><span class="state">pending</span>`
+          item.querySelector(".label").textContent = service.label
+          item.querySelector(".detail").textContent = service.detail
+          return item
+        }))
+      }
+      if (message.kind === "status") {
+        const item = document.getElementById(`service-${message.id}`)
+        if (!item) return
+        item.dataset.state = message.state
+        item.querySelector(".state").textContent = message.note ? `${message.state} · ${message.note}` : message.state
+      }
+      if (message.kind === "log") log.textContent = [...log.textContent.split("\n").filter(Boolean).slice(-3), message.line].join("\n")
+      if (message.kind === "error") error.textContent = message.message
+    })
+  </script>
+</body>
+</html>

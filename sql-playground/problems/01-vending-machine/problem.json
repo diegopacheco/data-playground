@@ -1,0 +1,26 @@
+{
+  "title": "Vending machine: the last can",
+  "schema": "vending",
+  "summary": "Two buyers press the button for the same last can at the same moment.",
+  "background": [
+    "A fleet of connected vending machines reports every sale to a central Postgres. When a buyer presses a button the machine asks the server: is there stock in slot A1? If yes, decrement the stock, record the sale and drop the can.",
+    "The naive code reads the stock into the application, checks it, waits a few milliseconds for the payment terminal, then writes stock = value_read - 1. Under READ COMMITTED every transaction sees the last committed value, so two buyers can both read stock = 1, both pass the check and both write stock = 0. Two cans are sold, one exists. This is the lost update anomaly.",
+    "The fix is to let the database do the check and the write in one atomic statement: UPDATE slots SET stock = stock - 1 WHERE id = 1 AND stock > 0. The row lock taken by the UPDATE serializes buyers on that row, and the WHERE clause is re-evaluated against the newest version after the lock is granted, so only as many buyers as there are cans succeed. SELECT ... FOR UPDATE before the check works too."
+  ],
+  "race": {
+    "clients": 20,
+    "iterations": 3,
+    "goal": "Slot 1 is loaded with 10 cans. 20 buyers press buy 3 times each. Exactly 10 sales may happen and the stock must end at 0."
+  },
+  "joins": {
+    "inner": { "title": "Revenue per product", "prompt": "Join sales, slots and products and sum the revenue of every product that sold at least once." },
+    "left": { "title": "Units sold per product, including zero", "prompt": "List every product with how many units it sold. Products that never sold must show 0." },
+    "right": { "title": "Machines per location", "prompt": "Show every location with its machines. Locations without machines must appear with NULL." },
+    "full": { "title": "Machines and locations mismatch", "prompt": "Find machines not placed in any location and locations with no machine in a single result." },
+    "cross": { "title": "Planogram matrix", "prompt": "Build every machine x product combination and flag which ones are actually stocked in a slot." },
+    "self": { "title": "Technician and supervisor", "prompt": "List every technician next to the name of the supervisor they report to." },
+    "semi": { "title": "Machines with a sold out slot", "prompt": "Return the machines that have at least one slot with zero stock, each machine once." },
+    "anti": { "title": "Products that never sold", "prompt": "Return the products that do not appear in any sale." },
+    "lateral": { "title": "Last two sales per machine", "prompt": "For every machine return its two most recent sales." }
+  }
+}

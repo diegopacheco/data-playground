@@ -1,0 +1,26 @@
+{
+  "title": "Hot counter: views of a viral post",
+  "schema": "social",
+  "summary": "A post goes viral and every viewer increments the same counter row.",
+  "background": [
+    "Social apps show a view counter next to every post. The counter lives in posts.views and every view also writes an event to post_views for analytics. When a post goes viral thousands of sessions hit the same row every second.",
+    "The naive code loads the post, adds one in the application and saves views = value_loaded + 1, the pattern many ORMs produce by default. Concurrent viewers read the same value and overwrite each other, so the counter shows far fewer views than the events table recorded.",
+    "The first fix is an atomic increment: UPDATE posts SET views = views + 1. It is correct but still serializes every writer on one row lock, which caps throughput on a truly hot row. At larger scale teams shard the counter into N rows (post_id, shard) and sum them on read, or append events and aggregate them asynchronously."
+  ],
+  "race": {
+    "clients": 20,
+    "iterations": 5,
+    "goal": "Post 1 starts with 0 views. 20 sessions view it 5 times each. posts.views must equal the 100 events recorded."
+  },
+  "joins": {
+    "inner": { "title": "Posts with author and tags", "prompt": "Join posts, authors and hashtags to list every tagged post." },
+    "left": { "title": "Posts per user, including zero", "prompt": "List every user with how many posts they wrote. Silent users must show 0." },
+    "right": { "title": "Unused hashtags", "prompt": "List every hashtag with the posts using it, keeping hashtags no post uses." },
+    "full": { "title": "Our hashtags versus trending", "prompt": "Match our hashtags with the external trending feed, showing tags only we have and tags only trending has." },
+    "cross": { "title": "Daily views grid", "prompt": "Build every post x day of the last 3 days grid and count the views in each cell, 0 when none." },
+    "self": { "title": "Mutual follows", "prompt": "Find pairs of users who follow each other, each pair once." },
+    "semi": { "title": "Users following a popular author", "prompt": "Return users that follow at least one author whose post has more than 2 views events." },
+    "anti": { "title": "Posts nobody viewed", "prompt": "Return posts that have no view event." },
+    "lateral": { "title": "Top post per author", "prompt": "For every user return their most viewed post." }
+  }
+}

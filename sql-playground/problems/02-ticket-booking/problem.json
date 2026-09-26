@@ -1,0 +1,26 @@
+{
+  "title": "Ticket booking: same seat sold twice",
+  "schema": "tickets",
+  "summary": "A concert goes on sale and thousands of fans click the same VIP seats in the same second.",
+  "background": [
+    "A ticketing site keeps one row per seat per event in event_seats with a status of free or sold. When a fan clicks buy, the server finds the first free VIP seat, waits for the payment gateway, then marks the seat sold and writes a booking.",
+    "The naive flow reads a free seat with a plain SELECT. Twenty fans run that SELECT at the same moment, all of them get the same first free seat, and all of them write a booking for it. The seat is sold many times and the venue has angry fans at the door.",
+    "The fix is to claim the seat and change it in one statement: UPDATE event_seats SET status = 'sold' WHERE (event_id, seat_id) = (SELECT ... WHERE status = 'free' ORDER BY seat_id LIMIT 1 FOR UPDATE SKIP LOCKED) RETURNING seat_id. FOR UPDATE locks the chosen row, SKIP LOCKED makes other fans jump to the next free seat instead of waiting in line, and because the row is updated Postgres re-checks status = 'free' on the newest version. A unique constraint on bookings (event_id, seat_id) is the last line of defense."
+  ],
+  "race": {
+    "clients": 20,
+    "iterations": 1,
+    "goal": "Event 1 has 8 free VIP seats. 20 fans try to buy one seat each. Exactly 8 bookings may exist and no seat may have two bookings."
+  },
+  "joins": {
+    "inner": { "title": "Who sits where", "prompt": "Join bookings, customers, events and seats to print the ticket of every booking." },
+    "left": { "title": "Tickets sold per event, including zero", "prompt": "List every event with its number of bookings. Events with no booking must show 0." },
+    "right": { "title": "Seat map of an event", "prompt": "For event 2 list every seat with the customer holding it or NULL when it is still free." },
+    "full": { "title": "Customers versus newsletter", "prompt": "Match customers with newsletter subscribers by email, keeping customers who never subscribed and subscribers who never bought." },
+    "cross": { "title": "Event x section grid", "prompt": "Build every event x seat section pair and count how many seats of that section each event sold." },
+    "self": { "title": "Referral chain", "prompt": "Show every customer next to the customer who referred them." },
+    "semi": { "title": "Customers who went to Lisbon", "prompt": "Return the customers with at least one booking for an event in a Lisbon venue." },
+    "anti": { "title": "Events with no sales", "prompt": "Return the events that have no booking at all." },
+    "lateral": { "title": "Latest booking per customer", "prompt": "For every customer return the most recent booking with the event title." }
+  }
+}

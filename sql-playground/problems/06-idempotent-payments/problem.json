@@ -1,0 +1,26 @@
+{
+  "title": "Payments: the double charge",
+  "schema": "payments",
+  "summary": "A mobile app retries a checkout on a flaky network and the customer is charged twice.",
+  "background": [
+    "Payment APIs accept an idempotency key: the client generates one key per checkout and sends it with every retry, so the server can recognize the retry and return the first result instead of charging again.",
+    "The naive server checks whether a charge with that key exists, calls the card network, then inserts the charge. When the app fires three retries in the same second, all three checks run before any insert commits, all three see nothing and all three charge the card. Check then insert is a race whenever nothing in the database enforces uniqueness.",
+    "The fix is to make the database the arbiter: a unique index on (merchant_id, idempotency_key) and INSERT ... ON CONFLICT DO NOTHING RETURNING id. The first insert wins, the others hit the unique index, wait for the winner to commit and then do nothing. Only the request that inserted the row calls the card network."
+  ],
+  "race": {
+    "clients": 20,
+    "iterations": 3,
+    "goal": "20 app instances retry 5 checkouts (keys order-1 to order-5) 3 times each. Each key must produce exactly one charge."
+  },
+  "joins": {
+    "inner": { "title": "Charges with merchant and customer", "prompt": "Join charges, merchants and customers to list every charge with names." },
+    "left": { "title": "Net amount after refunds", "prompt": "List every charge with its refunded amount and the net amount kept, 0 refunded when there is no refund." },
+    "right": { "title": "Merchants with no sales", "prompt": "List every merchant with its charges, keeping merchants that never charged." },
+    "full": { "title": "Settlement reconciliation", "prompt": "Match charges with the acquirer settlement file, showing charges never settled and settlements for unknown charges." },
+    "cross": { "title": "Merchant x currency matrix", "prompt": "Build every merchant x currency pair and sum the captured volume in each, 0 when none." },
+    "self": { "title": "Marketplace sub merchants", "prompt": "Show every sub merchant next to the marketplace that owns it." },
+    "semi": { "title": "Customers with a refund", "prompt": "Return customers that have at least one refunded charge." },
+    "anti": { "title": "Captured but not settled", "prompt": "Return captured charges that have no settlement row yet." },
+    "lateral": { "title": "Biggest charge per merchant", "prompt": "For every merchant return its largest charge." }
+  }
+}

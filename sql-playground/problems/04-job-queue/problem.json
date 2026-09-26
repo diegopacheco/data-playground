@@ -1,0 +1,26 @@
+{
+  "title": "Job queue: the same email sent twice",
+  "schema": "jobs",
+  "summary": "Many workers poll one Postgres table for work and several of them grab the same job.",
+  "background": [
+    "Using a table as a queue is common: producers insert rows with status queued, and a pool of workers keeps asking for the next job, runs it and marks it done. Sending a welcome email, charging a subscription or generating an invoice are typical jobs.",
+    "The naive worker runs SELECT id FROM jobs WHERE status = 'queued' ORDER BY id LIMIT 1, starts the work and only later marks the job done. Every worker polling at the same moment receives the same oldest job, so the customer gets the same email five times. Adding FOR UPDATE alone stops the duplicates but turns the queue into a single file line: every worker waits for the one holding the lock.",
+    "The fix is FOR UPDATE SKIP LOCKED inside an UPDATE ... RETURNING that flips the status in the same statement. Each worker locks a different row, locked rows are skipped instead of waited on, and the status change makes the claim visible to everyone after commit. This is how queue libraries such as pg-boss, Oban, graphile-worker and Que work."
+  ],
+  "race": {
+    "clients": 20,
+    "iterations": 3,
+    "goal": "30 jobs are queued in the race queue. 20 workers poll 3 times each. Every job must run exactly once."
+  },
+  "joins": {
+    "inner": { "title": "Execution log", "prompt": "Join executions with jobs, queues and workers to show who ran what." },
+    "left": { "title": "Queued jobs per queue, including zero", "prompt": "List every queue with its number of queued jobs. Empty queues must show 0." },
+    "right": { "title": "Idle workers", "prompt": "List every worker with the executions it ran, keeping workers that never ran anything." },
+    "full": { "title": "Registry versus heartbeats", "prompt": "Match registered workers with heartbeats, showing silent workers and heartbeats from unknown hosts." },
+    "cross": { "title": "Queue x priority grid", "prompt": "Build every queue x priority (1 to 3) pair and count the jobs in each cell." },
+    "self": { "title": "Job and parent job", "prompt": "Show every child job next to the parent job it depends on and the parent status." },
+    "semi": { "title": "Queues with failures", "prompt": "Return the queues that have at least one failed job." },
+    "anti": { "title": "Jobs never executed", "prompt": "Return jobs that have no execution at all." },
+    "lateral": { "title": "Last two runs per worker", "prompt": "For every worker return its two most recent executions." }
+  }
+}

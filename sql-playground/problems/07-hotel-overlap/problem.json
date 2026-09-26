@@ -1,0 +1,54 @@
+{
+  "title": "Hotel: overlapping reservations",
+  "schema": "hotel",
+  "summary": "Two guests book the same room for overlapping nights through two booking channels.",
+  "background": [
+    "A hotel sells rooms on its own site and through travel agencies. A reservation holds a room for a date range, stored as a daterange such as [2026-10-01, 2026-10-04). Two reservations for the same room must never overlap.",
+    "The naive service checks that no reservation overlaps the requested range and then inserts. A unique constraint cannot help because the ranges are different values that still overlap. Two channels checking at the same time both see a free room, both insert, and two guests arrive for the same bed.",
+    "Postgres has a constraint made for this: an exclusion constraint. EXCLUDE USING gist (room_id WITH =, stay WITH &&) rejects any row whose room is equal and whose range overlaps an existing row, and it is enforced across concurrent transactions the same way a unique index is. The btree_gist extension lets the gist index handle the plain integer room_id.",
+    "Adding the constraint to a live table fails while old conflicting rows exist: Postgres validates every existing row. The seed already holds one legacy double booking in room 102 (the self join exercise finds it), so the safe run first deletes the newer reservation of every overlapping pair and only then adds the constraint. In production that cleanup is a business decision, not a DELETE."
+  ],
+  "race": {
+    "clients": 20,
+    "iterations": 2,
+    "goal": "Room 1 is empty for the next 10 nights. 20 channels try 2 random 2 night stays each. No two reservations of room 1 may overlap."
+  },
+  "joins": {
+    "inner": {
+      "title": "Guest list with hotel",
+      "prompt": "Join reservations, guests, rooms and hotels to print every stay."
+    },
+    "left": {
+      "title": "Tonight's occupancy",
+      "prompt": "List every room with the guest staying tonight, NULL when the room is free."
+    },
+    "right": {
+      "title": "Room types without rooms",
+      "prompt": "List every room type with its rooms, keeping types that have no room."
+    },
+    "full": {
+      "title": "Tonight: reservations versus maintenance",
+      "prompt": "Match tonight's reservations with tonight's maintenance by room, showing conflicts and each side alone."
+    },
+    "cross": {
+      "title": "Occupancy calendar",
+      "prompt": "Build every room x night of the next 5 nights grid and mark occupied cells."
+    },
+    "self": {
+      "title": "Overlapping bookings",
+      "prompt": "Find pairs of reservations of the same room whose stays overlap."
+    },
+    "semi": {
+      "title": "Guests who stayed in Lisbon",
+      "prompt": "Return guests with at least one reservation in a Lisbon hotel."
+    },
+    "anti": {
+      "title": "Rooms with no bookings next week",
+      "prompt": "Return rooms with no reservation overlapping the next 7 nights."
+    },
+    "lateral": {
+      "title": "Next arrival per room",
+      "prompt": "For every room return the next reservation that starts from today on."
+    }
+  }
+}

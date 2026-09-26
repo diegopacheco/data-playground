@@ -1,0 +1,26 @@
+{
+  "title": "Rate limiter: 10 requests per minute",
+  "schema": "ratelimit",
+  "summary": "A burst of parallel API calls slips past a per minute quota.",
+  "background": [
+    "An API sells plans with a quota, for example 10 requests per minute per API key. Every accepted request is logged in requests, and before accepting a new one the gateway counts the requests of that key in the last minute.",
+    "The naive gateway runs SELECT count(*) and, if the count is under the limit, inserts the new request. A client that fires 40 calls in parallel makes all of them count at the same moment, all see a number under 10, and all get accepted. Counting rows cannot lock rows that do not exist yet, so row locks on requests do not help.",
+    "The fix is to serialize the decision per key. Lock the api_keys row with SELECT ... FOR UPDATE, or take a transaction scoped advisory lock with pg_advisory_xact_lock(key_id), then count and insert. Requests of other keys run in parallel, requests of the same key queue for a few microseconds. At larger scale the counter moves to a single row per key and window updated atomically."
+  ],
+  "race": {
+    "clients": 20,
+    "iterations": 2,
+    "goal": "Key 1 is on a plan of 10 requests per minute. 20 clients send 2 requests each in the same second. At most 10 may be accepted."
+  },
+  "joins": {
+    "inner": { "title": "Requests with key, org and plan", "prompt": "Join requests, api keys, organizations and plans for a full request log." },
+    "left": { "title": "Usage per key, including zero", "prompt": "List every api key with its requests in the last day. Unused keys must show 0." },
+    "right": { "title": "Plans nobody uses", "prompt": "List every plan with its api keys, keeping plans that have no key." },
+    "full": { "title": "Documented versus called endpoints", "prompt": "Match the endpoint catalog with the paths seen in requests, showing undocumented calls and endpoints never called." },
+    "cross": { "title": "Per minute usage grid", "prompt": "Build every api key x minute of the last 5 minutes grid and count the requests in each cell." },
+    "self": { "title": "Organization hierarchy", "prompt": "Show every organization next to its parent organization." },
+    "semi": { "title": "Organizations that got throttled", "prompt": "Return organizations with at least one key that received a 429." },
+    "anti": { "title": "Keys never used", "prompt": "Return api keys that never made a request." },
+    "lateral": { "title": "Last two calls per key", "prompt": "For every api key return its two most recent requests." }
+  }
+}

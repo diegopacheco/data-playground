@@ -1,0 +1,26 @@
+{
+  "title": "Bank transfer: money appears and disappears",
+  "schema": "bank",
+  "summary": "Concurrent transfers between the same accounts create or destroy money and can deadlock.",
+  "background": [
+    "A transfer moves an amount from account A to account B. The invariant every bank must keep is simple: the sum of all balances never changes because of a transfer.",
+    "The naive service reads both balances into memory, checks funds, computes the new values and writes them back with SET balance = value_computed. When two transfers touch the same account at the same time, the second write overwrites the first one. The total drifts: money is created or destroyed. This is again a lost update, now across two rows.",
+    "Taking row locks fixes the arithmetic but creates a new trap: transfer A to B locks A then B, while transfer B to A locks B then A. Each waits for the other and Postgres kills one with a deadlock error (40P01). The classic fix is to lock both rows in a fixed order (ORDER BY id FOR UPDATE) and then use relative updates: SET balance = balance - amount WHERE balance >= amount."
+  ],
+  "race": {
+    "clients": 20,
+    "iterations": 5,
+    "goal": "Accounts 1 to 4 start with 1000 each. 20 clients run 5 random transfers each among them. The total must stay 4000 and no balance may be negative."
+  },
+  "joins": {
+    "inner": { "title": "Transfer statement with names", "prompt": "Show every transfer with the owner name of the source and of the destination account." },
+    "left": { "title": "Cards per account, including zero", "prompt": "List every account with how many cards it has. Accounts without cards must show 0." },
+    "right": { "title": "Branches without accounts", "prompt": "List every branch with the accounts it holds, keeping branches that hold none." },
+    "full": { "title": "KYC reconciliation", "prompt": "Match owners with the KYC vendor file, showing owners never checked and vendor rows for unknown owners." },
+    "cross": { "title": "Branch x currency report grid", "prompt": "Build every branch x currency combination and sum the balance held in each, with 0 when empty." },
+    "self": { "title": "Employee and manager", "prompt": "Show every employee next to the name of their manager." },
+    "semi": { "title": "Owners with a rich account", "prompt": "Return owners that have at least one account with more than 5000." },
+    "anti": { "title": "Dormant accounts", "prompt": "Return accounts that never sent nor received a transfer." },
+    "lateral": { "title": "Top two transfers per account", "prompt": "For every account return its two largest outgoing transfers." }
+  }
+}
