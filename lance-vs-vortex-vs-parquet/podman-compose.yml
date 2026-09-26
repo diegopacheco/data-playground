@@ -1,0 +1,43 @@
+name: r3-lance-vs-vortex-vs-parquet
+
+services:
+  r3-bench:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: r3-lance-vs-vortex-vs-parquet:latest
+    container_name: r3-bench
+    command: ["python", "bench.py"]
+    environment:
+      LAKE: /lake
+      RESULTS: /bench/results/results.json
+      ROWS: "${ROWS:-1000000}"
+      ITERATIONS: "${ITERATIONS:-5}"
+      TAKE_N: "${TAKE_N:-100}"
+    mem_limit: 1536m
+    volumes:
+      - r3-lake:/lake
+      - ./results:/bench/results:Z
+
+  r3-ui:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: r3-lance-vs-vortex-vs-parquet:latest
+    container_name: r3-ui
+    restart: unless-stopped
+    command: ["python", "server.py"]
+    environment:
+      LAKE: /lake
+      RESULTS: /bench/results/results.json
+      UI_PORT: "8080"
+    mem_limit: 960m
+    ports:
+      - "${ui:-26800}:8080"
+    volumes:
+      - r3-lake:/lake
+      - ./results:/bench/results:Z
+
+volumes:
+  r3-lake:
+    name: r3-lake

@@ -1,0 +1,7 @@
+.run/
+.venv/
+.lake/
+__pycache__/
+*.parquet
+*.vortex
+*.lance/

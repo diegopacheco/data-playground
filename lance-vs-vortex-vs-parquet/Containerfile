@@ -1,0 +1,10 @@
+FROM docker.io/library/python:3.14.7-slim
+WORKDIR /bench
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+ENV PYTHONUNBUFFERED=1 LANCE_LOG=error
+COPY data data
+COPY app app
+COPY tests tests
+WORKDIR /bench/app
+CMD ["python", "server.py"]

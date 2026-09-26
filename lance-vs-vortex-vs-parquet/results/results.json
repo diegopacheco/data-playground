@@ -1,0 +1,472 @@
+{
+  "rows": 1000000,
+  "iterations": 5,
+  "take_n": 100,
+  "cpus": 6,
+  "versions": {
+    "python": "3.14.7",
+    "pyarrow": "25.0.1",
+    "pylance": "12.0.0",
+    "vortex-data": "0.86.1",
+    "numpy": "2.5.3"
+  },
+  "arrow_bytes": 139265000,
+  "arrow_scalar_bytes": 75265000,
+  "filter": {
+    "sql": "SELECT order_id, price WHERE category = 'electronics' AND quantity >= 3",
+    "expected_rows": 81653
+  },
+  "source_checksums": {
+    "rows": 1000000,
+    "order_id_sum": 500000500000,
+    "quantity_sum": 2964800,
+    "ts_sum": 1777185807000000000,
+    "text_bytes": 30890000,
+    "revenue": {
+      "books": [
+        160000,
+        15289490.75
+      ],
+      "clothing": [
+        175000,
+        30244059.72
+      ],
+      "electronics": [
+        150000,
+        79918544.26
+      ],
+      "home": [
+        160000,
+        28387392.14
+      ],
+      "sports": [
+        170000,
+        49742088.85
+      ],
+      "toys": [
+        185000,
+        18896477.47
+      ]
+    },
+    "embedding_sum": -1578676.571
+  },
+  "formats": [
+    {
+      "name": "parquet",
+      "settings": "pyarrow, zstd, default row groups",
+      "size_bytes": 64652241,
+      "scalar_size_bytes": 4819022,
+      "checks": {
+        "scan_equal": true,
+        "checksums": {
+          "rows": 1000000,
+          "order_id_sum": 500000500000,
+          "quantity_sum": 2964800,
+          "ts_sum": 1777185807000000000,
+          "text_bytes": 30890000,
+          "revenue": {
+            "books": [
+              160000,
+              15289490.75
+            ],
+            "clothing": [
+              175000,
+              30244059.72
+            ],
+            "electronics": [
+              150000,
+              79918544.26
+            ],
+            "home": [
+              160000,
+              28387392.14
+            ],
+            "sports": [
+              170000,
+              49742088.85
+            ],
+            "toys": [
+              185000,
+              18896477.47
+            ]
+          },
+          "embedding_sum": -1578676.571
+        },
+        "checksums_equal": true,
+        "filter_rows": 81653,
+        "filter_equal": true,
+        "take_rows": 100,
+        "take_equal": true
+      },
+      "write_ms": {
+        "cold": 386.25,
+        "median": 389.3,
+        "runs": [
+          388.43,
+          389.3,
+          387.22,
+          391.82,
+          407.39
+        ]
+      },
+      "scan_ms": {
+        "cold": 152.52,
+        "median": 165.29,
+        "runs": [
+          148.34,
+          165.29,
+          151.54,
+          170.35,
+          166.21
+        ]
+      },
+      "filter_ms": {
+        "cold": 25.25,
+        "median": 22.22,
+        "runs": [
+          19.67,
+          22.91,
+          22.22,
+          21.05,
+          22.31
+        ]
+      },
+      "take_ms": {
+        "cold": 147.78,
+        "median": 162.21,
+        "runs": [
+          169.48,
+          157.89,
+          157.52,
+          163.68,
+          162.21
+        ]
+      },
+      "ok": true
+    },
+    {
+      "name": "lance",
+      "settings": "pylance, default file version and encodings",
+      "size_bytes": 81707472,
+      "scalar_size_bytes": 17519509,
+      "checks": {
+        "scan_equal": true,
+        "checksums": {
+          "rows": 1000000,
+          "order_id_sum": 500000500000,
+          "quantity_sum": 2964800,
+          "ts_sum": 1777185807000000000,
+          "text_bytes": 30890000,
+          "revenue": {
+            "books": [
+              160000,
+              15289490.75
+            ],
+            "clothing": [
+              175000,
+              30244059.72
+            ],
+            "electronics": [
+              150000,
+              79918544.26
+            ],
+            "home": [
+              160000,
+              28387392.14
+            ],
+            "sports": [
+              170000,
+              49742088.85
+            ],
+            "toys": [
+              185000,
+              18896477.47
+            ]
+          },
+          "embedding_sum": -1578676.571
+        },
+        "checksums_equal": true,
+        "filter_rows": 81653,
+        "filter_equal": true,
+        "take_rows": 100,
+        "take_equal": true
+      },
+      "write_ms": {
+        "cold": 81.94,
+        "median": 65.25,
+        "runs": [
+          82.04,
+          62.38,
+          2086.91,
+          65.25,
+          61.98
+        ]
+      },
+      "scan_ms": {
+        "cold": 65.78,
+        "median": 27.34,
+        "runs": [
+          42.72,
+          50.93,
+          24.65,
+          27.34,
+          23.53
+        ]
+      },
+      "filter_ms": {
+        "cold": 24.36,
+        "median": 14.79,
+        "runs": [
+          14.08,
+          22.37,
+          13.83,
+          14.79,
+          15.64
+        ]
+      },
+      "take_ms": {
+        "cold": 4.49,
+        "median": 4.05,
+        "runs": [
+          5.46,
+          6.17,
+          3.43,
+          4.05,
+          3.95
+        ]
+      },
+      "ok": true
+    },
+    {
+      "name": "vortex",
+      "settings": "vortex-data, default write options",
+      "size_bytes": 63035972,
+      "scalar_size_bytes": 6373416,
+      "checks": {
+        "scan_equal": true,
+        "checksums": {
+          "rows": 1000000,
+          "order_id_sum": 500000500000,
+          "quantity_sum": 2964800,
+          "ts_sum": 1777185807000000000,
+          "text_bytes": 30890000,
+          "revenue": {
+            "books": [
+              160000,
+              15289490.75
+            ],
+            "clothing": [
+              175000,
+              30244059.72
+            ],
+            "electronics": [
+              150000,
+              79918544.26
+            ],
+            "home": [
+              160000,
+              28387392.14
+            ],
+            "sports": [
+              170000,
+              49742088.85
+            ],
+            "toys": [
+              185000,
+              18896477.47
+            ]
+          },
+          "embedding_sum": -1578676.571
+        },
+        "checksums_equal": true,
+        "filter_rows": 81653,
+        "filter_equal": true,
+        "take_rows": 100,
+        "take_equal": true
+      },
+      "write_ms": {
+        "cold": 150.69,
+        "median": 172.41,
+        "runs": [
+          172.41,
+          191.25,
+          208.43,
+          163.21,
+          169.64
+        ]
+      },
+      "scan_ms": {
+        "cold": 16.89,
+        "median": 13.11,
+        "runs": [
+          13.83,
+          13.11,
+          11.23,
+          12.66,
+          13.71
+        ]
+      },
+      "filter_ms": {
+        "cold": 2.26,
+        "median": 2.39,
+        "runs": [
+          3.4,
+          2.05,
+          2.39,
+          2.52,
+          2.35
+        ]
+      },
+      "take_ms": {
+        "cold": 8.49,
+        "median": 8.66,
+        "runs": [
+          8.1,
+          9.04,
+          8.87,
+          8.03,
+          8.66
+        ]
+      },
+      "ok": true
+    }
+  ],
+  "vector": {
+    "column": "embedding",
+    "dim": 16,
+    "index": {
+      "index_type": "IVF_PQ",
+      "num_partitions": 256,
+      "num_sub_vectors": 4
+    },
+    "search": {
+      "nprobes": 20,
+      "refine_factor": 10
+    },
+    "build_ms": 6201.34,
+    "index_bytes": 6747713,
+    "k": 10,
+    "queries": 20,
+    "ann_ms": {
+      "cold": 9.66,
+      "median": 9.89,
+      "runs": [
+        9.4,
+        9.29,
+        10.94,
+        9.58,
+        9.27,
+        9.7,
+        9.55,
+        10.21,
+        9.59,
+        10.7,
+        9.89,
+        9.84,
+        12.75,
+        12.23,
+        14.11,
+        9.55,
+        10.08,
+        11.61,
+        10.19
+      ]
+    },
+    "flat_ms": {
+      "cold": 19.52,
+      "median": 21.79,
+      "runs": [
+        21.79,
+        22.85,
+        19.33,
+        17.48,
+        18.85,
+        20.4,
+        20.7,
+        22.57,
+        17.94,
+        21.9,
+        21.56,
+        25.29,
+        26.7,
+        30.88,
+        30.42,
+        23.11,
+        20.75,
+        24.9,
+        21.31
+      ]
+    },
+    "recall_at_k": 0.985,
+    "same_category": 1.0,
+    "sample": {
+      "row": 979512,
+      "order_id": 979513,
+      "product": "4K Monitor",
+      "category": "electronics",
+      "results": [
+        {
+          "order_id": 979513,
+          "product": "4K Monitor",
+          "category": "electronics",
+          "_distance": 0.0
+        },
+        {
+          "order_id": 766913,
+          "product": "4K Monitor",
+          "category": "electronics",
+          "_distance": 0.1291862577199936
+        },
+        {
+          "order_id": 650914,
+          "product": "4K Monitor",
+          "category": "electronics",
+          "_distance": 0.15934382379055023
+        },
+        {
+          "order_id": 437248,
+          "product": "4K Monitor",
+          "category": "electronics",
+          "_distance": 0.18019121885299683
+        },
+        {
+          "order_id": 624204,
+          "product": "4K Monitor",
+          "category": "electronics",
+          "_distance": 0.18447162210941315
+        },
+        {
+          "order_id": 694626,
+          "product": "4K Monitor",
+          "category": "electronics",
+          "_distance": 0.1904776245355606
+        },
+        {
+          "order_id": 303248,
+          "product": "4K Monitor",
+          "category": "electronics",
+          "_distance": 0.19366216659545898
+        },
+        {
+          "order_id": 632448,
+          "product": "4K Monitor",
+          "category": "electronics",
+          "_distance": 0.19870586693286896
+        },
+        {
+          "order_id": 523204,
+          "product": "4K Monitor",
+          "category": "electronics",
+          "_distance": 0.2051180601119995
+        },
+        {
+          "order_id": 356848,
+          "product": "4K Monitor",
+          "category": "electronics",
+          "_distance": 0.20678161084651947
+        }
+      ]
+    }
+  },
+  "all_ok": true
+}

@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1160" height="500" viewBox="0 0 1160 500">
+  <defs>
+    <style>@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&amp;display=swap'); text { font-family: 'Caveat', 'Comic Sans MS', cursive; fill: #1f2933; }</style>
+    <filter id="wobble"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="3"/></filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1f2933"/></marker>
+  </defs>
+  <rect width="1160" height="500" fill="#ffffff"/>
+  <g filter="url(#wobble)" stroke="#1f2933" stroke-width="2">
+    <rect x="660" y="60" width="230" height="330" rx="14" fill="#f1f3f5" stroke-dasharray="8 6"/>
+    <rect x="20" y="175" width="140" height="80" rx="10" fill="#fff3bf"/>
+    <rect x="200" y="160" width="180" height="110" rx="10" fill="#d0ebff"/>
+    <rect x="420" y="150" width="200" height="130" rx="10" fill="#e5dbff"/>
+    <rect x="680" y="100" width="190" height="75" rx="10" fill="#dbe4ff"/>
+    <rect x="680" y="195" width="190" height="85" rx="10" fill="#ffd8a8"/>
+    <rect x="680" y="300" width="190" height="75" rx="10" fill="#d3f9d8"/>
+    <rect x="680" y="415" width="190" height="60" rx="10" fill="#fff3bf"/>
+    <rect x="930" y="160" width="210" height="110" rx="10" fill="#fcc2d7"/>
+    <rect x="930" y="30" width="210" height="75" rx="10" fill="#c3fae8"/>
+    <line x1="160" y1="215" x2="198" y2="215" marker-end="url(#arrow)"/>
+    <line x1="380" y1="215" x2="418" y2="215" marker-end="url(#arrow)"/>
+    <line x1="620" y1="185" x2="678" y2="140" marker-end="url(#arrow)"/>
+    <line x1="620" y1="215" x2="678" y2="235" marker-end="url(#arrow)"/>
+    <line x1="620" y1="245" x2="678" y2="335" marker-end="url(#arrow)"/>
+    <polyline points="520,280 520,445 678,445" fill="none" marker-end="url(#arrow)"/>
+    <line x1="870" y1="140" x2="928" y2="185" marker-end="url(#arrow)"/>
+    <line x1="870" y1="235" x2="928" y2="215" marker-end="url(#arrow)"/>
+    <line x1="870" y1="335" x2="928" y2="245" marker-end="url(#arrow)"/>
+    <polyline points="870,445 1035,445 1035,272" fill="none" marker-end="url(#arrow)"/>
+    <line x1="1035" y1="160" x2="1035" y2="107" marker-end="url(#arrow)"/>
+  </g>
+  <text x="330" y="40" font-size="30" font-weight="700" text-anchor="middle">lance-vs-vortex-vs-parquet</text>
+  <text x="330" y="70" font-size="19" text-anchor="middle">same 1,000,000 rows, three file formats, every result checked</text>
+  <text x="90" y="210" font-size="24" text-anchor="middle">orders.csv</text>
+  <text x="90" y="235" font-size="18" text-anchor="middle">200 base rows</text>
+  <text x="290" y="192" font-size="24" text-anchor="middle">dataset.py</text>
+  <text x="290" y="218" font-size="17" text-anchor="middle">expand to 1M rows</text>
+  <text x="290" y="240" font-size="17" text-anchor="middle">+ 16 dim embedding</text>
+  <text x="290" y="260" font-size="17" text-anchor="middle">deterministic seeds</text>
+  <text x="520" y="180" font-size="24" text-anchor="middle">bench.py</text>
+  <text x="520" y="205" font-size="17" text-anchor="middle">container r3-bench</text>
+  <text x="520" y="227" font-size="17" text-anchor="middle">one process per format</text>
+  <text x="520" y="249" font-size="17" text-anchor="middle">1 cold + 5 warm runs</text>
+  <text x="520" y="271" font-size="17" text-anchor="middle">verify vs source</text>
+  <text x="775" y="88" font-size="19" text-anchor="middle">volume r3-lake</text>
+  <text x="775" y="133" font-size="23" text-anchor="middle">orders.parquet</text>
+  <text x="775" y="158" font-size="17" text-anchor="middle">pyarrow, zstd</text>
+  <text x="775" y="226" font-size="23" text-anchor="middle">orders.lance/</text>
+  <text x="775" y="250" font-size="17" text-anchor="middle">pylance dataset</text>
+  <text x="775" y="270" font-size="17" text-anchor="middle">+ IVF_PQ vector index</text>
+  <text x="775" y="333" font-size="23" text-anchor="middle">orders.vortex</text>
+  <text x="775" y="358" font-size="17" text-anchor="middle">vortex-data default</text>
+  <text x="775" y="442" font-size="22" text-anchor="middle">results.json</text>
+  <text x="775" y="463" font-size="16" text-anchor="middle">bind mount ./results</text>
+  <text x="1035" y="192" font-size="24" text-anchor="middle">server.py</text>
+  <text x="1035" y="217" font-size="17" text-anchor="middle">container r3-ui</text>
+  <text x="1035" y="239" font-size="17" text-anchor="middle">live take + nearest</text>
+  <text x="1035" y="260" font-size="17" text-anchor="middle">stdlib http.server</text>
+  <text x="1035" y="62" font-size="24" text-anchor="middle">browser UI</text>
+  <text x="1035" y="88" font-size="17" text-anchor="middle">localhost:26800, SVG charts</text>
+  <text x="1080" y="135" font-size="16" text-anchor="middle">JSON</text>
+  <text x="560" y="460" font-size="16" text-anchor="middle">writes</text>
+  <text x="960" y="465" font-size="16" text-anchor="middle">reads</text>
+</svg>

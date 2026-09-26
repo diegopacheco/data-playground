@@ -109,6 +109,7 @@ Arrow moves columnar data between systems without converting it.
 
 * [parquet-rust-arrow](parquet-rust-arrow/) - Parquet and Arrow from Rust with arrow-rs
 * [parquet-vs-orc-vs-avro](parquet-vs-orc-vs-avro/) - Parquet vs ORC vs Avro on 1M rows
+* [lance-vs-vortex-vs-parquet](lance-vs-vortex-vs-parquet/) - Lance vs Vortex vs Parquet: size, scans, random access, vector search
 * [arrow-flight-java-python](arrow-flight-java-python/) - Arrow Flight server in Java, client in Python
 
 ## 🗄️ Databases
