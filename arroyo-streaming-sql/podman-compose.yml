@@ -1,0 +1,67 @@
+services:
+  q1-redpanda:
+    image: docker.io/redpandadata/redpanda:v26.2.3
+    container_name: q1-redpanda
+    command:
+      - redpanda
+      - start
+      - --smp
+      - "1"
+      - --memory
+      - 512M
+      - --overprovisioned
+      - --mode
+      - dev-container
+      - --kafka-addr
+      - internal://0.0.0.0:9092,external://0.0.0.0:${redpanda:-26092}
+      - --advertise-kafka-addr
+      - internal://q1-redpanda:9092,external://localhost:${redpanda:-26092}
+      - --pandaproxy-addr
+      - internal://0.0.0.0:8082
+      - --advertise-pandaproxy-addr
+      - internal://q1-redpanda:8082
+    ports:
+      - "${redpanda:-26092}:${redpanda:-26092}"
+    volumes:
+      - q1-redpanda-data:/var/lib/redpanda/data
+    networks:
+      - q1-net
+    mem_limit: 768m
+
+  q1-arroyo:
+    image: ghcr.io/arroyosystems/arroyo:0.15.0
+    container_name: q1-arroyo
+    command: ["cluster"]
+    ports:
+      - "${arroyo:-26015}:5115"
+    networks:
+      - q1-net
+    mem_limit: 512m
+    depends_on:
+      - q1-redpanda
+
+  q1-ui:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: q1-arroyo-streaming-sql-ui:latest
+    container_name: q1-ui
+    environment:
+      UI_PORT: "${ui:-26080}"
+      PROXY_URL: http://q1-redpanda:8082
+      RESULT_TOPIC: revenue_by_category
+    ports:
+      - "${ui:-26080}:${ui:-26080}"
+    networks:
+      - q1-net
+    mem_limit: 128m
+    depends_on:
+      - q1-redpanda
+
+networks:
+  q1-net:
+    name: q1-net
+
+volumes:
+  q1-redpanda-data:
+    name: q1-redpanda-data
