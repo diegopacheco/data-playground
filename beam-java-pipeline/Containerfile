@@ -1,0 +1,14 @@
+FROM docker.io/library/maven:3.9.16-eclipse-temurin-25 AS build
+WORKDIR /build
+COPY pom.xml .
+RUN mvn -B -q dependency:go-offline
+COPY src src
+RUN mvn -B -q package dependency:copy-dependencies -DincludeScope=runtime
+
+FROM docker.io/library/eclipse-temurin:25.0.4.1_1-jre-alpine
+WORKDIR /app
+COPY --from=build /build/target/dependency lib
+COPY --from=build /build/target/beam-java-pipeline-1.0.0.jar lib/app.jar
+COPY data data
+ENV INPUT=/app/data/orders.csv
+CMD ["java", "-Xmx96m", "-cp", "lib/*", "beam.UiServer"]
