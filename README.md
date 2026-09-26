@@ -15,6 +15,7 @@ They add ACID, schema evolution and time travel.
 * [paimon-flink-lakehouse](paimon-flink-lakehouse/) - Streaming lakehouse with Paimon 2.0 + Flink 2.2 from Kafka
 * [fluss-flink-paimon](fluss-flink-paimon/) - Apache Fluss 1.0 streaming storage tiered into Paimon, with union read
 * [ducklake-duckdb](ducklake-duckdb/) - DuckLake: a table format with a SQL database as catalog
+* [pg-lake-postgres-iceberg](pg-lake-postgres-iceberg/) - pg_lake: Postgres 18 writes Iceberg and Parquet on MinIO, joins them with heap tables
 * [xtable-iceberg-delta-hudi](xtable-iceberg-delta-hudi/) - Write once as Hudi, read as Delta and Iceberg with XTable
 * [medallion-bronze-silver-gold](medallion-bronze-silver-gold/) - Bronze, silver and gold layers on Iceberg with Spark
 
@@ -33,6 +34,7 @@ Governance tools record who owns each dataset and which ones hold personal data.
 Lineage shows which job built each table and where its data came from.
 
 * [gravitino-openlineage-marquez](gravitino-openlineage-marquez/) - Gravitino owners and tags, OpenLineage events, lineage graph in Marquez
+* [openmetadata-discovery](openmetadata-discovery/) - OpenMetadata catalog of Postgres with tags, glossary, owners, search and view lineage
 
 ## ⚙️ Batch Engines
 
@@ -56,6 +58,16 @@ They keep running totals instead of waiting for a nightly batch.
 * [spark-redpanda-cassandra](spark-redpanda-cassandra/) - Spark reads a Redpanda topic into Cassandra
 * [arroyo-streaming-sql](arroyo-streaming-sql/) - Arroyo streaming SQL over Redpanda
 * [bytewax-python-streaming](bytewax-python-streaming/) - Bytewax dataflows in Python over Redpanda
+
+## 📨 Messaging & Streaming Storage
+
+Brokers keep an ordered log of events that many readers can replay.
+Schema registries make sure producers and consumers keep agreeing on the data shape.
+
+* [pulsar-tiered-storage](pulsar-tiered-storage/) - Apache Pulsar: brokers apart from BookKeeper, old ledgers offloaded to MinIO and read back
+* [nats-jetstream-streams](nats-jetstream-streams/) - NATS JetStream cluster: retention modes, acks and redelivery, replay, KV and failover
+* [automq-diskless-kafka](automq-diskless-kafka/) - AutoMQ: Kafka with no data on broker disks, all of it on S3, survives broker replacement
+* [schema-registry-avro-protobuf](schema-registry-avro-protobuf/) - Apicurio Registry: Avro and Protobuf evolution under BACKWARD, FORWARD, FULL and NONE
 
 ## 🔁 Change Data Capture
 
@@ -102,6 +114,13 @@ They add tests, dependencies and versioning on top of plain queries.
 * [dbt-spark-iceberg](dbt-spark-iceberg/) - dbt on Spark writing incremental Iceberg tables
 * [sqlmesh-vs-dbt](sqlmesh-vs-dbt/) - Same models in SQLMesh and dbt, compared
 
+## ✅ Data Quality
+
+Data contracts say what a good batch looks like before anyone uses it.
+Bad batches get blocked and quarantined instead of reaching the dashboards.
+
+* [pandera-quality-gates-medallion](pandera-quality-gates-medallion/) - Pandera contracts as bronze, silver and gold gates on DuckDB, with row-level failure reports
+
 ## 🧭 Vector & Search
 
 Vector databases find things by meaning, not by exact words.
@@ -110,6 +129,13 @@ Search engines rank text matches with scores like BM25.
 * [pgvector-embeddings-pipeline](pgvector-embeddings-pipeline/) - Local embeddings into Postgres 18 with pgvector
 * [qdrant-vector-search](qdrant-vector-search/) - Qdrant semantic, hybrid and recommend search
 * [paradedb-search-analytics](paradedb-search-analytics/) - ParadeDB BM25 search and analytics inside Postgres
+
+## 🤖 Feature Stores
+
+Feature stores serve the same ML features for training and for live predictions.
+Training data is joined point-in-time so no value comes from the future.
+
+* [feast-feature-store](feast-feature-store/) - Feast with DuckDB offline and Redis online stores, point-in-time joins and TTLs
 
 ## 📦 File Formats & Data Transport
 
@@ -124,8 +150,18 @@ Arrow moves columnar data between systems without converting it.
 ## 🗄️ Databases
 
 Specialized databases built for one job and built to do it very fast.
-Here: wide-column storage and a financial ledger.
+Here: wide-column storage, a financial ledger and a graph.
 
 * [scylladb-vs-cassandra-bench](scylladb-vs-cassandra-bench/) - ScyllaDB vs Cassandra on the same workload
 * [tigerbeetle-ledger-ingest](tigerbeetle-ledger-ingest/) - TigerBeetle double-entry ledger for orders
 * [sql-playground](sql-playground/) - PostgreSQL 18 workbench with plans, timing, hints, 8 contention races and every join type
+* [apache-age-graph](apache-age-graph/) - Apache AGE: openCypher graph and SQL tables in one Postgres 18
+
+## 🧮 Fundamentals
+
+How data systems work on the inside, built from scratch or measured against the exact answer.
+Encodings, sketches and reprocessing patterns show up under every tool above.
+
+* [columnar-encodings-from-scratch](columnar-encodings-from-scratch/) - RLE, dictionary, delta, bit-packing, FSST and ALP in Rust, compared with DuckDB and Parquet
+* [datasketches-hll-kll-theta](datasketches-hll-kll-theta/) - Apache DataSketches HLL, KLL, Theta and Count-Min vs exact answers on 10M events
+* [kappa-vs-lambda-backfill](kappa-vs-lambda-backfill/) - Kappa vs Lambda: idempotent backfills, late data and a bug fix by log replay
