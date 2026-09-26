@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gravitino + OpenLineage + Marquez</title>
+<style>
+  :root { --bg: #f6f7fb; --card: #ffffff; --ink: #1f2933; --muted: #6b7785; --line: #e3e7ee; --accent: #3b5bdb;
+          --bronze: #f3d9b1; --silver: #dde3ea; --gold: #ffe8a3; --pii: #ffc9c9; --job: #e5dbff; --file: #eef1f5; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px/1.45 -apple-system, "Segoe UI", Roboto, sans-serif; color: var(--ink); background: var(--bg); }
+  header { background: #1f2a44; color: #fff; padding: 16px 24px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; }
+  header h1 { margin: 0; font-size: 20px; }
+  header .sub { color: #b8c2d9; font-size: 13px; }
+  header .links a { color: #fff; background: #34426a; padding: 6px 12px; border-radius: 6px; text-decoration: none; margin-left: 6px; font-size: 13px; }
+  header .links a:hover { background: var(--accent); }
+  nav { display: flex; gap: 4px; padding: 0 24px; background: #fff; border-bottom: 1px solid var(--line); }
+  nav button { border: 0; background: none; padding: 12px 16px; font-size: 14px; cursor: pointer; color: var(--muted); border-bottom: 3px solid transparent; }
+  nav button.on { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+  main { padding: 20px 24px; }
+  .tab { display: none; } .tab.on { display: block; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+  .card h2 { margin: 0 0 10px; font-size: 16px; }
+  .grid { display: grid; grid-template-columns: 340px 1fr; gap: 16px; align-items: start; }
+  .tree ul { list-style: none; margin: 0; padding-left: 16px; border-left: 1px dashed var(--line); }
+  .tree > ul { padding-left: 0; border: 0; }
+  .tree li { margin: 4px 0; }
+  .node { display: inline-flex; flex-wrap: wrap; gap: 4px; align-items: center; padding: 3px 6px; border-radius: 6px; cursor: default; }
+  .node.table { cursor: pointer; } .node.table:hover, .node.sel { background: #edf2ff; }
+  .kind { font-size: 10px; text-transform: uppercase; color: var(--muted); letter-spacing: .04em; }
+  .tag { font-size: 11px; padding: 1px 7px; border-radius: 10px; background: #e9ecef; border: 1px solid #d0d7de; }
+  .tag.bronze { background: var(--bronze); } .tag.silver { background: var(--silver); } .tag.gold { background: var(--gold); } .tag.pii { background: var(--pii); border-color: #e59898; }
+  .owner { font-size: 11px; padding: 1px 7px; border-radius: 10px; background: #d3f9d8; border: 1px solid #a9e3b4; }
+  .muted { color: var(--muted); }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 12px; color: var(--muted); font-weight: 600; }
+  code, pre { font-family: ui-monospace, Menlo, monospace; font-size: 12px; }
+  pre { background: #f1f3f5; padding: 10px; border-radius: 6px; overflow-x: auto; margin: 8px 0 0; }
+  .state { font-weight: 600; } .COMPLETED { color: #2b8a3e; } .FAILED { color: #c92a2a; } .RUNNING { color: #e67700; }
+  .kv { display: grid; grid-template-columns: 110px 1fr; gap: 4px 10px; margin-bottom: 12px; }
+  .kv div:nth-child(odd) { color: var(--muted); }
+  .bar { height: 14px; background: #91a7ff; border-radius: 3px; }
+  svg text { font-family: -apple-system, "Segoe UI", Roboto, sans-serif; }
+  .legend { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+  .err { color: #c92a2a; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Gravitino metadata + OpenLineage lineage in Marquez</h1>
+    <div class="sub" id="sub">loading</div>
+  </div>
+  <div class="links" id="links"></div>
+</header>
+<nav>
+  <button data-tab="catalog" class="on">Catalog</button>
+  <button data-tab="lineage">Lineage</button>
+  <button data-tab="runs">Runs</button>
+  <button data-tab="revenue">Revenue</button>
+</nav>
+<main>
+  <section class="tab on" id="catalog">
+    <div class="grid">
+      <div class="card tree" id="tree">loading</div>
+      <div>
+        <div class="card" id="detail"></div>
+        <div class="card" id="lake"></div>
+      </div>
+    </div>
+  </section>
+  <section class="tab" id="lineage">
+    <div class="card">
+      <h2>Lineage graph from Marquez <span class="muted">GET /api/v1/lineage</span></h2>
+      <div id="graph">loading</div>
+      <div class="legend">
+        <span class="tag" style="background:var(--file)">file</span>
+        <span class="tag bronze">bronze</span><span class="tag silver">silver</span><span class="tag gold">gold</span>
+        <span class="tag" style="background:var(--job)">job</span>
+        <span class="muted">datasets show owner and tags read from Gravitino</span>
+      </div>
+    </div>
+    <div class="card"><h2>Dataset to dataset edges</h2><div id="edges"></div></div>
+  </section>
+  <section class="tab" id="runs"><div id="jobs">loading</div></section>
+  <section class="tab" id="revenue"><div class="card"><h2>gold.revenue_by_category <span class="muted">read from Postgres</span></h2><div id="rev">loading</div></div></section>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+const tags = list => (list || []).map(t => `<span class="tag ${esc(t)}">${esc(t)}</span>`).join("");
+const owner = o => o ? `<span class="owner">${esc(o.type)}: ${esc(o.name)}</span>` : "";
+const api = async path => { const r = await fetch(path); const body = await r.json(); if (!r.ok) throw new Error(body.error || r.status); return body; };
+const fail = (id, e) => $(id).innerHTML = `<div class="err">${esc(e.message)}</div>`;
+let catalog = null;
+
+document.querySelectorAll("nav button").forEach(b => b.onclick = () => {
+  document.querySelectorAll("nav button, .tab").forEach(x => x.classList.remove("on"));
+  b.classList.add("on"); $(b.dataset.tab).classList.add("on"); location.hash = b.dataset.tab;
+});
+
+function tablesByName() {
+  const out = {};
+  (catalog?.catalogs || []).forEach(c => c.schemas.forEach(s => s.tables.forEach(t => out[t.full_name] = {...t, schema: s.name})));
+  return out;
+}
+
+function renderTree() {
+  if (!catalog) { $("tree").innerHTML = "metalake not created yet, run scripts/pipeline.sh"; return; }
+  const table = t => `<li><span class="node table" data-t="${esc(t.full_name)}"><span class="kind">table</span><b>${esc(t.name)}</b>${owner(t.owner)}${tags(t.tags)}</span></li>`;
+  const schema = s => `<li><span class="node"><span class="kind">schema</span><b>${esc(s.name)}</b>${owner(s.owner)}${tags(s.tags)}</span><ul>${s.tables.map(table).join("") || '<li class="muted">no tables</li>'}</ul></li>`;
+  const cat = c => `<li><span class="node"><span class="kind">catalog</span><b>${esc(c.name)}</b><span class="tag">${esc(c.provider)}</span>${owner(c.owner)}</span><ul>${c.schemas.map(schema).join("")}</ul></li>`;
+  $("tree").innerHTML = `<ul><li><span class="node"><span class="kind">metalake</span><b>${esc(catalog.metalake)}</b>${owner(catalog.owner)}</span><ul>${catalog.catalogs.map(cat).join("")}</ul></li></ul>`;
+  document.querySelectorAll(".node.table").forEach(n => n.onclick = () => select(n.dataset.t));
+  $("lake").innerHTML = `<h2>Metalake ${esc(catalog.metalake)}</h2><div class="kv"><div>comment</div><div>${esc(catalog.comment)}</div>
+    <div>groups</div><div>${catalog.groups.map(g => `<span class="owner">group: ${esc(g)}</span>`).join(" ")}</div>
+    <div>catalogs</div><div>${catalog.catalogs.map(c => `<b>${esc(c.name)}</b> ${esc(c.provider)} <code>${esc(c.jdbc_url)}</code><br><span class="muted">${esc(c.comment)}</span>`).join("<br>")}</div></div>
+    <table><tr><th>tag</th><th>meaning</th></tr>${catalog.tags.map(t => `<tr><td>${tags([t.name])}</td><td>${esc(t.comment)}</td></tr>`).join("")}</table>`;
+  const first = Object.keys(tablesByName())[0];
+  if (first) select(Object.keys(tablesByName()).find(n => n.includes(".raw.")) || first);
+}
+
+function select(name) {
+  document.querySelectorAll(".node.table").forEach(n => n.classList.toggle("sel", n.dataset.t === name));
+  const t = tablesByName()[name];
+  $("detail").innerHTML = `<h2>${esc(t.full_name)}</h2><div class="kv"><div>comment</div><div>${esc(t.comment)}</div>
+    <div>owner</div><div>${owner(t.owner)}</div><div>tags</div><div>${tags(t.tags)}</div><div>created</div><div>${esc(t.created)}</div></div>
+    <table><tr><th>column</th><th>type</th><th>comment</th><th>tags</th></tr>
+    ${t.columns.map(c => `<tr><td><b>${esc(c.name)}</b></td><td><code>${esc(c.type)}</code></td><td>${esc(c.comment)}</td><td>${tags(c.tags)}</td></tr>`).join("")}</table>`;
+}
+
+function layout(nodes, edges) {
+  const level = {}; nodes.forEach(n => level[n.id] = 0);
+  for (let i = 0; i < nodes.length; i++) edges.forEach(([a, b]) => level[b] = Math.max(level[b], level[a] + 1));
+  const rows = {}; nodes.forEach(n => { n.level = level[n.id]; n.row = (rows[n.level] = (rows[n.level] ?? -1) + 1); });
+  return nodes;
+}
+
+function renderGraph(g) {
+  if (!g.nodes.length) { $("graph").innerHTML = "no lineage yet, run scripts/pipeline.sh"; return; }
+  const known = tablesByName();
+  const W = 190, H = 84, GX = 46, GY = 30;
+  const nodes = layout(g.nodes.map(n => ({...n})), g.edges);
+  const pos = {}; nodes.forEach(n => pos[n.id] = {x: 10 + n.level * (W + GX), y: 10 + n.row * (H + GY)});
+  const width = Math.max(...nodes.map(n => pos[n.id].x)) + W + 10, height = Math.max(...nodes.map(n => pos[n.id].y)) + H + 10;
+  const fill = n => {
+    if (n.type === "JOB") return "var(--job)";
+    const t = known[n.name]; const tier = t && ["bronze", "silver", "gold"].find(x => t.tags.includes(x));
+    return tier ? `var(--${tier})` : "var(--file)";
+  };
+  const edges = g.edges.map(([a, b]) => { const p = pos[a], q = pos[b]; const x1 = p.x + W, y1 = p.y + H / 2, x2 = q.x - 4, y2 = q.y + H / 2;
+    return `<path d="M${x1},${y1} C${x1 + GX / 2},${y1} ${x2 - GX / 2},${y2} ${x2},${y2}" fill="none" stroke="#5c677d" stroke-width="1.6" marker-end="url(#arr)"/>`; }).join("");
+  const box = n => { const p = pos[n.id], t = known[n.name];
+    const sub = n.type === "JOB" ? "job in " + n.namespace : (t ? (t.owner ? t.owner.type + ": " + t.owner.name : "no owner") : "dataset in " + n.namespace);
+    const tagText = t ? t.tags.join(", ") : (n.type === "JOB" ? "OpenLineage run events" : "not in Gravitino");
+    return `<g><rect x="${p.x}" y="${p.y}" width="${W}" height="${H}" rx="${n.type === "JOB" ? 30 : 8}" fill="${fill(n)}" stroke="#495057" stroke-width="1.2"/>
+      <text x="${p.x + W / 2}" y="${p.y + 22}" text-anchor="middle" font-size="10" fill="#6b7785">${n.type === "JOB" ? "JOB" : "DATASET"}</text>
+      <text x="${p.x + W / 2}" y="${p.y + 40}" text-anchor="middle" font-size="12.5" font-weight="600">${esc(n.namespace === "file" ? n.name : n.name.split(".").pop())}</text>
+      <text x="${p.x + W / 2}" y="${p.y + 57}" text-anchor="middle" font-size="11" fill="#364152">${esc(sub)}</text>
+      <text x="${p.x + W / 2}" y="${p.y + 73}" text-anchor="middle" font-size="11" fill="#6b7785">${esc(tagText)}</text></g>`; };
+  $("graph").innerHTML = `<svg viewBox="0 0 ${width} ${height}" width="100%" style="max-height:420px"><defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#5c677d"/></marker></defs>${edges}${nodes.map(box).join("")}</svg>`;
+  $("edges").innerHTML = `<table><tr><th>from</th><th>to</th></tr>${g.dataset_edges.map(([a, b]) => `<tr><td><code>${esc(a)}</code></td><td><code>${esc(b)}</code></td></tr>`).join("")}</table>`;
+}
+
+function renderRuns(jobs) {
+  if (!jobs.length) { $("jobs").innerHTML = '<div class="card">no jobs in Marquez yet, run scripts/pipeline.sh</div>'; return; }
+  $("jobs").innerHTML = jobs.map(j => `<div class="card"><h2>${esc(j.job)} <span class="muted">${esc(j.namespace)}</span></h2>
+    <div class="kv"><div>description</div><div>${esc(j.description)}</div><div>inputs</div><div><code>${j.inputs.map(esc).join(", ")}</code></div>
+    <div>outputs</div><div><code>${j.outputs.map(esc).join(", ")}</code></div><div>runs</div><div>${j.runs.length}</div></div>
+    <table><tr><th>run id</th><th>state</th><th>started</th><th>ended</th><th>duration</th><th>rows written</th></tr>
+    ${j.runs.map(r => `<tr><td><code>${esc(r.id)}</code></td><td class="state ${esc(r.state)}">${esc(r.state)}</td><td>${esc(r.started)}</td><td>${esc(r.ended)}</td><td>${r.duration_ms ?? ""} ms</td><td>${r.rows ?? ""}</td></tr>`).join("")}</table>
+    <pre>${esc(j.sql)}</pre></div>`).join("");
+}
+
+function renderRevenue(rows) {
+  const max = Math.max(...rows.map(r => r.revenue), 1);
+  const total = rows.reduce((a, r) => a + r.revenue, 0);
+  $("rev").innerHTML = `<table><tr><th>category</th><th>orders</th><th>quantity</th><th>revenue</th><th style="width:40%"></th></tr>
+    ${rows.map(r => `<tr><td><b>${esc(r.category)}</b></td><td>${r.orders}</td><td>${r.quantity}</td><td>${r.revenue.toFixed(2)}</td><td><div class="bar" style="width:${100 * r.revenue / max}%"></div></td></tr>`).join("")}
+    <tr><td><b>total</b></td><td>${rows.reduce((a, r) => a + r.orders, 0)}</td><td>${rows.reduce((a, r) => a + r.quantity, 0)}</td><td><b>${total.toFixed(2)}</b></td><td></td></tr></table>`;
+}
+
+async function load() {
+  try {
+    const info = await api("/api/info");
+    $("sub").textContent = `Apache Gravitino ${info.gravitino_version} · metalake ${info.metalake} · jobs namespace ${info.job_namespace}`;
+    $("links").innerHTML = [["Gravitino UI", info.links.gravitino_ui], ["Gravitino API", info.links.gravitino_api], ["Marquez lineage", info.links.marquez_ui], ["Marquez jobs", info.links.marquez_jobs]]
+      .map(([l, u]) => `<a href="${esc(u)}" target="_blank">${l}</a>`).join("");
+  } catch (e) { $("sub").textContent = e.message; }
+  try { catalog = await api("/api/catalog"); renderTree(); } catch (e) { fail("tree", e); }
+  api("/api/lineage").then(renderGraph).catch(e => fail("graph", e));
+  api("/api/runs").then(renderRuns).catch(e => fail("jobs", e));
+  api("/api/revenue").then(renderRevenue).catch(e => fail("rev", e));
+  const tab = location.hash.slice(1);
+  if (tab) document.querySelector(`nav button[data-tab="${tab}"]`)?.click();
+}
+load();
+</script>
+</body>
+</html>

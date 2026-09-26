@@ -26,6 +26,13 @@ It lets many engines share the same tables safely.
 * [iceberg-trino-nessie](iceberg-trino-nessie/) - Project Nessie: git-like branches and merges for data
 * [lakekeeper-iceberg-catalog](lakekeeper-iceberg-catalog/) - Lakekeeper: Rust Iceberg REST catalog with MinIO STS
 
+## 🕸️ Governance & Lineage
+
+Governance tools record who owns each dataset and which ones hold personal data.
+Lineage shows which job built each table and where its data came from.
+
+* [gravitino-openlineage-marquez](gravitino-openlineage-marquez/) - Gravitino owners and tags, OpenLineage events, lineage graph in Marquez
+
 ## ⚙️ Batch Engines
 
 Engines read data, run the heavy computation and write the results.

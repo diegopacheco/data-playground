@@ -1,0 +1,111 @@
+name: r6-gravitino-openlineage-marquez
+
+x-app-env: &app-env
+  GRAVITINO_URL: http://r6-gravitino:8090
+  MARQUEZ_URL: http://r6-marquez:5000
+  PG_DSN: postgresql://shop:shop@r6-postgres:5432/shop
+
+services:
+  r6-postgres:
+    image: docker.io/library/postgres:18.6-alpine
+    container_name: r6-postgres
+    mem_limit: 256m
+    environment:
+      POSTGRES_USER: shop
+      POSTGRES_PASSWORD: shop
+      POSTGRES_DB: shop
+    ports:
+      - "${postgres:-27103}:5432"
+    volumes:
+      - r6-postgres-data:/var/lib/postgresql
+      - ./conf/postgres-init.sql:/docker-entrypoint-initdb.d/marquez.sql:ro
+    networks:
+      - r6-net
+
+  r6-gravitino:
+    image: docker.io/apache/gravitino:1.3.0
+    container_name: r6-gravitino
+    restart: unless-stopped
+    mem_limit: 896m
+    environment:
+      SKIP_CONFIG_REWRITE: "true"
+      GRAVITINO_MEM: "-Xms256m -Xmx512m -XX:MaxMetaspaceSize=192m"
+    ports:
+      - "${gravitino:-27100}:8090"
+    volumes:
+      - ./conf/gravitino.conf:/opt/gravitino/conf/gravitino.conf:ro
+      - r6-gravitino-data:/opt/gravitino/data
+    networks:
+      - r6-net
+
+  r6-marquez:
+    image: docker.io/marquezproject/marquez:0.51.1
+    container_name: r6-marquez
+    restart: unless-stopped
+    mem_limit: 768m
+    environment:
+      MARQUEZ_PORT: "5000"
+      MARQUEZ_ADMIN_PORT: "5001"
+      POSTGRES_HOST: r6-postgres
+      POSTGRES_PORT: "5432"
+      SEARCH_ENABLED: "false"
+      JAVA_OPTS: "-Xms128m -Xmx384m"
+    ports:
+      - "${marquez:-27101}:5000"
+    networks:
+      - r6-net
+
+  r6-marquez-web:
+    image: docker.io/marquezproject/marquez-web:0.51.1
+    container_name: r6-marquez-web
+    restart: unless-stopped
+    mem_limit: 256m
+    environment:
+      MARQUEZ_HOST: r6-marquez
+      MARQUEZ_PORT: "5000"
+      WEB_PORT: "3000"
+      REACT_APP_ADVANCED_SEARCH: "false"
+    ports:
+      - "${marquez_web:-27102}:3000"
+    networks:
+      - r6-net
+
+  r6-pipeline:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: r6-gravitino-openlineage-marquez:latest
+    container_name: r6-pipeline
+    command: ["python", "app/pipeline.py"]
+    mem_limit: 192m
+    environment: *app-env
+    networks:
+      - r6-net
+
+  r6-ui:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: r6-gravitino-openlineage-marquez:latest
+    container_name: r6-ui
+    restart: unless-stopped
+    mem_limit: 192m
+    environment:
+      <<: *app-env
+      UI_PORT: "8080"
+      GRAVITINO_WEB: http://localhost:${gravitino:-27100}
+      MARQUEZ_WEB: http://localhost:${marquez_web:-27102}
+    ports:
+      - "${ui:-27104}:8080"
+    networks:
+      - r6-net
+
+networks:
+  r6-net:
+    name: r6-net
+
+volumes:
+  r6-postgres-data:
+    name: r6-postgres-data
+  r6-gravitino-data:
+    name: r6-gravitino-data

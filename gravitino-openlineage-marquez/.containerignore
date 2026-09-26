@@ -1,0 +1,7 @@
+.venv
+.run
+scripts
+tests
+printscreens
+conf
+__pycache__
