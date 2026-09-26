@@ -1,0 +1,65 @@
+doris-olap-stream-load/doris/schema.sql
+  s_14c0915619db27::t_bb82913bbc410c 1-14
+doris-olap-stream-load/scripts/stop-all.sh
+  s_14c0915619db27::t_0935d9378a84ce 1-15
+doris-olap-stream-load/Containerfile
+  s_14c0915619db27::t_3e25f9b1f7fa17 1-7
+doris-olap-stream-load/scripts/sql-console.sh
+  s_14c0915619db27::t_a8545a28e82147 1-14
+doris-olap-stream-load/scripts/ports.env
+  s_14c0915619db27::t_d60627e306a865 1-4
+doris-olap-stream-load/scripts/start-all.sh
+  s_14c0915619db27::t_4d1348b15fadd7 1-35
+doris-olap-stream-load/scripts/setup.sh
+  s_14c0915619db27::t_ceb576d4a63726 1-18
+doris-olap-stream-load/README.md
+  s_14c0915619db27::t_055ca16773e2ef 1-187
+doris-olap-stream-load/app/index.html
+  s_14c0915619db27::t_9cbb700fb23b3d 1-160
+doris-olap-stream-load/scripts/ui.sh
+  s_14c0915619db27::t_5ece4c82551b76 1-7
+doris-olap-stream-load/scripts/status.sh
+  s_14c0915619db27::t_3084f7f8d9e7fb 1-18
+doris-olap-stream-load/app/doris_store.py
+  s_14c0915619db27::t_fb74b2805861fd 1-42
+doris-olap-stream-load/.gitignore
+  s_14c0915619db27::t_2e05b11db2b554 1-4
+doris-olap-stream-load/requirements.txt
+  s_14c0915619db27::t_73020c1fac5058 1
+doris-olap-stream-load/data/orders.csv
+  s_14c0915619db27::t_ac49ea183642bc 1-201
+doris-olap-stream-load/scripts/common.sh
+  s_14c0915619db27::t_d9997ddde01712 1-91,93-129
+  s_14c0915619db27::t_58fc6cabc5acd1 92
+doris-olap-stream-load/printscreens/architecture.svg
+  s_14c0915619db27::t_fb64ef5d2fc797 1-13,15-20,22-40
+  s_14c0915619db27::t_7da6f0dd5e53a5 14,21
+doris-olap-stream-load/app/server.py
+  s_14c0915619db27::t_773f12f8afd39f 1-39
+doris-olap-stream-load/scripts/test-all.sh
+  s_14c0915619db27::t_0a89c7417dc729 1-43,46-60
+  s_14c0915619db27::t_0361ca18a22d31 44-45
+doris-olap-stream-load/scripts/pipeline.sh
+  s_14c0915619db27::t_14d3f06f1b7796 13-16,19-22
+  s_14c0915619db27::t_43988c2c6c18fe 1-12,17-18,23-46
+doris-olap-stream-load/podman-compose.yml
+  s_14c0915619db27::t_5f4405227147b3 1-76
+doris-olap-stream-load/doris/materialized-view.sql
+  s_14c0915619db27::t_4387221c28fa63 1-5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "e2f131099630bd5b1fc5142f8247af7b291fdc25",
+  "prompts": {},
+  "sessions": {
+    "s_14c0915619db27": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "78bc23ff-c306-44c2-90f2-85a722724642",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "diegopacheco <diego.pacheco.it@gmail.com>"
+    }
+  }
+}
