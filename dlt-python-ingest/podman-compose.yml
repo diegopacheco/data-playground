@@ -1,0 +1,49 @@
+name: r4-dlt-python-ingest
+
+services:
+  r4-postgres:
+    image: docker.io/library/postgres:18.6-alpine
+    container_name: r4-postgres
+    environment:
+      POSTGRES_USER: shop
+      POSTGRES_PASSWORD: shop
+      POSTGRES_DB: shop
+    mem_limit: 256m
+    ports:
+      - "${postgres:-26900}:5432"
+    volumes:
+      - r4-pgdata:/var/lib/postgresql
+    networks:
+      - r4-net
+
+  r4-app:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: r4-dlt-python-ingest:latest
+    container_name: r4-app
+    restart: unless-stopped
+    environment:
+      SOURCE_DSN: postgresql://shop:shop@r4-postgres:5432/shop
+      API_URL: http://localhost:8080/source/
+      STATE_DIR: /state
+      UI_PORT: "8080"
+    mem_limit: 768m
+    ports:
+      - "${ui:-26901}:8080"
+    volumes:
+      - r4-dlt-state:/state
+    networks:
+      - r4-net
+    depends_on:
+      - r4-postgres
+
+networks:
+  r4-net:
+    name: r4-net
+
+volumes:
+  r4-pgdata:
+    name: r4-pgdata
+  r4-dlt-state:
+    name: r4-dlt-state

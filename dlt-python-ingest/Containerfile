@@ -1,0 +1,9 @@
+FROM docker.io/library/python:3.14.7-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+ENV PYTHONUNBUFFERED=1 RUNTIME__DLTHUB_TELEMETRY=false DATA_DIR=/app/data
+COPY data data
+COPY app app
+WORKDIR /app/app
+CMD ["python", "server.py"]

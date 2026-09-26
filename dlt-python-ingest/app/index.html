@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>dlt Python Ingest</title>
+<style>
+  :root { --bg: #f7f8fa; --card: #ffffff; --text: #1f2933; --muted: #6b7785; --line: #e4e7eb; --accent: #5c3ee8; --accent-soft: #eee9ff; --bar: #4f7cff; --ok: #2f9e44; --new: #e8590c; --new-soft: #fff4e6; --off: #c0392b; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 1120px; margin: 0 auto; padding: 28px 16px; }
+  header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  p.sub { color: var(--muted); margin: 0; font-size: 14px; }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  button { font-size: 14px; padding: 9px 14px; border-radius: 8px; border: 1px solid var(--line); background: #fff; cursor: pointer; }
+  button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  button.dark { background: var(--text); color: #fff; border-color: var(--text); }
+  button:disabled { opacity: .5; cursor: wait; }
+  nav { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 18px; overflow-x: auto; }
+  nav a { padding: 10px 14px; text-decoration: none; color: var(--muted); font-weight: 600; font-size: 14px; border-bottom: 2px solid transparent; white-space: nowrap; }
+  nav a.on { color: var(--accent); border-color: var(--accent); }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 18px; }
+  .stat { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
+  .stat b { display: block; font-size: 20px; margin-top: 4px; }
+  .stat span { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 18px; margin-bottom: 18px; overflow-x: auto; }
+  .card h2 { font-size: 15px; margin: 0 0 12px; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; }
+  th, td { text-align: left; padding: 7px 8px; border-top: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; border-top: none; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .pill { display: inline-block; font-size: 12px; padding: 2px 8px; border-radius: 999px; background: var(--bg); border: 1px solid var(--line); margin: 1px 4px 1px 0; }
+  .pill.new { background: var(--new-soft); border-color: var(--new); color: var(--new); font-weight: 600; }
+  .pill.hint { background: var(--accent-soft); border-color: var(--accent-soft); color: var(--accent); }
+  .pill.ok { color: var(--ok); border-color: var(--ok); }
+  .muted { color: var(--muted); }
+  .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 18px; }
+  .track { height: 8px; background: var(--bg); border-radius: 4px; overflow: hidden; min-width: 80px; }
+  .fill { height: 100%; background: var(--bar); }
+  tr.pick { cursor: pointer; }
+  tr.pick:hover, tr.sel { background: var(--accent-soft); }
+  tr.added td { background: var(--new-soft); }
+  input[type=text] { width: 100%; font-family: ui-monospace, Menlo, monospace; font-size: 13px; padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; margin-bottom: 10px; }
+  pre { background: #1f2933; color: #e4e7eb; padding: 14px; border-radius: 8px; overflow-x: auto; font-size: 12px; margin: 0; max-height: 420px; }
+  .error { color: var(--off); font-weight: 600; }
+  section { display: none; }
+  section.on { display: block; }
+  code { font-size: 12px; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div>
+      <h1>dlt Python Ingest</h1>
+      <p class="sub" id="sub">loading</p>
+    </div>
+    <div class="actions">
+      <button class="primary" id="run">Run pipeline</button>
+      <button class="dark" id="changes">Apply source changes</button>
+      <button id="reset">Reset all</button>
+    </div>
+  </header>
+  <div class="stats" id="stats"></div>
+  <p id="message" class="muted"></p>
+  <nav>
+    <a href="#runs" data-tab="runs">Runs and loads</a>
+    <a href="#tables" data-tab="tables">Destination tables</a>
+    <a href="#schema" data-tab="schema">Schema and evolution</a>
+    <a href="#source" data-tab="source">Sources</a>
+  </nav>
+
+  <section id="runs">
+    <div class="card"><h2>Pipeline runs (load info)</h2><div id="runs-table"></div></div>
+    <div class="card"><h2><code>_dlt_loads</code> (one row per load package committed to DuckDB)</h2><div id="loads-table"></div></div>
+  </section>
+
+  <section id="tables">
+    <div class="grid2">
+      <div class="card"><h2>Tables in dataset <code id="dataset"></code></h2><div id="tables-table"></div></div>
+      <div class="card"><h2>Query the destination (read only)</h2>
+        <input type="text" id="sql" value="SELECT order_id, customer, quantity, coupon, updated_at FROM ingest.orders ORDER BY updated_at DESC LIMIT 8">
+        <button class="dark" id="sql-run">Run SQL</button>
+      </div>
+    </div>
+    <div class="card"><h2 id="preview-title">Rows</h2><div id="preview"></div></div>
+  </section>
+
+  <section id="schema">
+    <div class="card"><h2>Schema versions stored in <code>_dlt_version</code></h2><div id="versions"></div></div>
+    <div id="schema-tables" class="grid2"></div>
+  </section>
+
+  <section id="source">
+    <div class="grid2">
+      <div class="card"><h2>Postgres 18 source <code>orders</code> (sql_database, incremental on updated_at)</h2><div id="source-counts"></div></div>
+      <div class="card"><h2>Last source changes applied</h2><div id="last-changes" class="muted">none in this session, press Apply source changes</div></div>
+    </div>
+    <div class="card"><h2>REST source <code>GET /source/customers?page=1&amp;page_size=5</code> (rest_api, page_number paginator)</h2><pre id="api-page"></pre></div>
+  </section>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const esc = v => String(v ?? "").replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+const cell = v => v === null || v === undefined ? '<span class="muted">null</span>' : esc(typeof v === "object" ? JSON.stringify(v) : v);
+const time = v => v ? esc(String(v).replace("T", " ").slice(0, 19)) : "";
+let current = null;
+
+async function api(path, method = "GET") {
+  const res = await fetch(path, {method});
+  const body = await res.json();
+  if (!res.ok) throw new Error(body.error || res.statusText);
+  return body;
+}
+
+function grid(columns, rows, render) {
+  if (!rows.length) return '<p class="muted">no rows</p>';
+  return `<table><tr>${columns.map(c => `<th>${esc(c)}</th>`).join("")}</tr>${rows.map(render).join("")}</table>`;
+}
+
+function stat(label, value) {
+  return `<div class="stat"><span>${esc(label)}</span><b>${esc(value)}</b></div>`;
+}
+
+function renderOverview(o) {
+  $("sub").textContent = `dlt ${o.versions.dlt} on Python 3.14, Postgres ${o.versions.postgres} + REST API into DuckDB ${o.versions.duckdb}, pipeline "${o.pipeline}", dataset "${o.dataset}"`;
+  $("dataset").textContent = o.dataset;
+  const rows = Object.fromEntries(o.tables.map(t => [t.table, t.rows]));
+  $("stats").innerHTML = [
+    stat("source orders (live)", o.source.orders_live),
+    stat("destination orders", rows.orders ?? 0),
+    stat("source customers", o.source.customers),
+    stat("destination customers", rows.customers ?? 0),
+    stat("pipeline runs", o.runs.length),
+    stat("load packages", o.loads.length),
+  ].join("");
+  $("runs-table").innerHTML = grid(["run", "finished", "duration", "load id", "rows loaded per table", "new columns", "schema"], [...o.runs].reverse(), r => `<tr>
+    <td>#${r.run}</td><td>${time(r.finished_at)}</td><td class="num">${r.duration_ms} ms</td><td><code>${esc(r.load_ids.join(", "))}</code></td>
+    <td>${Object.keys(r.row_counts).length ? Object.entries(r.row_counts).map(([t, n]) => `<span class="pill">${esc(t)} ${n}</span>`).join("") : '<span class="muted">nothing new (incremental)</span>'}</td>
+    <td>${r.new_columns.map(c => `<span class="pill new">+ ${esc(c)}</span>`).join("")}</td>
+    <td>v${r.schema_version} <span class="muted">${esc(r.schema_hash.slice(0, 8))}</span></td></tr>`);
+  $("loads-table").innerHTML = grid(["load_id", "schema_name", "status", "inserted_at", "schema_version_hash"], [...o.loads].reverse(), l => `<tr>
+    <td><code>${esc(l.load_id)}</code></td><td>${esc(l.schema_name)}</td><td><span class="pill ok">${l.status === 0 ? "0 completed" : esc(l.status)}</span></td>
+    <td>${time(l.inserted_at)}</td><td><code>${esc(l.schema_version_hash)}</code></td></tr>`);
+  const max = Math.max(1, ...o.tables.map(t => t.rows));
+  $("tables-table").innerHTML = grid(["table", "rows", ""], o.tables, t => `<tr class="pick${t.table === current ? " sel" : ""}" data-table="${esc(t.table)}">
+    <td><code>${esc(t.table)}</code></td><td class="num">${t.rows}</td><td><div class="track"><div class="fill" style="width:${100 * t.rows / max}%"></div></div></td></tr>`);
+  document.querySelectorAll("tr[data-table]").forEach(tr => tr.onclick = () => preview(tr.dataset.table));
+  const s = o.source;
+  $("source-counts").innerHTML = `<table>
+    <tr><td>live orders</td><td class="num">${s.orders_live}</td></tr>
+    <tr><td>soft deleted orders (<code>deleted = true</code>, hard_delete hint removes them downstream)</td><td class="num">${s.orders_deleted}</td></tr>
+    <tr><td>customers behind the REST API</td><td class="num">${s.customers}</td></tr>
+    <tr><td>customers with the new <code>loyalty</code> object</td><td class="num">${s.customers_with_loyalty}</td></tr>
+    <tr><td><code>orders.coupon</code> column exists in the source</td><td class="num">${s.orders_has_coupon ? "yes" : "no"}</td></tr></table>`;
+}
+
+async function preview(table) {
+  current = table;
+  document.querySelectorAll("tr[data-table]").forEach(tr => tr.classList.toggle("sel", tr.dataset.table === table));
+  $("sql").value = `SELECT * FROM ingest."${table}" LIMIT 12`;
+  await runSql();
+}
+
+async function runSql() {
+  $("preview-title").textContent = $("sql").value;
+  try {
+    const r = await api("/api/sql?q=" + encodeURIComponent($("sql").value));
+    $("preview").innerHTML = grid(r.columns, r.rows, row => `<tr>${row.map(v => `<td>${cell(v)}</td>`).join("")}</tr>`);
+  } catch (e) {
+    $("preview").innerHTML = `<p class="error">${esc(e.message)}</p>`;
+  }
+}
+
+function renderSchema(s) {
+  const latest = s.versions.length ? s.versions[s.versions.length - 1] : null;
+  const fresh = new Set(latest && s.versions.length > 1 ? latest.added_columns : []);
+  $("versions").innerHTML = grid(["version", "version_hash", "stored at", "tables", "columns added by this version"], [...s.versions].reverse(), v => `<tr>
+    <td>v${v.version}</td><td><code>${esc(v.version_hash.slice(0, 12))}</code></td><td>${time(v.inserted_at)}</td><td>${v.tables.length}</td>
+    <td>${v === s.versions[0] ? `<span class="muted">initial schema, ${v.added_columns.length} columns inferred</span>` : v.added_columns.map(c => `<span class="pill new">+ ${esc(c)}</span>`).join("")}</td></tr>`);
+  $("schema-tables").innerHTML = s.current.tables.map(t => `<div class="card"><h2><code>${esc(t.table)}</code>
+    <span class="pill hint">${esc(t.write_disposition)}</span>${t.parent ? `<span class="pill">child of ${esc(t.parent)}</span>` : ""}</h2>
+    ${grid(["column", "data_type", "hints"], t.columns, c => `<tr class="${fresh.has(t.table + "." + c.name) ? "added" : ""}">
+      <td><code>${esc(c.name)}</code>${fresh.has(t.table + "." + c.name) ? ' <span class="pill new">new</span>' : ""}</td><td>${esc(c.data_type)}</td>
+      <td>${c.hints.map(h => `<span class="pill${h === "not null" ? "" : " hint"}">${esc(h)}</span>`).join("")}</td></tr>`)}</div>`).join("")
+    || '<div class="card muted">no schema yet, press Run pipeline</div>';
+}
+
+function renderChanges(c) {
+  $("last-changes").innerHTML = `<table>
+    <tr><td>updated orders (quantity + 1, coupon SAVE10)</td><td>${c.updated.map(u => `<span class="pill">${u.order_id} qty ${u.quantity}</span>`).join("")}</td></tr>
+    <tr><td>soft deleted orders</td><td>${c.deleted.map(d => `<span class="pill">${d}</span>`).join("")}</td></tr>
+    <tr><td>inserted orders</td><td>${c.inserted.map(i => `<span class="pill">${i.order_id} ${esc(i.product)}</span>`).join("")}</td></tr>
+    <tr><td>customers with new tier, loyalty and address</td><td>${c.customers.map(u => `<span class="pill">id ${u.id} ${u.loyalty.points} pts</span>`).join("")}</td></tr>
+    <tr><td>source fields that the CSV seed does not have</td><td><span class="pill new">orders.coupon</span><span class="pill new">customers.loyalty</span></td></tr></table>`;
+}
+
+async function refresh() {
+  const [o, s, page] = await Promise.all([api("/api/overview"), api("/api/schema"), api("/source/customers?page=1&page_size=5")]);
+  renderOverview(o);
+  renderSchema(s);
+  $("api-page").textContent = JSON.stringify(page, null, 2);
+  if (current) await preview(current);
+}
+
+async function act(button, path, done) {
+  document.querySelectorAll(".actions button").forEach(b => b.disabled = true);
+  $("message").className = "muted";
+  $("message").textContent = "working";
+  try {
+    const r = await api(path, "POST");
+    $("message").textContent = done(r);
+    if (path === "/api/changes") renderChanges(r);
+    await refresh();
+  } catch (e) {
+    $("message").className = "error";
+    $("message").textContent = e.message;
+  }
+  document.querySelectorAll(".actions button").forEach(b => b.disabled = false);
+}
+
+function tab() {
+  const name = (location.hash || "#runs").slice(1);
+  document.querySelectorAll("section").forEach(s => s.classList.toggle("on", s.id === name));
+  document.querySelectorAll("nav a").forEach(a => a.classList.toggle("on", a.dataset.tab === name));
+}
+
+$("run").onclick = () => act($("run"), "/api/run", r => `run #${r.run} finished in ${r.duration_ms} ms, load ${r.load_ids.join(", ")}, rows ${JSON.stringify(r.row_counts)}${r.new_columns.length ? ", new columns " + r.new_columns.join(", ") : ""}`);
+$("changes").onclick = () => act($("changes"), "/api/changes", r => `source changed: ${r.updated.length} updated, ${r.deleted.length} soft deleted, ${r.inserted.length} inserted orders, ${r.customers.length} customers updated, press Run pipeline to load them`);
+$("reset").onclick = () => act($("reset"), "/api/reset", () => "source reseeded from orders.csv, DuckDB file and pipeline state removed");
+$("sql-run").onclick = runSql;
+window.onhashchange = tab;
+tab();
+refresh().then(() => preview("orders")).catch(e => { $("message").className = "error"; $("message").textContent = e.message; });
+</script>
+</body>
+</html>
