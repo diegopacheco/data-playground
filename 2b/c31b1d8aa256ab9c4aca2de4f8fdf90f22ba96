@@ -1,0 +1,97 @@
+README.md
+  s_dde22dd2cd9c7d::t_6eaa10555e161d 16
+fluss-flink-paimon/scripts/status.sh
+  s_dde22dd2cd9c7d::t_61e5ef3a73036c 1-22
+fluss-flink-paimon/scripts/common.sh
+  s_dde22dd2cd9c7d::t_543beac88149ed 1-89,92-98,102-125
+  s_dde22dd2cd9c7d::t_48f4af3da6c8da 90-91
+  s_dde22dd2cd9c7d::t_2e3ff64757f9f2 99-101
+fluss-flink-paimon/scripts/start-all.sh
+  s_dde22dd2cd9c7d::t_656f25b74e35dc 21
+  s_dde22dd2cd9c7d::t_143741ea93afa1 1-20,22-33
+fluss-flink-paimon/src/main/java/com/github/diegopacheco/flussflink/Lake.java
+  s_dde22dd2cd9c7d::t_ae85d3cb6eff1b 1-15,17-55
+  s_dde22dd2cd9c7d::t_708d76cb36d787 16
+fluss-flink-paimon/src/main/java/com/github/diegopacheco/flussflink/Json.java
+  s_dde22dd2cd9c7d::t_9effd12d6fc79d 1-50
+fluss-flink-paimon/scripts/stop-all.sh
+  s_dde22dd2cd9c7d::t_3937bba8d309dc 1-19
+fluss-flink-paimon/scripts/ui.sh
+  s_dde22dd2cd9c7d::t_3e17de24809e19 1-8
+fluss-flink-paimon/tests/test_lakehouse.py
+  s_dde22dd2cd9c7d::t_ef4e1e9525f724 1-25,27-141
+  s_dde22dd2cd9c7d::t_23a11eac7cd0fe 26
+fluss-flink-paimon/scripts/ports.env
+  s_dde22dd2cd9c7d::t_4162f36b206497 1-2
+fluss-flink-paimon/podman-compose.yml
+  s_dde22dd2cd9c7d::t_5ae75868be751d 54-56
+  s_dde22dd2cd9c7d::t_655e0216f2c9a1 84
+  s_dde22dd2cd9c7d::t_72942d208c1804 1-53,57-83,86-108
+  s_dde22dd2cd9c7d::t_0d73e7f9f97e4a 85
+fluss-flink-paimon/src/main/java/com/github/diegopacheco/flussflink/Order.java
+  s_dde22dd2cd9c7d::t_866bbc5e80c307 1-44
+fluss-flink-paimon/pom.xml
+  s_dde22dd2cd9c7d::t_9936ebf0174d53 1-45,51-87,89-117
+  s_dde22dd2cd9c7d::t_85e00751b6baed 88
+  s_dde22dd2cd9c7d::t_b5f44ed31e64cf 46-50
+fluss-flink-paimon/src/main/java/com/github/diegopacheco/flussflink/App.java
+  s_dde22dd2cd9c7d::t_fe9144d99050b2 72
+  s_dde22dd2cd9c7d::t_3971b45d370336 26
+  s_dde22dd2cd9c7d::t_ac8795ed54706e 1-25,27-37,39-71,73-210
+  s_dde22dd2cd9c7d::t_2198f2d99eccc1 38
+fluss-flink-paimon/src/main/java/com/github/diegopacheco/flussflink/Tiering.java
+  s_dde22dd2cd9c7d::t_af205eccaa5287 22
+  s_dde22dd2cd9c7d::t_3a43eb42cc94f0 39,41-51
+  s_dde22dd2cd9c7d::t_aef30149de0c7a 1-9,12-21,23-38,40,52-72
+  s_dde22dd2cd9c7d::t_9c32b0a82f97d2 10-11
+fluss-flink-paimon/README.md
+  s_dde22dd2cd9c7d::t_6206c832daa734 1-174
+fluss-flink-paimon/data/orders-updates.csv
+  s_dde22dd2cd9c7d::t_0b2ad3755ce3db 1-13
+fluss-flink-paimon/data/orders.csv
+  s_dde22dd2cd9c7d::t_0b2ad3755ce3db 1-201
+fluss-flink-paimon/scripts/test-all.sh
+  s_dde22dd2cd9c7d::t_ec9577cc72b05b 1-16
+fluss-flink-paimon/Containerfile
+  s_dde22dd2cd9c7d::t_3dd93a7b6758a8 6
+  s_dde22dd2cd9c7d::t_8f806c3ca1663c 1-5,7
+fluss-flink-paimon/src/main/java/com/github/diegopacheco/flussflink/Fluss.java
+  s_dde22dd2cd9c7d::t_444316ef2fec30 105-109
+  s_dde22dd2cd9c7d::t_9e39c96274dac5 88-89
+  s_dde22dd2cd9c7d::t_f0d7528cda875e 97
+  s_dde22dd2cd9c7d::t_9581abc25e5dd7 26,28
+  s_dde22dd2cd9c7d::t_02f44238910dd5 37,42-57
+  s_dde22dd2cd9c7d::t_da9777c50507f2 1-25,27,29-36,38-41,58-87,90-96,98-104,110-132
+fluss-flink-paimon/scripts/setup.sh
+  s_dde22dd2cd9c7d::t_037af4f671a6bd 1-21
+fluss-flink-paimon/src/main/java/com/github/diegopacheco/flussflink/Settings.java
+  s_dde22dd2cd9c7d::t_514dcf7ec8af8c 11
+  s_dde22dd2cd9c7d::t_b00481835ea273 20-28
+  s_dde22dd2cd9c7d::t_ab4f5665d1208a 1-2,5-10,12-19,29-33
+  s_dde22dd2cd9c7d::t_f61c5e7ccc207e 3-4
+fluss-flink-paimon/.gitignore
+  s_dde22dd2cd9c7d::t_cfc9d561100249 1-3
+fluss-flink-paimon/src/main/resources/index.html
+  s_dde22dd2cd9c7d::t_9687b42275a18c 1-256
+fluss-flink-paimon/.containerignore
+  s_dde22dd2cd9c7d::t_0f3b66cb2550c4 1-8
+fluss-flink-paimon/printscreens/architecture.svg
+  s_dde22dd2cd9c7d::t_98b2bb6a06d6fa 1-48,50-51
+  s_dde22dd2cd9c7d::t_2aad40f2976e42 49
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "2bc31b1d8aa256ab9c4aca2de4f8fdf90f22ba96",
+  "prompts": {},
+  "sessions": {
+    "s_dde22dd2cd9c7d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2d754554-d602-4dbd-8996-a2c4d4376a54",
+        "model": "unknown"
+      },
+      "human_author": "diegopacheco <diego.pacheco.it@gmail.com>"
+    }
+  }
+}
