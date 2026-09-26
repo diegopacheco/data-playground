@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lakekeeper Iceberg Catalog</title>
+<style>
+  :root { --bg: #f7f8fa; --card: #ffffff; --text: #1f2933; --muted: #6b7785; --line: #e4e7eb; --bar: #4f7cff; --accent: #eef2ff; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 1100px; margin: 0 auto; padding: 32px 16px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  p.sub { color: var(--muted); margin: 0 0 24px; }
+  a { color: var(--bar); }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 20px; margin-bottom: 20px; overflow-x: auto; }
+  .card h2 { font-size: 16px; margin: 0 0 16px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { padding: 8px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+  th:first-child, td:first-child { text-align: left; }
+  th { color: var(--muted); font-weight: 600; }
+  tfoot td { font-weight: 700; border-bottom: none; }
+  dl { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 0; font-size: 14px; }
+  dt { color: var(--muted); }
+  dd { margin: 0; word-break: break-all; }
+  code, pre { font-family: ui-monospace, Menlo, monospace; font-size: 12px; }
+  pre { background: var(--accent); padding: 10px; border-radius: 6px; margin: 12px 0 0; white-space: pre-wrap; }
+  .tag { display: inline-block; background: var(--accent); border-radius: 4px; padding: 1px 6px; margin: 0 4px 4px 0; font-size: 12px; }
+  select { font-size: 14px; padding: 4px; }
+  svg text { font-size: 12px; fill: var(--text); }
+  .error { color: #c0392b; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Lakekeeper Iceberg Catalog</h1>
+  <p class="sub">PyIceberg writes shop.orders through the Lakekeeper REST catalog, DuckDB reads it back through the same catalog. <span id="lkui"></span></p>
+  <div class="grid">
+    <div class="card">
+      <h2>Lakekeeper server</h2>
+      <dl id="server"></dl>
+    </div>
+    <div class="card">
+      <h2>Catalog</h2>
+      <dl id="catalog"></dl>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Revenue per category <select id="snapshot"></select></h2>
+    <svg id="chart" width="100%" role="img" aria-label="Revenue by category bar chart"></svg>
+    <table>
+      <thead><tr><th>Category</th><th>Orders</th><th>Quantity</th><th>Revenue</th></tr></thead>
+      <tbody id="rows"></tbody>
+      <tfoot id="total"></tfoot>
+    </table>
+    <pre id="sql"></pre>
+  </div>
+  <div class="card">
+    <h2>Snapshots</h2>
+    <table>
+      <thead><tr><th>Snapshot id</th><th>Seq</th><th>Operation</th><th>Added records</th><th>Total records</th><th>Data files</th><th>Committed</th><th>Current</th></tr></thead>
+      <tbody id="snapshots"></tbody>
+    </table>
+  </div>
+  <div class="card">
+    <h2>Table metadata</h2>
+    <dl id="metadata"></dl>
+  </div>
+</main>
+<script>
+const money = v => v.toLocaleString("en-US", { style: "currency", currency: "USD" });
+const NS = "http://www.w3.org/2000/svg";
+const $ = id => document.getElementById(id);
+
+function el(name, attrs, text) {
+  const node = document.createElementNS(NS, name);
+  Object.entries(attrs).forEach(([k, v]) => node.setAttribute(k, v));
+  if (text !== undefined) node.textContent = text;
+  return node;
+}
+
+function pairs(target, entries) {
+  $(target).innerHTML = entries.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("");
+}
+
+function tags(list) {
+  return list.map(v => `<span class="tag">${v}</span>`).join("");
+}
+
+function renderChart(data) {
+  const svg = $("chart");
+  const width = svg.clientWidth || 900;
+  const rowHeight = 30, labelWidth = 110, valueWidth = 110;
+  const max = Math.max(...data.map(d => d.total_revenue));
+  svg.setAttribute("height", data.length * rowHeight + 8);
+  svg.replaceChildren();
+  data.forEach((d, i) => {
+    const y = i * rowHeight;
+    const barWidth = Math.max(2, (width - labelWidth - valueWidth) * d.total_revenue / max);
+    svg.appendChild(el("text", { x: 0, y: y + 20 }, d.category));
+    svg.appendChild(el("rect", { x: labelWidth, y: y + 6, width: barWidth, height: 18, rx: 4, fill: "var(--bar)" }));
+    svg.appendChild(el("text", { x: labelWidth + barWidth + 8, y: y + 20 }, money(d.total_revenue)));
+  });
+}
+
+function renderRevenue(result) {
+  const data = result.rows;
+  renderChart(data);
+  $("rows").innerHTML = data.map(d =>
+    `<tr><td>${d.category}</td><td>${d.total_orders}</td><td>${d.total_quantity}</td><td>${money(d.total_revenue)}</td></tr>`).join("");
+  const sum = key => data.reduce((acc, d) => acc + d[key], 0);
+  $("total").innerHTML = `<tr><td>Total</td><td>${sum("total_orders")}</td><td>${sum("total_quantity")}</td><td>${money(sum("total_revenue"))}</td></tr>`;
+  $("sql").textContent = result.sql;
+}
+
+function loadRevenue(snapshot) {
+  return fetch(snapshot ? `/api/revenue?snapshot=${snapshot}` : "/api/revenue")
+    .then(r => r.json())
+    .then(result => { if (result.error) throw new Error(result.error); renderRevenue(result); });
+}
+
+function renderCatalog(c) {
+  $("lkui").innerHTML = `Built-in Lakekeeper UI: <a href="${c.lakekeeper_ui}" target="_blank">${c.lakekeeper_ui}</a>`;
+  pairs("server", [
+    ["version", c.lakekeeper_version],
+    ["bootstrapped", c.bootstrapped],
+    ["server id", `<code>${c.server_id}</code>`],
+    ["authz", c.authz_backend],
+    ["warehouses", c.warehouses.map(w => `<code>${w.name}</code> ${w.status}, s3://${w.bucket}/${w.key_prefix}, sts ${w.sts_enabled}`).join("<br>")],
+  ]);
+  pairs("catalog", [
+    ["rest uri", `<code>${c.catalog_uri}</code>`],
+    ["warehouse", `<code>${c.warehouse}</code>`],
+    ["namespaces", tags(c.namespaces)],
+    ["tables", tags(c.tables)],
+    ["snapshots", c.snapshots.length],
+  ]);
+  $("snapshots").innerHTML = c.snapshots.map(s =>
+    `<tr><td><code>${s.snapshot_id}</code></td><td>${s.sequence_number}</td><td>${s.operation}</td><td>${s.added_records}</td><td>${s.total_records}</td><td>${s.total_files}</td><td>${new Date(s.timestamp_ms).toISOString().replace("T", " ").slice(0, 19)}</td><td>${s.current ? "yes" : ""}</td></tr>`).join("");
+  pairs("metadata", [
+    ["table", `<code>${c.table}</code>`],
+    ["uuid", `<code>${c.table_uuid}</code>`],
+    ["format version", c.format_version],
+    ["location", `<code>${c.location}</code>`],
+    ["metadata file", `<code>${c.metadata_location}</code>`],
+    ["partition spec", `<code>${c.partition_spec}</code>`],
+    ["schema", tags(c.schema.map(f => `${f.id} ${f.name}: ${f.type}`))],
+  ]);
+  const select = $("snapshot");
+  select.innerHTML = c.snapshots.slice().reverse().map(s =>
+    `<option value="${s.current ? "" : s.snapshot_id}">${s.current ? "current" : "snapshot"} ${s.snapshot_id} (${s.total_records} rows)</option>`).join("");
+  select.onchange = () => loadRevenue(select.value).catch(showError);
+}
+
+function showError(e) {
+  $("rows").innerHTML = `<tr><td colspan="4" class="error">${e.message}</td></tr>`;
+}
+
+fetch("/api/catalog")
+  .then(r => r.json())
+  .then(c => { if (c.error) throw new Error(c.error); renderCatalog(c); return loadRevenue(""); })
+  .catch(showError);
+</script>
+</body>
+</html>

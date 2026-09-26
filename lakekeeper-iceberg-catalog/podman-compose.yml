@@ -1,0 +1,102 @@
+x-lakekeeper-env: &lakekeeper-env
+  LAKEKEEPER__PG_ENCRYPTION_KEY: q4-lakekeeper-encryption-key
+  LAKEKEEPER__PG_DATABASE_URL_READ: postgresql://lakekeeper:lakekeeper@q4-postgres:5432/lakekeeper
+  LAKEKEEPER__PG_DATABASE_URL_WRITE: postgresql://lakekeeper:lakekeeper@q4-postgres:5432/lakekeeper
+  LAKEKEEPER__UI__ENABLE_SURVEYS: "false"
+  RUST_LOG: info
+
+services:
+  q4-minio:
+    image: docker.io/pgsty/minio:RELEASE.2026-08-04T00-00-00Z
+    container_name: q4-minio
+    command: ["server", "/data", "--console-address", ":9001"]
+    mem_limit: 512m
+    environment:
+      MINIO_ROOT_USER: q4admin
+      MINIO_ROOT_PASSWORD: q4password
+    ports:
+      - "${minio:-26300}:9000"
+      - "${console:-26301}:9001"
+    volumes:
+      - q4-minio-data:/data
+    networks:
+      - q4-net
+
+  q4-postgres:
+    image: docker.io/library/postgres:18.6-alpine
+    container_name: q4-postgres
+    mem_limit: 256m
+    environment:
+      POSTGRES_USER: lakekeeper
+      POSTGRES_PASSWORD: lakekeeper
+      POSTGRES_DB: lakekeeper
+    ports:
+      - "${postgres:-26303}:5432"
+    volumes:
+      - q4-postgres-data:/var/lib/postgresql
+    networks:
+      - q4-net
+
+  q4-migrate:
+    image: quay.io/lakekeeper/catalog:v0.13.6
+    container_name: q4-migrate
+    command: ["migrate"]
+    mem_limit: 256m
+    environment: *lakekeeper-env
+    networks:
+      - q4-net
+
+  q4-lakekeeper:
+    image: quay.io/lakekeeper/catalog:v0.13.6
+    container_name: q4-lakekeeper
+    command: ["serve"]
+    restart: unless-stopped
+    mem_limit: 256m
+    environment: *lakekeeper-env
+    ports:
+      - "${lakekeeper:-26302}:8181"
+    networks:
+      - q4-net
+
+  q4-pipeline:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: q4-lakekeeper-iceberg-catalog:latest
+    container_name: q4-pipeline
+    command: ["python", "app/pipeline.py"]
+    mem_limit: 512m
+    environment:
+      LAKEKEEPER_URL: http://q4-lakekeeper:8181
+      S3_ENDPOINT: http://q4-minio:9000
+      S3_ACCESS_KEY: q4admin
+      S3_SECRET_KEY: q4password
+    networks:
+      - q4-net
+
+  q4-ui:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: q4-lakekeeper-iceberg-catalog:latest
+    container_name: q4-ui
+    restart: unless-stopped
+    mem_limit: 512m
+    environment:
+      LAKEKEEPER_URL: http://q4-lakekeeper:8181
+      LAKEKEEPER_UI: http://localhost:${lakekeeper:-26302}/ui
+      UI_PORT: "${ui:-26304}"
+    ports:
+      - "${ui:-26304}:${ui:-26304}"
+    networks:
+      - q4-net
+
+networks:
+  q4-net:
+    name: q4-net
+
+volumes:
+  q4-minio-data:
+    name: q4-minio-data
+  q4-postgres-data:
+    name: q4-postgres-data
