@@ -1,0 +1,82 @@
+daft-multimodal-dataframe/scripts/ports.env
+  s_dde22dd2cd9c7d::t_6e69950f4edbb3 1
+daft-multimodal-dataframe/scripts/start-all.sh
+  s_dde22dd2cd9c7d::t_e88d75a00986de 1-29
+daft-multimodal-dataframe/README.md
+  s_dde22dd2cd9c7d::t_ca21df1cfc8310 1-198
+daft-multimodal-dataframe/scripts/pipeline.sh
+  s_dde22dd2cd9c7d::t_2de06130e1233c 1-9
+daft-multimodal-dataframe/scripts/test-all.sh
+  s_dde22dd2cd9c7d::t_fe88b32451e6d5 1-23,25-27
+  s_dde22dd2cd9c7d::t_3479e532418014 24
+daft-multimodal-dataframe/.gitignore
+  s_dde22dd2cd9c7d::t_6e69950f4edbb3 1-5
+daft-multimodal-dataframe/app/index.html
+  s_dde22dd2cd9c7d::t_d86239d416d917 35-36,71,80,172,234
+  s_dde22dd2cd9c7d::t_f4a8c4dc048dc9 1-34,37-70,72-79,81-171,173-233,235-243
+daft-multimodal-dataframe/app/features.py
+  s_dde22dd2cd9c7d::t_0a542c8a728473 1-50
+daft-multimodal-dataframe/data/promotions.csv
+  s_dde22dd2cd9c7d::t_e045f76ddf24b4 1-4
+daft-multimodal-dataframe/app/queries.py
+  s_dde22dd2cd9c7d::t_3479e532418014 22
+  s_dde22dd2cd9c7d::t_e780e2014fb59e 52
+  s_dde22dd2cd9c7d::t_f2c36fe922debc 4
+  s_dde22dd2cd9c7d::t_f7a405fcfb63ed 1-3,5-21,23-30,47-51,53-106
+  s_dde22dd2cd9c7d::t_380a2aa8587a7a 31-46
+daft-multimodal-dataframe/Containerfile
+  s_dde22dd2cd9c7d::t_0f110efbc7a180 1-13
+daft-multimodal-dataframe/scripts/common.sh
+  s_dde22dd2cd9c7d::t_70f1d16ded5078 1-94
+daft-multimodal-dataframe/scripts/status.sh
+  s_dde22dd2cd9c7d::t_23a80232d3277b 1-13
+daft-multimodal-dataframe/scripts/ui.sh
+  s_dde22dd2cd9c7d::t_809fffe002fee4 1-9
+daft-multimodal-dataframe/scripts/stop-all.sh
+  s_dde22dd2cd9c7d::t_8ce680a0a8c682 1-15
+daft-multimodal-dataframe/app/pipeline.py
+  s_dde22dd2cd9c7d::t_c555b8ff017806 39
+  s_dde22dd2cd9c7d::t_10ecb0976d5bbd 1-38,40-117
+daft-multimodal-dataframe/requirements.txt
+  s_dde22dd2cd9c7d::t_6e69950f4edbb3 1-3
+daft-multimodal-dataframe/printscreens/architecture.svg
+  s_dde22dd2cd9c7d::t_160abde95cc16f 1-53
+daft-multimodal-dataframe/tests/test_catalog.py
+  s_dde22dd2cd9c7d::t_71ee0ef3ec9c4f 1-37,39-107,109-170
+  s_dde22dd2cd9c7d::t_3479e532418014 38,108
+README.md
+  s_dde22dd2cd9c7d::t_79a929b19844cc 38
+daft-multimodal-dataframe/scripts/setup.sh
+  s_dde22dd2cd9c7d::t_fd2d200d2c4818 1-15
+daft-multimodal-dataframe/data/products.csv
+  s_dde22dd2cd9c7d::t_631c02f3c4d588 2-45
+  s_dde22dd2cd9c7d::t_c555b8ff017806 1
+daft-multimodal-dataframe/podman-compose.yml
+  s_dde22dd2cd9c7d::t_7e0b1c4f2620cb 1-39,41-54
+  s_dde22dd2cd9c7d::t_3479e532418014 40
+daft-multimodal-dataframe/app/embed.py
+  s_dde22dd2cd9c7d::t_559cd692c50e63 1-26
+daft-multimodal-dataframe/.containerignore
+  s_dde22dd2cd9c7d::t_6e69950f4edbb3 1-8
+daft-multimodal-dataframe/app/server.py
+  s_dde22dd2cd9c7d::t_50a510923256c7 1-54
+daft-multimodal-dataframe/app/generate_images.py
+  s_dde22dd2cd9c7d::t_c555b8ff017806 73
+  s_dde22dd2cd9c7d::t_75be819f8bfa8a 1-72,74-80
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "a50026131f1f2271be7a8d58cab8e18785e4512f",
+  "prompts": {},
+  "sessions": {
+    "s_dde22dd2cd9c7d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2d754554-d602-4dbd-8996-a2c4d4376a54",
+        "model": "unknown"
+      },
+      "human_author": "diegopacheco <diego.pacheco.it@gmail.com>"
+    }
+  }
+}
