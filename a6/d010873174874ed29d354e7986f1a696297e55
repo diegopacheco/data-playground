@@ -1,0 +1,68 @@
+beam-java-pipeline/scripts/start-all.sh
+  s_14c0915619db27::t_a896b52dbd42dc 1-27
+beam-java-pipeline/scripts/ports.env
+  s_14c0915619db27::t_d84468b18fedde 1-2
+beam-java-pipeline/src/test/java/beam/RevenueByCategoryTest.java
+  s_14c0915619db27::t_08d94571e65d13 1-2,4-17,19-53
+  s_14c0915619db27::t_aa5c32b985ca16 3,18
+beam-java-pipeline/src/main/java/beam/RevenuePipeline.java
+  s_14c0915619db27::t_b140feec7e8467 1-41
+beam-java-pipeline/src/main/java/beam/Totals.java
+  s_14c0915619db27::t_d75772eb1db1e6 1-24
+beam-java-pipeline/podman-compose.yml
+  s_14c0915619db27::t_41753465f26d62 1-60
+beam-java-pipeline/src/main/java/beam/Env.java
+  s_14c0915619db27::t_84a6bb9f128703 1-24
+beam-java-pipeline/printscreens/architecture.svg
+  s_14c0915619db27::t_ac2d5bf7a1549d 1-39
+beam-java-pipeline/scripts/common.sh
+  s_14c0915619db27::t_c4ba6aa4f2bde7 1-116
+beam-java-pipeline/.gitignore
+  s_14c0915619db27::t_85e053d71a94f2 1-2
+beam-java-pipeline/scripts/stop-all.sh
+  s_14c0915619db27::t_715fcfec8c7fd1 1-15
+beam-java-pipeline/scripts/test-all.sh
+  s_14c0915619db27::t_a67350c401db82 1-32
+beam-java-pipeline/scripts/status.sh
+  s_14c0915619db27::t_33cfcf9c78e3d4 1-18
+beam-java-pipeline/scripts/sql-console.sh
+  s_14c0915619db27::t_3548c5e95726ac 1-11
+beam-java-pipeline/scripts/setup.sh
+  s_14c0915619db27::t_05d48cd9ddaea2 1-16
+beam-java-pipeline/postgres/schema.sql
+  s_14c0915619db27::t_85796281b0c89c 1-6
+beam-java-pipeline/pom.xml
+  s_14c0915619db27::t_69b9d679156830 1-71
+beam-java-pipeline/README.md
+  s_14c0915619db27::t_0a7744f618dd7d 1-159
+beam-java-pipeline/src/main/java/beam/UiServer.java
+  s_14c0915619db27::t_adedf6c6c9bd48 1-70
+beam-java-pipeline/scripts/pipeline.sh
+  s_14c0915619db27::t_0afd7263f21649 1-10
+beam-java-pipeline/scripts/ui.sh
+  s_14c0915619db27::t_f9827d1cb7cbaa 1-7
+beam-java-pipeline/data/orders.csv
+  s_14c0915619db27::t_5b283a72d3a8d6 1-201
+beam-java-pipeline/src/main/java/beam/RevenueByCategory.java
+  s_14c0915619db27::t_7516182cb8e16a 1-62
+beam-java-pipeline/Containerfile
+  s_14c0915619db27::t_6ad8bf5d919c69 1-14
+beam-java-pipeline/src/main/resources/index.html
+  s_14c0915619db27::t_1aad4dc473f701 1-87
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "a6d010873174874ed29d354e7986f1a696297e55",
+  "prompts": {},
+  "sessions": {
+    "s_14c0915619db27": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "78bc23ff-c306-44c2-90f2-85a722724642",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "diegopacheco <diego.pacheco.it@gmail.com>"
+    }
+  }
+}
