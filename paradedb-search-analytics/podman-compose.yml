@@ -1,0 +1,47 @@
+name: q5-paradedb
+
+services:
+  q5-paradedb:
+    image: docker.io/paradedb/paradedb:0.25.10-pg18
+    container_name: q5-paradedb
+    environment:
+      POSTGRES_DB: shop
+      POSTGRES_USER: shop
+      POSTGRES_PASSWORD: shop
+    command: ["postgres", "-c", "shared_buffers=128MB", "-c", "max_connections=30"]
+    shm_size: 256m
+    mem_limit: 768m
+    ports:
+      - "${postgres:-26400}:5432"
+    volumes:
+      - q5-pgdata:/var/lib/postgresql
+      - ./data:/data:ro
+      - ./sql:/sql:ro
+    networks:
+      - q5-net
+
+  q5-ui:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: q5-paradedb-ui:latest
+    container_name: q5-ui
+    environment:
+      PGHOST: q5-paradedb
+      PGPORT: "5432"
+      UI_PORT: "${ui:-26401}"
+    mem_limit: 128m
+    ports:
+      - "${ui:-26401}:${ui:-26401}"
+    networks:
+      - q5-net
+    depends_on:
+      - q5-paradedb
+
+networks:
+  q5-net:
+    name: q5-net
+
+volumes:
+  q5-pgdata:
+    name: q5-pgdata

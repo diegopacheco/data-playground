@@ -1,0 +1,36 @@
+id,name,category,price,description
+1,Clean Code,books,37.50,Robert C. Martin handbook of agile software craftsmanship with rules for readable functions and meaningful names and refactoring legacy code
+2,Designing Data-Intensive Applications,books,45.99,Martin Kleppmann guide to reliable scalable and maintainable systems covering replication partitioning transactions stream processing and distributed databases
+3,Dune,books,12.99,Frank Herbert science fiction epic about the desert planet Arrakis and the spice melange with sandworms politics and prophecy
+4,Sapiens,books,18.75,Yuval Noah Harari brief history of humankind from hunter gatherers through the agricultural revolution to modern capitalism
+5,The Hobbit,books,10.49,J.R.R. Tolkien fantasy adventure of Bilbo Baggins with dwarves a wizard a dragon and a journey to the Lonely Mountain
+6,The Pragmatic Programmer,books,42.00,David Thomas and Andrew Hunt classic on software engineering careers with tips on automation testing and orthogonal design
+7,Baseball Cap,clothing,19.95,Adjustable cotton twill cap with a curved brim that keeps the sun out of your eyes during summer games
+8,Cotton T-Shirt,clothing,14.99,Soft organic cotton crew neck tee with a relaxed fit that stays breathable on warm days
+9,Denim Jacket,clothing,69.00,Classic blue denim jacket with button front and chest pockets that layers over a sweater in autumn
+10,Rain Coat,clothing,99.00,Waterproof breathable rain jacket with sealed seams and a packable hood for storms and hiking trails
+11,Running Shoes,clothing,89.99,Lightweight running shoes with breathable mesh upper and cushioned foam sole for road marathon training
+12,Wool Sweater,clothing,54.50,Warm merino wool knit sweater with ribbed cuffs for cold winter evenings
+13,4K Monitor,electronics,329.00,27 inch ultra high definition 4K display with IPS panel HDR and USB-C for photo editing and coding
+14,Bluetooth Speaker,electronics,49.90,Portable wireless bluetooth speaker with waterproof shell and twelve hour battery for outdoor music
+15,Gaming Mouse,electronics,39.95,Wired ergonomic gaming mouse with optical sensor programmable buttons and RGB lighting for esports
+16,Mechanical Keyboard,electronics,109.99,Tenkeyless mechanical keyboard with hot swappable tactile switches and backlit keycaps for typing and coding
+17,Wireless Headphones,electronics,79.99,Over ear wireless bluetooth headphones with active noise cancelling and thirty hour battery for travel and music
+18,Air Purifier,home,149.00,HEPA air purifier that removes dust pollen smoke and pet allergens from bedrooms and living rooms quietly
+19,Cast Iron Skillet,home,34.95,Pre seasoned cast iron skillet for searing steak and baking cornbread on the stove or in the oven
+20,Coffee Maker,home,59.99,Programmable drip coffee maker that brews twelve cups into a thermal carafe with a reusable filter
+21,Desk Lamp,home,29.90,Dimmable LED desk lamp with adjustable arm and warm light for reading and late night work
+22,Scented Candle,home,11.99,Hand poured soy wax candle with lavender and vanilla scent that burns for forty hours
+23,Throw Blanket,home,27.50,Chunky knit throw blanket in soft fleece to keep warm on the sofa during winter movie nights
+24,Cycling Helmet,sports,64.00,Lightweight road cycling helmet with ventilation channels and MIPS protection for bike commuting
+25,Dumbbell Set,sports,119.99,Adjustable dumbbell set with steel plates and secure collars for strength training at home
+26,Soccer Ball,sports,22.99,Size five match soccer ball with stitched panels for training on grass or turf
+27,Tennis Racket,sports,89.50,Graphite tennis racket with a large head and balanced weight for control and spin on the court
+28,Water Bottle,sports,15.49,Insulated stainless steel water bottle that keeps drinks cold for a full day of hiking or gym
+29,Yoga Mat,sports,25.00,Non slip yoga mat with extra thick cushioning for stretching pilates and meditation
+30,Board Game,toys,34.99,Strategy board game for two to five players about trading and building settlements on an island
+31,Building Blocks Set,toys,49.99,Five hundred interlocking plastic building blocks to build castles cars and spaceships for creative kids
+32,Model Train,toys,89.00,Electric model train set with steam locomotive wagons oval track and a controller for collectors
+33,Plush Bear,toys,21.00,Soft plush teddy bear with embroidered eyes that is safe for toddlers and bedtime cuddles
+34,Puzzle 1000 Pieces,toys,17.99,Jigsaw puzzle of one thousand pieces with a mountain lake landscape for family evenings
+35,Remote Control Car,toys,39.50,Fast off road remote control car with rechargeable battery and four wheel drive for dirt and gravel

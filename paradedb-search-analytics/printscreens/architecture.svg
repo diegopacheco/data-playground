@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="380" viewBox="0 0 1100 380">
+  <defs>
+    <style>@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&amp;display=swap'); text { font-family: 'Caveat', 'Comic Sans MS', cursive; fill: #1f2933; }</style>
+    <filter id="wobble"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="3"/></filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1f2933"/></marker>
+  </defs>
+  <rect width="1100" height="380" fill="#ffffff"/>
+  <g filter="url(#wobble)" stroke="#1f2933" stroke-width="2">
+    <rect x="20" y="80" width="160" height="70" rx="10" fill="#fff3bf"/>
+    <rect x="20" y="190" width="160" height="70" rx="10" fill="#fff3bf"/>
+    <rect x="230" y="130" width="160" height="80" rx="10" fill="#d0ebff"/>
+    <rect x="440" y="70" width="290" height="200" rx="12" fill="#d3f9d8"/>
+    <rect x="460" y="120" width="250" height="60" rx="8" fill="#ffffff"/>
+    <rect x="460" y="195" width="250" height="60" rx="8" fill="#ffffff"/>
+    <rect x="780" y="130" width="150" height="80" rx="10" fill="#ffd8a8"/>
+    <rect x="970" y="130" width="110" height="80" rx="10" fill="#e5dbff"/>
+    <rect x="510" y="300" width="150" height="55" rx="10" fill="#fcc2d7"/>
+    <line x1="180" y1="115" x2="228" y2="155" marker-end="url(#arrow)"/>
+    <line x1="180" y1="225" x2="228" y2="185" marker-end="url(#arrow)"/>
+    <line x1="390" y1="170" x2="438" y2="170" marker-end="url(#arrow)"/>
+    <line x1="778" y1="160" x2="732" y2="160" marker-end="url(#arrow)"/>
+    <line x1="732" y1="185" x2="778" y2="185" marker-end="url(#arrow)"/>
+    <line x1="968" y1="170" x2="932" y2="170" marker-end="url(#arrow)"/>
+    <line x1="585" y1="298" x2="585" y2="272" marker-end="url(#arrow)"/>
+  </g>
+  <text x="550" y="40" font-size="30" font-weight="700" text-anchor="middle">paradedb-search-analytics</text>
+  <text x="100" y="112" font-size="22" text-anchor="middle">products.csv</text>
+  <text x="100" y="136" font-size="17" text-anchor="middle">35 names + descriptions</text>
+  <text x="100" y="222" font-size="22" text-anchor="middle">orders.csv</text>
+  <text x="100" y="246" font-size="17" text-anchor="middle">200 orders</text>
+  <text x="310" y="163" font-size="22" text-anchor="middle">sql/load.sql</text>
+  <text x="310" y="190" font-size="17" text-anchor="middle">COPY + CREATE INDEX</text>
+  <text x="585" y="100" font-size="22" text-anchor="middle">ParadeDB (Postgres 18 + pg_search)</text>
+  <text x="585" y="146" font-size="19" text-anchor="middle">products_search: BM25 text</text>
+  <text x="585" y="169" font-size="16" text-anchor="middle">score, snippet, fuzzy, facets</text>
+  <text x="585" y="221" font-size="19" text-anchor="middle">orders_search: columnar</text>
+  <text x="585" y="244" font-size="16" text-anchor="middle">GROUP BY on DataFusion</text>
+  <text x="855" y="160" font-size="22" text-anchor="middle">server.py</text>
+  <text x="855" y="182" font-size="16" text-anchor="middle">/api/search</text>
+  <text x="855" y="201" font-size="16" text-anchor="middle">/api/analytics</text>
+  <text x="1025" y="165" font-size="22" text-anchor="middle">index.html</text>
+  <text x="1025" y="190" font-size="17" text-anchor="middle">browser</text>
+  <text x="585" y="333" font-size="20" text-anchor="middle">psql console</text>
+</svg>
