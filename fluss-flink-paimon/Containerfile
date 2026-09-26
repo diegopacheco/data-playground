@@ -1,0 +1,7 @@
+FROM docker.io/library/eclipse-temurin:25.0.4_7-jre
+WORKDIR /app
+COPY target/lib lib
+COPY target/classes classes
+COPY data data
+ENV JAVA_OPTS="-Xmx640m -XX:MaxDirectMemorySize=192m -XX:MaxMetaspaceSize=256m -XX:+UseSerialGC -Dorg.slf4j.simpleLogger.defaultLogLevel=warn"
+CMD ["sh", "-c", "exec java $JAVA_OPTS --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.time=ALL-UNNAMED --add-opens=java.base/java.math=ALL-UNNAMED --add-opens=java.base/java.util.concurrent=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens=java.base/jdk.internal.misc=ALL-UNNAMED --enable-native-access=ALL-UNNAMED -Dio.netty.tryReflectionSetAccessible=true -cp 'classes:lib/*' com.github.diegopacheco.flussflink.App"]

@@ -1,0 +1,8 @@
+.run
+printscreens
+scripts
+tests
+src
+target/*
+!target/lib
+!target/classes

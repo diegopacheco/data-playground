@@ -1,0 +1,13 @@
+order_id,customer,product,category,quantity,price,ts
+1001,Emma Brown,Building Blocks Set,toys,3,42.87,2026-02-01T09:00:00Z
+1002,Sofia Rossi,Building Blocks Set,toys,1,82.98,2026-02-01T09:05:00Z
+1003,Thomas Clark,Coffee Maker,home,2,55.00,2026-02-01T09:10:00Z
+1004,Noah Wilson,4K Monitor,electronics,2,399.99,2026-02-01T09:15:00Z
+1005,Felipe Costa,Sapiens,books,5,23.08,2026-02-01T09:20:00Z
+1006,David Kim,Yoga Mat,sports,1,12.32,2026-02-01T09:25:00Z
+1007,Isabela Rocha,Mechanical Keyboard,electronics,4,143.21,2026-02-01T09:30:00Z
+1009,Sofia Rossi,Tennis Racket,sports,1,145.59,2026-02-01T09:35:00Z
+1010,Carla Mendes,Cotton T-Shirt,clothing,1,36.10,2026-02-01T09:40:00Z
+1012,Carla Mendes,Cotton T-Shirt,clothing,6,13.99,2026-02-01T09:45:00Z
+1201,Emma Brown,Smartwatch,electronics,1,147.71,2026-02-01T09:50:00Z
+1202,Noah Wilson,Plush Bear,toys,2,12.32,2026-02-01T09:55:00Z

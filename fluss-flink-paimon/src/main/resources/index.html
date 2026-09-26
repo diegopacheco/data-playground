@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fluss Streaming Lakehouse</title>
+<style>
+  :root { --bg: #f6f7f9; --card: #ffffff; --ink: #1f2933; --muted: #616e7c; --line: #e4e7eb; --fluss: #2f80ed; --lake: #27ae60; --union: #9b51e0; --warn: #f2994a; --bad: #eb5757; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--ink); }
+  header { background: var(--card); border-bottom: 1px solid var(--line); padding: 14px 24px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+  header h1 { font-size: 20px; margin: 0 16px 0 0; }
+  .pill { font-size: 12px; padding: 4px 10px; border-radius: 999px; background: #eef2f7; color: var(--muted); }
+  .pill.on { background: #e3f6ea; color: #1e7b45; }
+  .pill.off { background: #fdeee2; color: #a4520e; }
+  .actions { margin-left: auto; display: flex; flex-wrap: wrap; gap: 8px; }
+  button { font: inherit; font-size: 13px; padding: 7px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); cursor: pointer; }
+  button.primary { background: var(--fluss); color: #fff; border-color: var(--fluss); }
+  button:disabled { opacity: .5; cursor: wait; }
+  a { color: var(--fluss); }
+  nav { display: flex; gap: 4px; padding: 0 24px; background: var(--card); border-bottom: 1px solid var(--line); }
+  nav button { border: 0; border-bottom: 3px solid transparent; border-radius: 0; padding: 12px 16px; background: none; font-size: 14px; }
+  nav button.active { border-bottom-color: var(--fluss); font-weight: 600; }
+  main { padding: 20px 24px; max-width: 1280px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+  .card h2 { font-size: 15px; margin: 0 0 4px; }
+  .card p.sub { margin: 0 0 12px; font-size: 12px; color: var(--muted); }
+  .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 12px; }
+  .tile { background: var(--bg); border-radius: 8px; padding: 10px; }
+  .tile b { display: block; font-size: 20px; }
+  .tile span { font-size: 11px; color: var(--muted); text-transform: uppercase; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+  th { font-size: 11px; text-transform: uppercase; color: var(--muted); }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .up { color: #1e7b45; } .down { color: var(--bad); }
+  .row { display: flex; gap: 8px; margin-bottom: 12px; }
+  input { font: inherit; padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px; width: 140px; }
+  .rec { font-size: 13px; line-height: 1.7; }
+  .rec .k { color: var(--muted); display: inline-block; width: 80px; }
+  .changed { background: #fff4e5; }
+  .ms { font-size: 12px; color: var(--muted); }
+  .fluss { border-top: 4px solid var(--fluss); } .lake { border-top: 4px solid var(--lake); } .union { border-top: 4px solid var(--union); }
+  #log { font-size: 12px; color: var(--muted); padding: 0 24px 8px; min-height: 18px; }
+  .err { color: var(--bad); }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Fluss + Flink + Paimon</h1>
+  <span class="pill" id="table">fluss.orders</span>
+  <span class="pill" id="tiering">tiering</span>
+  <span class="pill" id="snapshot">lake snapshot</span>
+  <span class="pill" id="freshness">freshness</span>
+  <div class="actions">
+    <button class="primary" data-ingest="orders.csv">Stream orders.csv</button>
+    <button class="primary" data-ingest="orders-updates.csv">Stream orders-updates.csv</button>
+    <button id="toggle">Pause tiering</button>
+    <button id="reset">Reset</button>
+    <a id="flink" href="#" target="_blank" class="pill">Flink web UI</a>
+  </div>
+</header>
+<nav>
+  <button data-tab="fluss" class="active">Fluss real-time</button>
+  <button data-tab="lake">Paimon lake</button>
+  <button data-tab="union">Union read</button>
+</nav>
+<div id="log"></div>
+<main>
+  <section id="tab-fluss">
+    <div class="grid">
+      <div class="card fluss">
+        <h2>Point lookup by primary key</h2>
+        <p class="sub">Fluss Java client <code>Lookuper</code> against the tablet server RocksDB KV, next to the same key read from the Paimon lake with Flink SQL.</p>
+        <div class="row"><input id="lookupId" value="1006" inputmode="numeric"><button class="primary" id="lookupBtn">Lookup</button></div>
+        <div class="grid" id="lookupOut"></div>
+      </div>
+      <div class="card fluss">
+        <h2>Latest state in Fluss</h2>
+        <p class="sub">Full KV scan with the Fluss <code>BatchScanner</code>: every upsert is visible as soon as it is acknowledged.</p>
+        <div class="tiles" id="flussTiles"></div>
+        <table id="flussTable"></table>
+      </div>
+    </div>
+  </section>
+  <section id="tab-lake" class="hidden">
+    <div class="grid">
+      <div class="card lake">
+        <h2>Paimon table <code>orders$lake</code></h2>
+        <p class="sub">Only what the tiering service committed to Paimon, read with Flink SQL batch.</p>
+        <div class="tiles" id="lakeTiles"></div>
+        <table id="lakeTable"></table>
+      </div>
+      <div class="card lake">
+        <h2>Paimon snapshots <code>orders$lake$snapshots</code></h2>
+        <p class="sub">One snapshot per tiering round, the Fluss log offset it covers is in the header pill.</p>
+        <table id="snapTable"></table>
+      </div>
+    </div>
+  </section>
+  <section id="tab-union" class="hidden">
+    <div class="grid">
+      <div class="card union">
+        <h2>Union read <code>SELECT * FROM orders</code></h2>
+        <p class="sub">Flink reads the Paimon snapshot and merges the Fluss changes after its tiered offset, deduplicated by primary key.</p>
+        <div class="tiles" id="unionTiles"></div>
+        <table id="unionTable"></table>
+      </div>
+      <div class="card union">
+        <h2>Rows only fresh in Fluss</h2>
+        <p class="sub">Orders whose union value differs from the lake: not tiered yet.</p>
+        <table id="freshTable"></table>
+      </div>
+    </div>
+  </section>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const money = v => Number(v).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+let current = 'fluss';
+let tieringOn = true;
+
+async function api(path, method) {
+  const res = await fetch(path, { method: method || 'GET' });
+  const body = await res.json();
+  if (!res.ok) throw new Error(body.error || res.status);
+  return body;
+}
+
+function log(text, bad) {
+  $('log').textContent = text;
+  $('log').className = bad ? 'err' : '';
+}
+
+function tiles(el, totals, ms) {
+  $(el).innerHTML = `<div class="tile"><b>${totals.orders}</b><span>orders</span></div>`
+    + `<div class="tile"><b>${totals.units}</b><span>units</span></div>`
+    + `<div class="tile"><b>${money(totals.revenue)}</b><span>revenue</span></div>`
+    + `<div class="ms" style="grid-column: span 3">read in ${ms} ms</div>`;
+}
+
+function categoryTable(el, rows, compare) {
+  const base = {};
+  (compare || []).forEach(c => base[c.category] = c);
+  let html = '<tr><th>category</th><th class="num">orders</th><th class="num">units</th><th class="num">revenue</th>' + (compare ? '<th class="num">vs lake</th>' : '') + '</tr>';
+  rows.forEach(r => {
+    let delta = '';
+    if (compare) {
+      const d = r.revenue - (base[r.category] ? base[r.category].revenue : 0);
+      delta = `<td class="num ${d > 0 ? 'up' : d < 0 ? 'down' : ''}">${d === 0 ? '=' : (d > 0 ? '+' : '') + money(d)}</td>`;
+    }
+    html += `<tr><td>${r.category}</td><td class="num">${r.orders}</td><td class="num">${r.units}</td><td class="num">${money(r.revenue)}</td>${delta}</tr>`;
+  });
+  $(el).innerHTML = rows.length ? html : '<tr><td>empty</td></tr>';
+}
+
+function record(title, cls, o, other, ms) {
+  if (!o) return `<div class="card ${cls}"><h2>${title}</h2><p class="sub">not found</p><div class="ms">${ms} ms</div></div>`;
+  const keys = ['customer', 'product', 'category', 'quantity', 'price', 'ts'];
+  const lines = keys.map(k => `<div class="${other && String(other[k]) !== String(o[k]) ? 'changed' : ''}"><span class="k">${k}</span>${o[k]}</div>`).join('');
+  return `<div class="card ${cls}"><h2>${title}</h2><div class="rec"><div><span class="k">order_id</span>${o.order_id}</div>${lines}</div><div class="ms">${ms} ms</div></div>`;
+}
+
+async function status() {
+  const s = await api('/api/status');
+  tieringOn = s.tiering.running;
+  $('table').textContent = s.table;
+  $('tiering').textContent = 'tiering ' + (s.tiering.running ? 'RUNNING' : 'PAUSED');
+  $('tiering').className = 'pill ' + (s.tiering.running ? 'on' : 'off');
+  $('snapshot').textContent = s.lakeSnapshot ? `lake snapshot #${s.lakeSnapshot.id}, tiered offset ${s.lakeSnapshot.offsets.map(o => o.offset).join(',')}` : 'no lake snapshot yet';
+  $('freshness').textContent = 'freshness ' + s.freshness;
+  $('toggle').textContent = s.tiering.running ? 'Pause tiering' : 'Resume tiering';
+  $('flink').href = s.flinkUi;
+}
+
+async function lookup() {
+  const r = await api('/api/lookup?id=' + encodeURIComponent($('lookupId').value));
+  $('lookupOut').innerHTML = record('Fluss KV (real-time)', 'fluss', r.fluss, r.lake, r.fluss_ms) + record('Paimon lake', 'lake', r.lake, r.fluss, r.lake_ms);
+}
+
+async function flussTab() {
+  const f = await api('/api/fluss');
+  tiles('flussTiles', f.totals, f.ms);
+  categoryTable('flussTable', f.categories);
+  await lookup();
+}
+
+async function lakeTab() {
+  const l = await api('/api/lake');
+  tiles('lakeTiles', l.totals, l.ms);
+  categoryTable('lakeTable', l.categories);
+  $('snapTable').innerHTML = '<tr><th>id</th><th>kind</th><th>commit time</th><th class="num">total rows</th><th class="num">delta</th></tr>'
+    + l.snapshots.map(s => `<tr><td>${s.id}</td><td>${s.kind}</td><td>${s.time}</td><td class="num">${s.total}</td><td class="num">${s.delta}</td></tr>`).join('');
+}
+
+async function unionTab() {
+  const u = await api('/api/union');
+  tiles('unionTiles', u.totals, u.ms);
+  categoryTable('unionTable', u.categories, u.lake.categories);
+  $('freshTable').innerHTML = u.fresh.length
+    ? '<tr><th>order</th><th>union (Fluss)</th><th>lake (Paimon)</th></tr>' + u.fresh.map(f => `<tr><td>${f.order.order_id}</td><td>${f.order.category}, ${f.order.quantity} x ${f.order.price}</td><td>${f.lake ? `${f.lake.category}, ${f.lake.quantity} x ${f.lake.price}` : 'not in lake'}</td></tr>`).join('')
+    : '<tr><td>none, the lake is caught up with Fluss</td></tr>';
+}
+
+const tabs = { fluss: flussTab, lake: lakeTab, union: unionTab };
+
+async function refresh() {
+  try {
+    await status();
+    await tabs[current]();
+  } catch (e) {
+    log(e.message, true);
+  }
+}
+
+async function action(btn, fn) {
+  document.querySelectorAll('button').forEach(b => b.disabled = true);
+  try {
+    const msg = await fn();
+    log(msg);
+    await refresh();
+  } catch (e) {
+    log(e.message, true);
+  } finally {
+    document.querySelectorAll('button').forEach(b => b.disabled = false);
+  }
+}
+
+document.querySelectorAll('[data-ingest]').forEach(b => b.onclick = () => action(b, async () => {
+  const r = await api('/api/ingest?file=' + b.dataset.ingest, 'POST');
+  return `upserted ${r.rows} rows from ${r.file} into Fluss in ${r.ms} ms`;
+}));
+$('toggle').onclick = () => action($('toggle'), async () => {
+  await api(tieringOn ? '/api/tiering/pause' : '/api/tiering/resume', 'POST');
+  return tieringOn ? 'tiering job cancelled' : 'tiering job started';
+});
+$('reset').onclick = () => action($('reset'), async () => {
+  await api('/api/reset', 'POST');
+  return 'Fluss table and Paimon table dropped and recreated';
+});
+$('lookupBtn').onclick = () => lookup().catch(e => log(e.message, true));
+document.querySelectorAll('nav button').forEach(b => b.onclick = () => {
+  current = b.dataset.tab;
+  document.querySelectorAll('nav button').forEach(x => x.classList.toggle('active', x === b));
+  Object.keys(tabs).forEach(t => $('tab-' + t).classList.toggle('hidden', t !== current));
+  const hash = '#' + current;
+  if (location.hash !== hash) history.replaceState(null, '', hash);
+  refresh();
+});
+const start = location.hash.slice(1);
+if (tabs[start]) document.querySelector(`nav button[data-tab="${start}"]`).click(); else refresh();
+</script>
+</body>
+</html>

@@ -13,6 +13,7 @@ They add ACID, schema evolution and time travel.
 * [delta-rs-python](delta-rs-python/) - Delta Lake from pure Python with delta-rs, no Spark, no JVM
 * [hudi-spark-cow-mor](hudi-spark-cow-mor/) - Hudi Copy-On-Write vs Merge-On-Read benchmark
 * [paimon-flink-lakehouse](paimon-flink-lakehouse/) - Streaming lakehouse with Paimon 2.0 + Flink 2.2 from Kafka
+* [fluss-flink-paimon](fluss-flink-paimon/) - Apache Fluss 1.0 streaming storage tiered into Paimon, with union read
 * [ducklake-duckdb](ducklake-duckdb/) - DuckLake: a table format with a SQL database as catalog
 * [xtable-iceberg-delta-hudi](xtable-iceberg-delta-hudi/) - Write once as Hudi, read as Delta and Iceberg with XTable
 * [medallion-bronze-silver-gold](medallion-bronze-silver-gold/) - Bronze, silver and gold layers on Iceberg with Spark

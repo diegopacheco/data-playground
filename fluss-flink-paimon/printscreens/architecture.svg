@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="480" viewBox="0 0 1200 480">
+  <defs>
+    <style>@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&amp;display=swap'); text { font-family: 'Caveat', 'Comic Sans MS', cursive; fill: #1f2933; }</style>
+    <filter id="wobble"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="3"/></filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1f2933"/></marker>
+  </defs>
+  <rect width="1200" height="480" fill="#ffffff"/>
+  <g filter="url(#wobble)" stroke="#1f2933" stroke-width="2">
+    <rect x="20" y="150" width="150" height="90" rx="10" fill="#fff3bf"/>
+    <rect x="210" y="150" width="180" height="90" rx="10" fill="#d0ebff"/>
+    <rect x="430" y="115" width="230" height="160" rx="10" fill="#fcc2d7"/>
+    <rect x="700" y="150" width="200" height="90" rx="10" fill="#d3f9d8"/>
+    <rect x="940" y="135" width="230" height="120" rx="10" fill="#e5dbff"/>
+    <rect x="440" y="305" width="140" height="50" rx="10" fill="#f1f3f5"/>
+    <rect x="660" y="385" width="320" height="75" rx="10" fill="#ffd8a8"/>
+    <rect x="20" y="390" width="210" height="60" rx="10" fill="#f1f3f5"/>
+    <line x1="170" y1="195" x2="208" y2="195" marker-end="url(#arrow)"/>
+    <line x1="390" y1="195" x2="428" y2="195" marker-end="url(#arrow)"/>
+    <line x1="660" y1="195" x2="698" y2="195" marker-end="url(#arrow)"/>
+    <line x1="900" y1="195" x2="938" y2="195" marker-end="url(#arrow)"/>
+    <line x1="510" y1="305" x2="510" y2="277" marker-end="url(#arrow)"/>
+    <line x1="700" y1="385" x2="625" y2="278" marker-end="url(#arrow)"/>
+    <line x1="940" y1="385" x2="1030" y2="258" marker-end="url(#arrow)"/>
+    <line x1="230" y1="420" x2="658" y2="420" marker-end="url(#arrow)"/>
+  </g>
+  <text x="600" y="45" font-size="32" font-weight="700" text-anchor="middle">fluss-flink-paimon</text>
+  <text x="600" y="75" font-size="20" text-anchor="middle">Fluss 1.0 streaming storage, Flink 2.2 tiering and union read, Paimon 2.0 lake</text>
+  <text x="95" y="188" font-size="24" text-anchor="middle">orders.csv</text>
+  <text x="95" y="213" font-size="17" text-anchor="middle">200 rows + 12 updates</text>
+  <text x="300" y="183" font-size="23" text-anchor="middle">App (Java 25)</text>
+  <text x="300" y="207" font-size="17" text-anchor="middle">Fluss UpsertWriter</text>
+  <text x="300" y="228" font-size="17" text-anchor="middle">POST /api/ingest</text>
+  <text x="545" y="148" font-size="24" text-anchor="middle">Fluss 1.0 cluster</text>
+  <text x="545" y="175" font-size="17" text-anchor="middle">PK table fluss.orders</text>
+  <text x="545" y="198" font-size="17" text-anchor="middle">tablet: RocksDB KV + changelog</text>
+  <text x="545" y="221" font-size="17" text-anchor="middle">coordinator: tiering schedule</text>
+  <text x="545" y="244" font-size="17" text-anchor="middle">datalake.enabled, freshness 5s</text>
+  <text x="800" y="183" font-size="23" text-anchor="middle">Flink 2.2.1 job</text>
+  <text x="800" y="207" font-size="17" text-anchor="middle">Lake Tiering Service</text>
+  <text x="800" y="228" font-size="17" text-anchor="middle">pause / resume = cancel / start</text>
+  <text x="1055" y="165" font-size="24" text-anchor="middle">Paimon 2.0 lake</text>
+  <text x="1055" y="190" font-size="17" text-anchor="middle">table fluss.orders</text>
+  <text x="1055" y="211" font-size="17" text-anchor="middle">volume r1-lake</text>
+  <text x="1055" y="232" font-size="17" text-anchor="middle">one snapshot per round</text>
+  <text x="510" y="336" font-size="20" text-anchor="middle">ZooKeeper 3.9</text>
+  <text x="820" y="413" font-size="22" text-anchor="middle">UI + REST (JDK HttpServer)</text>
+  <text x="820" y="440" font-size="17" text-anchor="middle">lookup, KV scan, orders$lake, union read</text>
+  <text x="125" y="426" font-size="21" text-anchor="middle">test_lakehouse.py</text>
+  <text x="672" y="322" font-size="16" text-anchor="start">Lookuper + BatchScanner</text>
+  <text x="1000" y="330" font-size="16" text-anchor="start">Flink SQL batch</text>
+</svg>

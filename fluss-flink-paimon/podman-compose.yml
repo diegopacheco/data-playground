@@ -1,0 +1,108 @@
+name: r1-fluss-flink-paimon
+
+services:
+  r1-zookeeper:
+    image: docker.io/library/zookeeper:3.9.5
+    container_name: r1-zookeeper
+    restart: unless-stopped
+    environment:
+      JVMFLAGS: "-Xmx128m"
+      ZOO_ADMINSERVER_ENABLED: "false"
+    mem_limit: 256m
+    volumes:
+      - r1-zk-data:/data
+      - r1-zk-datalog:/datalog
+    networks:
+      - r1-net
+
+  r1-fluss-coordinator:
+    image: docker.io/apache/fluss:1.0.0
+    container_name: r1-fluss-coordinator
+    command: coordinatorServer
+    restart: unless-stopped
+    environment:
+      FLUSS_PROPERTIES: |
+        zookeeper.address: r1-zookeeper:2181
+        bind.listeners: FLUSS://r1-fluss-coordinator:9123
+        remote.data.dir: /lake/remote
+        datalake.enabled: true
+        datalake.format: paimon
+        datalake.paimon.metastore: filesystem
+        datalake.paimon.warehouse: file:///lake/paimon
+        env.java.opts.all: -Xmx256m
+    mem_limit: 448m
+    volumes:
+      - r1-lake:/lake
+    networks:
+      - r1-net
+    depends_on:
+      - r1-zookeeper
+
+  r1-fluss-tablet:
+    image: docker.io/apache/fluss:1.0.0
+    container_name: r1-fluss-tablet
+    command: tabletServer
+    restart: unless-stopped
+    environment:
+      FLUSS_PROPERTIES: |
+        zookeeper.address: r1-zookeeper:2181
+        bind.listeners: FLUSS://r1-fluss-tablet:9123
+        tablet-server.id: 0
+        data.dir: /fluss/data
+        remote.data.dir: /lake/remote
+        kv.snapshot.interval: 10s
+        kv.rocksdb.writebuffer.size: 8mb
+        server.data-disk.write-limit-ratio: 0.99
+        server.data-disk.write-recover-ratio: 0.98
+        datalake.enabled: true
+        datalake.format: paimon
+        datalake.paimon.metastore: filesystem
+        datalake.paimon.warehouse: file:///lake/paimon
+        env.java.opts.all: -Xmx320m
+    mem_limit: 640m
+    volumes:
+      - r1-fluss-data:/fluss/data
+      - r1-lake:/lake
+    networks:
+      - r1-net
+    depends_on:
+      - r1-fluss-coordinator
+
+  r1-app:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: r1-fluss-flink-paimon:latest
+    container_name: r1-app
+    restart: unless-stopped
+    environment:
+      FLUSS_BOOTSTRAP: r1-fluss-coordinator:9123
+      PAIMON_WAREHOUSE: file:///lake/paimon
+      LAKE_FRESHNESS: 5s
+      UI_PORT: "8080"
+      FLINK_PORT: "8081"
+      FLINK_UI_URL: "http://localhost:${flink:-26601}"
+    mem_limit: 1600m
+    ports:
+      - "${ui:-26600}:8080"
+      - "${flink:-26601}:8081"
+    volumes:
+      - r1-lake:/lake
+    networks:
+      - r1-net
+    depends_on:
+      - r1-fluss-tablet
+
+networks:
+  r1-net:
+    name: r1-net
+
+volumes:
+  r1-zk-data:
+    name: r1-zk-data
+  r1-zk-datalog:
+    name: r1-zk-datalog
+  r1-fluss-data:
+    name: r1-fluss-data
+  r1-lake:
+    name: r1-lake
