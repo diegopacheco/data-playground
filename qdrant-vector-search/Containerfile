@@ -1,0 +1,12 @@
+FROM docker.io/library/python:3.14.7-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+ENV FASTEMBED_CACHE_PATH=/models PYTHONUNBUFFERED=1
+COPY app/embed.py app/embed.py
+RUN cd app && python -c "import embed; embed.warm()"
+ENV HF_HUB_OFFLINE=1
+COPY data data
+COPY app app
+WORKDIR /app/app
+CMD ["python", "server.py"]

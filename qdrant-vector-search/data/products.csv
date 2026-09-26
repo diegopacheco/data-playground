@@ -1,0 +1,45 @@
+id,name,category,brand,price,rating,in_stock,description
+1,Wireless Noise Cancelling Headphones,electronics,Sonora,249.00,4.7,true,Over ear headphones with active noise cancellation that silence airplane engines and office chatter with 30 hours of battery life
+2,Mechanical Keyboard,electronics,Keyforge,119.00,4.6,true,Tactile brown switches and a solid aluminum frame for programmers who type all day with hot swappable keys
+3,4K Action Camera,electronics,Vantix,299.00,4.4,true,Waterproof camera that records stabilized 4K video while surfing mountain biking or skiing
+4,Portable Bluetooth Speaker,electronics,Sonora,79.00,4.3,false,Small rugged speaker that floats in the pool and plays music for 12 hours at a beach party
+5,E-Reader with Warm Light,electronics,Pagelight,139.00,4.8,true,Glare free e-ink screen with adjustable warm light to read novels in bed without eye strain
+6,USB-C Charging Hub,electronics,Voltrix,45.00,4.1,true,Seven port hub that charges a laptop phone and tablet from a single wall outlet
+7,Smart Fitness Watch,electronics,Pulsewise,199.00,4.5,true,Tracks heart rate sleep and GPS routes for runners with a two week battery
+8,Insulated Travel Mug,kitchen,Thermocraft,29.00,4.8,true,Vacuum sealed stainless steel mug that keeps coffee hot for 12 hours on a long commute and never leaks in a bag
+9,Chef Knife 8 inch,kitchen,Blade and Grain,89.00,4.9,true,Forged high carbon steel knife that slices tomatoes dices onions and chops herbs with a razor sharp edge
+10,Cast Iron Skillet,kitchen,Hearthstone,39.00,4.7,true,Pre seasoned heavy pan that sears steak and bakes cornbread and lasts for generations
+11,Espresso Machine,kitchen,Baristo,549.00,4.4,false,Fifteen bar pump and a steam wand to pull espresso shots and froth milk for lattes at home
+12,Sourdough Starter Kit,kitchen,Hearthstone,24.00,4.2,true,Dried wild yeast culture with a glass jar and a proofing basket to bake crusty bread loaves
+13,Electric Kettle,kitchen,Thermocraft,49.00,4.5,true,Boils water in three minutes with precise temperature settings for green tea and pour over coffee
+14,Non Stick Frying Pan,kitchen,Hearthstone,34.00,4.0,true,Ceramic coated pan for cooking eggs and pancakes without oil that cleans with a quick rinse
+15,Four Season Tent,outdoor,Nordvik,429.00,4.8,true,Two person geodesic tent that stands up to snow load and high winds on alpine expeditions
+16,Down Sleeping Bag,outdoor,Nordvik,319.00,4.7,true,Goose down mummy bag rated to minus 15 celsius for sleeping outside in freezing mountain nights
+17,Trekking Poles,outdoor,Ridgeline,69.00,4.5,true,Collapsible carbon poles that save the knees on steep descents during long hikes
+18,Water Filter Bottle,outdoor,Clearstream,39.00,4.3,true,Drink safely from rivers and lakes with a hollow fiber filter that removes bacteria and protozoa
+19,Headlamp,outdoor,Ridgeline,35.00,4.6,true,Rechargeable 400 lumen headlamp with a red night mode for camping and early trail starts
+20,Camping Stove,outdoor,Nordvik,59.00,4.4,false,Compact canister stove that boils a liter of water in three minutes at the campsite
+21,Hiking Backpack 45L,outdoor,Ridgeline,179.00,4.6,true,Ventilated frame pack with a rain cover and hip belt pockets for multi day backpacking trips
+22,Dune,books,Chilton Press,18.00,4.8,true,Science fiction novel about a desert planet noble houses giant sandworms and a precious spice
+23,Sapiens,books,Harper Lane,22.00,4.6,true,A brief history of humankind from hunter gatherers to the agricultural and scientific revolutions
+24,The Pragmatic Programmer,books,Addison Row,45.00,4.7,true,Classic software engineering book with practical advice on writing clean maintainable code
+25,Designing Data-Intensive Applications,books,Oriel Media,52.00,4.9,true,Deep guide to databases replication partitioning stream processing and distributed systems trade offs
+26,Salt Fat Acid Heat,books,Simon Page,32.00,4.7,false,Cookbook that teaches the four elements of good cooking with illustrated recipes
+27,The Hobbit,books,Chilton Press,12.00,4.8,true,Fantasy adventure of a hobbit who travels with dwarves to reclaim treasure guarded by a dragon
+28,Atomic Habits,books,Avery House,16.00,4.6,true,Self improvement book on building good habits and breaking bad ones with tiny daily changes
+29,Merino Wool Base Layer,apparel,Nordvik,85.00,4.6,true,Soft merino shirt that keeps you warm when wet and does not smell after days on the trail
+30,Waterproof Rain Jacket,apparel,Stormline,159.00,4.5,true,Breathable three layer shell with sealed seams that keeps you dry in heavy downpours
+31,Running Shoes,apparel,Pulsewise,129.00,4.4,true,Lightweight cushioned road running shoes with a breathable mesh upper for marathon training
+32,Wool Beanie,apparel,Nordvik,25.00,4.3,true,Warm knit hat that covers the ears on cold winter walks
+33,Denim Jacket,apparel,Bluefold,79.00,4.1,false,Classic stonewashed cotton denim jacket with button front for casual everyday style
+34,Linen Shirt,apparel,Bluefold,49.00,4.2,true,Loose breathable linen button down shirt for hot summer days by the sea
+35,Memory Foam Pillow,home,Dreamnest,59.00,4.5,true,Contoured pillow that supports the neck for side sleepers and reduces morning stiffness
+36,Blackout Curtains,home,Dreamnest,42.00,4.3,true,Thermal curtains that block sunlight so night shift workers can sleep during the day
+37,Robot Vacuum,home,Cleanbot,329.00,4.2,true,Self navigating vacuum that maps rooms and picks up pet hair from carpets and hardwood floors
+38,Air Purifier,home,Clearstream,189.00,4.6,true,HEPA filter purifier that removes pollen dust and smoke for allergy sufferers
+39,Scented Soy Candle,home,Wickwood,19.00,4.4,true,Hand poured candle with lavender and cedar scent that burns for 50 hours
+40,Yoga Mat,fitness,Pulsewise,39.00,4.5,true,Non slip six millimeter mat that cushions the joints during yoga and pilates stretching
+41,Adjustable Dumbbells,fitness,Ironpeak,299.00,4.7,true,Pair of dumbbells that change from 5 to 52 pounds with a dial for strength training at home
+42,Resistance Bands Set,fitness,Ironpeak,27.00,4.4,true,Five latex bands of different tension for rehab warm ups and full body workouts while traveling
+43,Foam Roller,fitness,Pulsewise,29.00,4.3,false,High density roller for massaging sore muscles and releasing tight hamstrings after running
+44,Jump Rope,fitness,Ironpeak,15.00,4.2,true,Speed rope with ball bearings for cardio conditioning and boxing footwork drills

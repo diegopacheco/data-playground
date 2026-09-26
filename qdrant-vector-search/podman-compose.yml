@@ -1,0 +1,58 @@
+name: q6-qdrant-vector-search
+
+services:
+  q6-qdrant:
+    image: docker.io/qdrant/qdrant:v1.19.1
+    container_name: q6-qdrant
+    environment:
+      QDRANT__TELEMETRY_DISABLED: "true"
+      QDRANT__LOG_LEVEL: WARN
+    mem_limit: 512m
+    ports:
+      - "${qdrant:-26500}:6333"
+    volumes:
+      - q6-qdrant-data:/qdrant/storage
+    networks:
+      - q6-net
+
+  q6-loader:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: q6-qdrant-vector-search:latest
+    container_name: q6-loader
+    command: ["python", "load.py"]
+    environment:
+      QDRANT_URL: http://q6-qdrant:6333
+    mem_limit: 768m
+    networks:
+      - q6-net
+    depends_on:
+      - q6-qdrant
+
+  q6-ui:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: q6-qdrant-vector-search:latest
+    container_name: q6-ui
+    restart: unless-stopped
+    environment:
+      QDRANT_URL: http://q6-qdrant:6333
+      UI_PORT: "8080"
+      DASHBOARD_URL: "http://localhost:${qdrant:-26500}/dashboard"
+    mem_limit: 768m
+    ports:
+      - "${ui:-26501}:8080"
+    networks:
+      - q6-net
+    depends_on:
+      - q6-qdrant
+
+networks:
+  q6-net:
+    name: q6-net
+
+volumes:
+  q6-qdrant-data:
+    name: q6-qdrant-data

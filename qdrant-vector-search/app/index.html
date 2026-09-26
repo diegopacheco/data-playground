@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Qdrant Vector Search</title>
+<style>
+  :root { --bg: #f7f8fa; --card: #ffffff; --text: #1f2933; --muted: #6b7785; --line: #e4e7eb; --accent: #dc244c; --accent-soft: #fde8ec; --bar: #4f7cff; --ok: #2f9e44; --off: #c0392b; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 1080px; margin: 0 auto; padding: 28px 16px; }
+  header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  p.sub { color: var(--muted); margin: 0; font-size: 14px; }
+  a.dash { background: var(--accent); color: #fff; text-decoration: none; padding: 9px 14px; border-radius: 8px; font-size: 14px; font-weight: 600; white-space: nowrap; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .stat { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
+  .stat b { display: block; font-size: 20px; margin-top: 4px; }
+  .stat span { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 18px; margin-bottom: 20px; }
+  .card h2 { font-size: 15px; margin: 0 0 12px; }
+  form .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  input[type=text] { flex: 1 1 320px; font-size: 16px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; }
+  input[type=number], select { font-size: 14px; padding: 8px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+  input[type=number] { width: 96px; }
+  button { font-size: 14px; padding: 10px 16px; border-radius: 8px; border: 1px solid var(--line); background: #fff; cursor: pointer; }
+  button.primary { background: var(--text); color: #fff; border-color: var(--text); }
+  .modes { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .modes label { padding: 9px 12px; font-size: 14px; cursor: pointer; }
+  .modes input { display: none; }
+  .modes label:has(input:checked) { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+  .filters { margin-top: 12px; font-size: 14px; color: var(--muted); }
+  .filters label { display: inline-flex; align-items: center; gap: 6px; }
+  .chips { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { font-size: 13px; padding: 5px 10px; border-radius: 999px; background: var(--bg); border: 1px solid var(--line); cursor: pointer; }
+  .meta { color: var(--muted); font-size: 13px; margin-bottom: 10px; }
+  .result { display: grid; grid-template-columns: 28px 1fr 180px; gap: 12px; padding: 12px 0; border-top: 1px solid var(--line); align-items: start; }
+  .rank { color: var(--muted); font-weight: 700; font-size: 18px; }
+  .name { font-weight: 600; }
+  .pill { display: inline-block; font-size: 12px; padding: 2px 8px; border-radius: 999px; background: var(--bg); border: 1px solid var(--line); margin-left: 6px; }
+  .desc { color: var(--muted); font-size: 13px; margin: 4px 0; }
+  .facts { font-size: 13px; }
+  .in { color: var(--ok); }
+  .out { color: var(--off); }
+  .score { font-size: 13px; text-align: right; }
+  .track { height: 8px; background: var(--bg); border-radius: 4px; margin: 6px 0; overflow: hidden; }
+  .fill { height: 100%; background: var(--bar); }
+  .score button { padding: 5px 10px; font-size: 12px; }
+  pre { background: #1f2933; color: #e4e7eb; padding: 14px; border-radius: 8px; overflow-x: auto; font-size: 12px; margin: 0; }
+  .error { color: var(--off); }
+  @media (max-width: 640px) { .result { grid-template-columns: 24px 1fr; } .score { grid-column: 2; text-align: left; } }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div>
+      <h1>Qdrant Vector Search</h1>
+      <p class="sub" id="sub">loading collection info</p>
+    </div>
+    <a class="dash" id="dash" href="#" target="_blank" rel="noopener">Open Qdrant dashboard</a>
+  </header>
+
+  <section class="stats" id="stats"></section>
+
+  <section class="card">
+    <form id="form">
+      <div class="row">
+        <input type="text" id="q" placeholder="Describe what you need, e.g. keep my coffee hot on the way to work" autocomplete="off">
+        <div class="modes">
+          <label><input type="radio" name="mode" value="semantic" checked>Semantic</label>
+          <label><input type="radio" name="mode" value="hybrid">Hybrid</label>
+          <label><input type="radio" name="mode" value="keyword">Keyword</label>
+        </div>
+        <button class="primary" type="submit">Search</button>
+      </div>
+      <div class="row filters">
+        <label>Category <select id="category"><option value="">all</option></select></label>
+        <label>Price <input type="number" id="price_min" min="0" placeholder="min"> to <input type="number" id="price_max" min="0" placeholder="max"></label>
+        <label>Rating <select id="min_rating"><option value="">any</option><option>4.0</option><option>4.5</option><option>4.7</option></select></label>
+        <label><input type="checkbox" id="in_stock"> in stock only</label>
+      </div>
+      <div class="chips" id="chips"></div>
+    </form>
+  </section>
+
+  <section class="card">
+    <h2 id="title">Results</h2>
+    <div class="meta" id="meta"></div>
+    <div id="results"></div>
+  </section>
+
+  <section class="card">
+    <h2>Request sent to Qdrant (POST /collections/products/points/query)</h2>
+    <pre id="request">{}</pre>
+  </section>
+</main>
+<script>
+const CHIPS = ["keep my coffee hot on the way to work", "block out airplane noise on a long flight", "stay warm sleeping outdoors in freezing mountains", "how do databases scale across many machines", "thermos", "Nordvik warm sleeping"];
+const $ = id => document.getElementById(id);
+const money = v => v.toLocaleString("en-US", { style: "currency", currency: "USD" });
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+
+function filterParams() {
+  const p = new URLSearchParams();
+  ["category", "price_min", "price_max", "min_rating"].forEach(k => { if ($(k).value) p.set(k, $(k).value); });
+  if ($("in_stock").checked) p.set("in_stock", "true");
+  return p;
+}
+
+async function getJson(url) {
+  const r = await fetch(url);
+  const body = await r.json();
+  if (body.error) throw new Error(body.error);
+  return body;
+}
+
+function stat(label, value) {
+  return `<div class="stat"><span>${label}</span><b>${value}</b></div>`;
+}
+
+async function loadInfo() {
+  const info = await getJson("/api/info");
+  $("sub").textContent = `Qdrant ${info.qdrant_version} | collection ${info.collection} (${info.status}) | ${info.dense_model} + ${info.sparse_model} via fastembed on CPU`;
+  $("dash").href = info.dashboard_url;
+  const dense = info.vectors.dense;
+  $("stats").innerHTML = stat("points", info.points_count) + stat("dense vector", `${dense.size} dim ${dense.distance}`) +
+    stat("sparse vector", `bm25 (${info.sparse_vectors.bm25.modifier})`) + stat("payload indexes", Object.keys(info.payload_schema).length);
+  info.categories.forEach(c => $("category").insertAdjacentHTML("beforeend", `<option value="${esc(c.category)}">${esc(c.category)} (${c.count})</option>`));
+}
+
+function render(data, title) {
+  $("title").textContent = title;
+  $("meta").textContent = `${data.results.length} results | embed ${data.embed_ms} ms | qdrant ${data.query_ms} ms | score: ${data.mode === "hybrid" ? "RRF fusion" : data.mode === "keyword" ? "BM25" : "cosine similarity"}`;
+  $("request").textContent = JSON.stringify(data.request, null, 2);
+  const max = Math.max(...data.results.map(r => r.score), 1e-9);
+  $("results").innerHTML = data.results.length ? data.results.map((r, i) => `
+    <div class="result">
+      <div class="rank">${i + 1}</div>
+      <div>
+        <div class="name">${esc(r.name)}<span class="pill">${esc(r.category)}</span></div>
+        <div class="desc">${esc(r.description)}</div>
+        <div class="facts">${esc(r.brand)} | ${money(r.price)} | rating ${r.rating} | <span class="${r.in_stock ? "in" : "out"}">${r.in_stock ? "in stock" : "out of stock"}</span></div>
+      </div>
+      <div class="score">
+        <div>score <b>${r.score}</b></div>
+        <div class="track"><div class="fill" style="width:${Math.max(3, 100 * r.score / max)}%"></div></div>
+        <button type="button" data-id="${r.id}" data-name="${esc(r.name)}">More like this</button>
+      </div>
+    </div>`).join("") : `<p class="meta">No points match this query and these filters.</p>`;
+}
+
+function fail(e) {
+  $("results").innerHTML = `<p class="error">${esc(e.message)}</p>`;
+}
+
+async function runSearch() {
+  const q = $("q").value.trim();
+  if (!q) return;
+  const p = filterParams();
+  p.set("q", q);
+  p.set("mode", document.querySelector("input[name=mode]:checked").value);
+  try { render(await getJson(`/api/search?${p}`), `Results for "${q}"`); } catch (e) { fail(e); }
+}
+
+async function runRecommend(id, name) {
+  const p = filterParams();
+  p.set("id", id);
+  try { render(await getJson(`/api/recommend?${p}`), `More like "${name}" (recommend, positive id ${id})`); } catch (e) { fail(e); }
+}
+
+$("form").addEventListener("submit", e => { e.preventDefault(); runSearch(); });
+document.querySelectorAll("input[name=mode], #category, #min_rating, #in_stock").forEach(el => el.addEventListener("change", runSearch));
+$("results").addEventListener("click", e => { if (e.target.dataset.id) runRecommend(e.target.dataset.id, e.target.dataset.name); });
+$("chips").innerHTML = CHIPS.map(c => `<span class="chip">${esc(c)}</span>`).join("");
+$("chips").addEventListener("click", e => { if (e.target.classList.contains("chip")) { $("q").value = e.target.textContent; runSearch(); } });
+
+loadInfo().then(() => { $("q").value = CHIPS[0]; runSearch(); }).catch(fail);
+</script>
+</body>
+</html>
