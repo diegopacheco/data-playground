@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sail vs Spark Connect</title>
+<style>
+  :root { --bg: #f6f7f9; --card: #fff; --ink: #1f2933; --muted: #616e7c; --line: #e4e7eb; --spark: #e8590c; --sail: #1c7ed6; --ok: #2b8a3e; --bad: #c92a2a; --warn: #e67700; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--ink); }
+  header { background: var(--card); border-bottom: 1px solid var(--line); padding: 14px 20px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; }
+  header h1 { font-size: 18px; margin: 0; }
+  header .sub { color: var(--muted); }
+  nav { display: flex; gap: 4px; padding: 0 20px; background: var(--card); border-bottom: 1px solid var(--line); }
+  nav button { border: 0; background: none; padding: 10px 14px; font: inherit; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; }
+  nav button.active { color: var(--ink); border-bottom-color: var(--sail); font-weight: 600; }
+  main { padding: 20px; max-width: 1200px; margin: 0 auto; }
+  .tab { display: none; }
+  .tab.active { display: block; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 16px; }
+  .tile, .card { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; }
+  .tile .label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+  .tile .value { font-size: 24px; font-weight: 650; margin-top: 4px; }
+  .card { margin-bottom: 16px; overflow-x: auto; }
+  .card h2 { font-size: 15px; margin: 0 0 10px; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th { color: var(--muted); font-weight: 600; font-size: 12px; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .badge { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 12px; font-weight: 600; }
+  .badge.ok { background: #d3f9d8; color: var(--ok); }
+  .badge.bad { background: #ffe3e3; color: var(--bad); }
+  .badge.warn { background: #fff3bf; color: var(--warn); }
+  .legend { display: flex; gap: 16px; color: var(--muted); margin-bottom: 8px; }
+  .dot { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+  .bars { display: grid; grid-template-columns: 60px 1fr; gap: 6px 10px; align-items: center; }
+  .bar { height: 14px; border-radius: 3px; min-width: 2px; }
+  .barrow { white-space: nowrap; display: flex; align-items: center; gap: 8px; margin: 2px 0; font-size: 12px; color: var(--muted); }
+  pre { background: #f1f3f5; border-radius: 6px; padding: 10px 12px; overflow-x: auto; font-size: 12.5px; margin: 8px 0; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .engine h3 { font-size: 13px; margin: 6px 0; }
+  .err { color: var(--bad); font-family: ui-monospace, monospace; font-size: 12.5px; white-space: normal; }
+  .muted { color: var(--muted); }
+  dl { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; margin: 0; }
+  dt { color: var(--muted); }
+  dd { margin: 0; }
+  a { color: var(--sail); }
+  @media (max-width: 760px) { .grid2 { grid-template-columns: 1fr; } main { padding: 12px; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Sail vs Spark Connect</h1>
+  <span class="sub" id="sub">loading results</span>
+</header>
+<nav>
+  <button data-tab="bench" class="active">Benchmark</button>
+  <button data-tab="queries">Queries</button>
+  <button data-tab="setup">Setup</button>
+</nav>
+<main>
+  <section class="tab active" id="bench"></section>
+  <section class="tab" id="queries"></section>
+  <section class="tab" id="setup"></section>
+</main>
+<script>
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+const ms = (v) => v >= 1000 ? (v / 1000).toFixed(2) + " s" : v.toFixed(1) + " ms";
+
+document.querySelectorAll("nav button").forEach((b) => b.addEventListener("click", () => {
+  document.querySelectorAll("nav button").forEach((x) => x.classList.toggle("active", x === b));
+  document.querySelectorAll(".tab").forEach((t) => t.classList.toggle("active", t.id === b.dataset.tab));
+}));
+
+function status(q) {
+  if (q.identical === true) return '<span class="badge ok">identical</span>';
+  if (q.identical === false) return '<span class="badge bad">different</span>';
+  const failed = Object.entries(q.engines).filter(([, r]) => !r.supported).map(([e]) => e);
+  return `<span class="badge warn">unsupported on ${failed.join(", ")}</span>`;
+}
+
+function cell(r, key) {
+  return r.supported ? `<td class="num">${ms(r[key])}</td>` : '<td class="num muted">n/a</td>';
+}
+
+function geomean(xs) {
+  return Math.exp(xs.reduce((a, x) => a + Math.log(x), 0) / xs.length);
+}
+
+function renderBench(d) {
+  const both = d.queries.filter((q) => q.speedup !== null);
+  const total = (e) => both.reduce((a, q) => a + q.engines[e].warm_median_ms, 0);
+  const identical = d.queries.filter((q) => q.identical === true).length;
+  const unsupported = d.queries.filter((q) => q.identical === null).length;
+  const max = Math.max(...d.queries.flatMap((q) => Object.values(q.engines).filter((r) => r.supported).map((r) => r.warm_median_ms)));
+  const rows = d.queries.map((q) => `<tr><td>${q.id}</td><td>${esc(q.title)}</td><td class="muted">${q.kind}</td>
+    ${cell(q.engines.spark, "cold_ms")}${cell(q.engines.spark, "warm_median_ms")}${cell(q.engines.sail, "cold_ms")}${cell(q.engines.sail, "warm_median_ms")}
+    <td class="num">${q.speedup === null ? '<span class="muted">n/a</span>' : q.speedup.toFixed(2) + "x"}</td><td>${status(q)}</td></tr>`).join("");
+  const bar = (r, color) => r.supported
+    ? `<div class="barrow"><div class="bar" style="width:${Math.max(0.3, 85 * r.warm_median_ms / max)}%;background:${color}"></div>${ms(r.warm_median_ms)}</div>`
+    : '<div class="barrow"><span class="badge warn">unsupported</span></div>';
+  const bars = d.queries.map((q) => `<div>${q.id}</div><div>${bar(q.engines.spark, "var(--spark)")}${bar(q.engines.sail, "var(--sail)")}</div>`).join("");
+  $("bench").innerHTML = `
+    <div class="tiles">
+      <div class="tile"><div class="label">Identical results</div><div class="value">${identical} / ${d.queries.length}</div></div>
+      <div class="tile"><div class="label">Unsupported on an engine</div><div class="value">${unsupported}</div></div>
+      <div class="tile"><div class="label">Warm speedup (geo mean)</div><div class="value">${both.length ? geomean(both.map((q) => q.speedup)).toFixed(2) + "x" : "n/a"}</div></div>
+      <div class="tile"><div class="label">Warm total, ${both.length} common queries</div><div class="value">${ms(total("spark"))} / ${ms(total("sail"))}</div><div class="muted">Spark / Sail</div></div>
+    </div>
+    <div class="card"><h2>Timings per query (cold = first run in a new session, warm = median of ${d.warm_runs} runs)</h2>
+      <table><thead><tr><th>Id</th><th>Query</th><th>API</th><th class="num">Spark cold</th><th class="num">Spark warm</th><th class="num">Sail cold</th><th class="num">Sail warm</th><th class="num">Speedup</th><th>Result</th></tr></thead><tbody>${rows}</tbody></table>
+    </div>
+    <div class="card"><h2>Warm median per query</h2>
+      <div class="legend"><span><span class="dot" style="background:var(--spark)"></span>Spark Connect</span><span><span class="dot" style="background:var(--sail)"></span>Sail</span></div>
+      <div class="bars">${bars}</div>
+    </div>`;
+}
+
+function preview(r) {
+  if (!r.supported) return `<p class="err">${esc(r.error)}</p>`;
+  const head = r.columns.map((c) => `<th>${esc(c)}</th>`).join("");
+  const body = r.rows.slice(0, 6).map((row) => `<tr>${row.map((v) => `<td class="num">${v === null ? "null" : esc(v)}</td>`).join("")}</tr>`).join("");
+  return `<table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table><p class="muted">${r.rows.length} rows, cold ${ms(r.cold_ms)}, warm runs ${r.warm_ms.map(ms).join(", ")}</p>`;
+}
+
+function renderQueries(d) {
+  $("queries").innerHTML = d.queries.map((q) => `
+    <div class="card"><h2>${q.id} ${esc(q.title)} <span class="muted">${q.kind}</span> ${status(q)}</h2>
+      <pre>${esc(q.text)}</pre>
+      <div class="grid2">
+        <div class="engine"><h3 style="color:var(--spark)">Spark Connect</h3>${preview(q.engines.spark)}</div>
+        <div class="engine"><h3 style="color:var(--sail)">Sail</h3>${preview(q.engines.sail)}</div>
+      </div>
+    </div>`).join("");
+}
+
+function renderSetup(d) {
+  const engine = (e) => `<div class="card"><h2>${esc(d.engines[e].product)}</h2><dl>
+    <dt>endpoint</dt><dd>${esc(d.engines[e].url)}</dd>
+    <dt>reported version</dt><dd>${esc(d.engines[e].version)}</dd>
+    <dt>orders rows</dt><dd>${d.engines[e].orders_rows.toLocaleString()}</dd>
+    <dt>budget</dt><dd>2 CPUs, 1536 MB container limit</dd>
+    <dt>config</dt><dd>${e === "spark" ? "local[2], driver heap 800 MB, direct memory 256 MB, spark.sql.shuffle.partitions=8, AQE on (default)" : "SAIL_EXECUTION__DEFAULT_PARALLELISM=2, defaults otherwise"}</dd>
+  </dl></div>`;
+  $("setup").innerHTML = `<div class="grid2">${engine("spark")}${engine("sail")}</div>
+    <div class="card"><h2>Method</h2><dl>
+      <dt>client</dt><dd>${esc(d.client)} on Python ${esc(d.python)}, same code for both engines, only the sc:// URL changes</dd>
+      <dt>data</dt><dd>orders: 8 Parquet files (zstd), products: 500 rows, both mounted read only at /data in each engine</dd>
+      <dt>cold</dt><dd>first execution of the query in a new Spark Connect session (server already running)</dd>
+      <dt>warm</dt><dd>median of ${d.warm_runs} more executions, each one timed from submit until collect() returns every row</dd>
+      <dt>equality</dt><dd>rows and column names compared in order, floats rounded to 6 decimals</dd>
+      <dt>generated</dt><dd>${esc(d.generated_at)}</dd>
+      <dt>Spark UI</dt><dd><a href="${esc(d.spark_ui)}" target="_blank">${esc(d.spark_ui)}</a></dd>
+    </dl></div>`;
+}
+
+fetch("/api/results").then((r) => r.json()).then((d) => {
+  if (d.error) { $("sub").textContent = d.error; return; }
+  $("sub").textContent = `${d.engines.spark.orders_rows.toLocaleString()} orders, ${d.queries.length} queries, ${esc(d.engines.spark.product)} vs ${d.engines.sail.product}`;
+  renderBench(d);
+  renderQueries(d);
+  renderSetup(d);
+});
+</script>
+</body>
+</html>

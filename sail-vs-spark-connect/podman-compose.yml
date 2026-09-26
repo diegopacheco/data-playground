@@ -1,0 +1,76 @@
+name: r2-sail-vs-spark-connect
+
+services:
+  r2-spark:
+    image: docker.io/library/spark:4.2.0
+    container_name: r2-spark
+    command:
+      - /opt/spark/sbin/start-connect-server.sh
+      - --master
+      - local[2]
+      - --driver-memory
+      - 800m
+      - --conf
+      - spark.driver.extraJavaOptions=-XX:MaxDirectMemorySize=256m -XX:MaxMetaspaceSize=192m
+      - --conf
+      - spark.sql.shuffle.partitions=8
+      - --conf
+      - spark.ui.showConsoleProgress=false
+    environment:
+      SPARK_NO_DAEMONIZE: "true"
+      MALLOC_ARENA_MAX: "2"
+    mem_limit: 1536m
+    cpus: 2
+    ports:
+      - "${spark:-26700}:15002"
+      - "${sparkui:-26703}:4040"
+    volumes:
+      - ./data:/data:ro
+    networks:
+      - r2-net
+
+  r2-sail:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: r2-sail-vs-spark-connect:latest
+    container_name: r2-sail
+    command: ["sail", "spark", "server", "--ip", "0.0.0.0", "--port", "50051"]
+    environment:
+      SAIL_EXECUTION__DEFAULT_PARALLELISM: "2"
+    mem_limit: 1536m
+    cpus: 2
+    ports:
+      - "${sail:-26701}:50051"
+    volumes:
+      - ./data:/data:ro
+    networks:
+      - r2-net
+
+  r2-app:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: r2-sail-vs-spark-connect:latest
+    container_name: r2-app
+    restart: unless-stopped
+    environment:
+      SPARK_URL: sc://r2-spark:15002
+      SAIL_URL: sc://r2-sail:50051
+      SPARK_UI_URL: "http://localhost:${sparkui:-26703}"
+      UI_PORT: "8080"
+    mem_limit: 512m
+    ports:
+      - "${ui:-26702}:8080"
+    volumes:
+      - ./data:/data
+      - ./results:/app/results
+    networks:
+      - r2-net
+    depends_on:
+      - r2-spark
+      - r2-sail
+
+networks:
+  r2-net:
+    name: r2-net

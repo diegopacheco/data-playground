@@ -1,0 +1,3 @@
+pysail==0.7.1
+pyspark-client==4.2.0
+pandas==2.3.3

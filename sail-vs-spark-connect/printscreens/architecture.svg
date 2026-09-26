@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="440" viewBox="0 0 1100 440">
+  <defs>
+    <style>@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&amp;display=swap'); text { font-family: 'Caveat', 'Comic Sans MS', cursive; fill: #1f2933; }</style>
+    <filter id="wobble"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="3"/></filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1f2933"/></marker>
+  </defs>
+  <rect width="1100" height="440" fill="#ffffff"/>
+  <g filter="url(#wobble)" stroke="#1f2933" stroke-width="2">
+    <rect x="240" y="160" width="230" height="110" rx="10" fill="#fcc2d7"/>
+    <rect x="560" y="70" width="240" height="115" rx="10" fill="#ffd8a8"/>
+    <rect x="560" y="245" width="240" height="115" rx="10" fill="#d0ebff"/>
+    <rect x="860" y="40" width="220" height="80" rx="10" fill="#fff3bf"/>
+    <rect x="860" y="175" width="220" height="100" rx="10" fill="#f1f3f5"/>
+    <rect x="260" y="340" width="190" height="70" rx="10" fill="#e5dbff"/>
+    <rect x="20" y="330" width="190" height="90" rx="10" fill="#d3f9d8"/>
+    <line x1="470" y1="195" x2="557" y2="140" marker-end="url(#arrow)"/>
+    <line x1="470" y1="235" x2="557" y2="295" marker-end="url(#arrow)"/>
+    <line x1="970" y1="120" x2="970" y2="172" marker-end="url(#arrow)"/>
+    <line x1="800" y1="140" x2="857" y2="200" marker-end="url(#arrow)"/>
+    <line x1="800" y1="300" x2="857" y2="250" marker-end="url(#arrow)"/>
+    <line x1="355" y1="270" x2="355" y2="337" marker-end="url(#arrow)"/>
+    <line x1="260" y1="375" x2="213" y2="375" marker-end="url(#arrow)"/>
+  </g>
+  <text x="330" y="50" font-size="32" font-weight="700" text-anchor="middle">sail-vs-spark-connect</text>
+  <text x="330" y="82" font-size="19" text-anchor="middle">same PySpark client, two Spark Connect servers</text>
+  <text x="355" y="190" font-size="24" text-anchor="middle">r2-app: bench.py</text>
+  <text x="355" y="215" font-size="17" text-anchor="middle">pyspark-client 4.2.0, Python 3.14</text>
+  <text x="355" y="237" font-size="17" text-anchor="middle">9 queries, SQL + DataFrame API</text>
+  <text x="355" y="259" font-size="17" text-anchor="middle">1 cold + 5 warm runs each</text>
+  <text x="680" y="100" font-size="24" text-anchor="middle">r2-spark</text>
+  <text x="680" y="125" font-size="17" text-anchor="middle">Apache Spark 4.2.0 on the JVM</text>
+  <text x="680" y="147" font-size="17" text-anchor="middle">sc://r2-spark:15002</text>
+  <text x="680" y="169" font-size="17" text-anchor="middle">local[2], 2 CPUs, 1.5 GB limit</text>
+  <text x="680" y="275" font-size="24" text-anchor="middle">r2-sail</text>
+  <text x="680" y="300" font-size="17" text-anchor="middle">Sail 0.7.1, Rust + DataFusion</text>
+  <text x="680" y="322" font-size="17" text-anchor="middle">sc://r2-sail:50051</text>
+  <text x="680" y="344" font-size="17" text-anchor="middle">2 CPUs, 1.5 GB limit</text>
+  <text x="970" y="72" font-size="24" text-anchor="middle">gen.py</text>
+  <text x="970" y="98" font-size="17" text-anchor="middle">seeded random, runs once</text>
+  <text x="970" y="205" font-size="24" text-anchor="middle">data/ (read only)</text>
+  <text x="970" y="230" font-size="17" text-anchor="middle">orders: 5M rows, 8 Parquet</text>
+  <text x="970" y="252" font-size="17" text-anchor="middle">products: 500 rows</text>
+  <text x="355" y="370" font-size="22" text-anchor="middle">results.json</text>
+  <text x="355" y="393" font-size="16" text-anchor="middle">timings + rows + equality</text>
+  <text x="115" y="360" font-size="22" text-anchor="middle">server.py + UI</text>
+  <text x="115" y="384" font-size="16" text-anchor="middle">GET /api/results</text>
+  <text x="115" y="405" font-size="16" text-anchor="middle">Benchmark, Queries, Setup</text>
+</svg>
