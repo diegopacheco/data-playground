@@ -1,0 +1,421 @@
+sql-playground/backend/seed/06-shop-constraints.sql
+  s_8772a817eccd11::t_2bb275b75b5cfb 1-8
+sql-playground/electron/boot.html
+  s_8772a817eccd11::t_b2bb88a544cf4e 1-67
+sql-playground/src/main.jsx
+  s_3b53f3faf7302c::t_46ed6c1cb99bde 1,3-30
+  s_3b53f3faf7302c::t_2fe82d5f64c7eb 2
+sql-playground/problems/06-idempotent-payments/joins/semi.sql
+  s_8772a817eccd11::t_832763c9788bfe 1-6
+sql-playground/electron/main.cjs
+  s_8772a817eccd11::t_adee89f470a5e3 1-139
+sql-playground/problems/03-bank-transfer/joins/anti.sql
+  s_8772a817eccd11::t_f060ab06607c4f 1-3
+sql-playground/scripts/ports.env
+  s_8772a817eccd11::t_e2b9903ade1e36 1-3
+sql-playground/problems/04-job-queue/joins/anti.sql
+  s_8772a817eccd11::t_f815d3fb8deed1 1-4
+sql-playground/src/components/Problems.jsx
+  s_8772a817eccd11::t_e8d06fa1b45c7a 1-225
+sql-playground/scripts/test-all.sh
+  s_8772a817eccd11::t_74b58fc8ea53cf 1-16
+sql-playground/src/components/SearchModal.jsx
+  s_8772a817eccd11::t_242a95a07bf1e3 1-61
+sql-playground/scripts/common.sh
+  s_8772a817eccd11::t_74b58fc8ea53cf 1-128
+sql-playground/problems/01-vending-machine/joins/full.sql
+  s_8772a817eccd11::t_05549a8509b23e 1-4
+sql-playground/problems/02-ticket-booking/joins/inner.sql
+  s_8772a817eccd11::t_d70e425dd2ef94 1-6
+sql-playground/electron/preload.cjs
+  s_8772a817eccd11::t_efb10fde35adfe 1-12
+sql-playground/electron/services.cjs
+  s_8772a817eccd11::t_d060efcecbddf2 1-86
+sql-playground/problems/03-bank-transfer/problem.json
+  s_8772a817eccd11::t_f060ab06607c4f 1-26
+sql-playground/problems/01-vending-machine/joins/semi.sql
+  s_8772a817eccd11::t_05549a8509b23e 1-4
+sql-playground/backend/seed/05-shop-payments-reviews.sql
+  s_8772a817eccd11::t_2bb275b75b5cfb 1-17
+sql-playground/problems/06-idempotent-payments/joins/self.sql
+  s_8772a817eccd11::t_832763c9788bfe 1-4
+sql-playground/problems/07-hotel-overlap/safe-prepare.sql
+  s_3b53f3faf7302c::t_acd7a416a5a91e 1-3
+  s_8772a817eccd11::t_4a59506a46fb7a 4
+sql-playground/src/components/PlanView.jsx
+  s_3b53f3faf7302c::t_8b2a0b662e5dab 1-93
+sql-playground/problems/02-ticket-booking/safe-prepare.sql
+  s_8772a817eccd11::t_d70e425dd2ef94 1
+sql-playground/problems/06-idempotent-payments/joins/anti.sql
+  s_8772a817eccd11::t_832763c9788bfe 1-5
+sql-playground/assets/logo.svg
+  s_3b53f3faf7302c::t_f94749679482e1 1-16
+sql-playground/problems/03-bank-transfer/safe.sql
+  s_8772a817eccd11::t_f060ab06607c4f 1-15
+sql-playground/package.json
+  s_3b53f3faf7302c::t_6059bac18eb78f 13
+  s_8772a817eccd11::t_66543190cc1897 1-12,14-44
+sql-playground/problems/03-bank-transfer/prepare.sql
+  s_8772a817eccd11::t_f060ab06607c4f 1-2
+sql-playground/problems/06-idempotent-payments/joins/inner.sql
+  s_8772a817eccd11::t_832763c9788bfe 1-5
+sql-playground/problems/02-ticket-booking/joins/anti.sql
+  s_8772a817eccd11::t_d70e425dd2ef94 1-4
+sql-playground/problems/06-idempotent-payments/check.sql
+  s_8772a817eccd11::t_832763c9788bfe 1-7
+sql-playground/.gitignore
+  s_8772a817eccd11::t_66543190cc1897 1-6
+sql-playground/scripts/start-all.sh
+  s_8772a817eccd11::t_74b58fc8ea53cf 1-36
+sql-playground/src/api.js
+  s_3b53f3faf7302c::t_46ed6c1cb99bde 1-20
+sql-playground/src/components/ResultTable.jsx
+  s_3b53f3faf7302c::t_8b2a0b662e5dab 1-38
+sql-playground/problems/02-ticket-booking/joins/cross.sql
+  s_8772a817eccd11::t_d70e425dd2ef94 1-6
+sql-playground/problems/04-job-queue/setup.sql
+  s_8772a817eccd11::t_f815d3fb8deed1 1-28
+sql-playground/problems/03-bank-transfer/joins/cross.sql
+  s_8772a817eccd11::t_f060ab06607c4f 1-6
+sql-playground/src/components/ShortcutsModal.jsx
+  s_8772a817eccd11::t_242a95a07bf1e3 1-91
+sql-playground/problems/03-bank-transfer/joins/inner.sql
+  s_8772a817eccd11::t_f060ab06607c4f 1-7
+sql-playground/src/components/ErDiagram.jsx
+  s_8772a817eccd11::t_c1044d417b15cb 1-106
+sql-playground/backend/seed/01-shop-schema.sql
+  s_8772a817eccd11::t_2bb275b75b5cfb 1-119
+sql-playground/problems/06-idempotent-payments/naive.sql
+  s_8772a817eccd11::t_832763c9788bfe 1-10
+sql-playground/problems/04-job-queue/joins/inner.sql
+  s_8772a817eccd11::t_f815d3fb8deed1 1-6
+sql-playground/backend/seed/07-shop-indexes.sql
+  s_8772a817eccd11::t_2bb275b75b5cfb 1-8
+sql-playground/problems/06-idempotent-payments/safe.sql
+  s_8772a817eccd11::t_832763c9788bfe 1-13
+sql-playground/problems/04-job-queue/safe.sql
+  s_8772a817eccd11::t_f815d3fb8deed1 1-18
+sql-playground/problems/06-idempotent-payments/joins/left.sql
+  s_8772a817eccd11::t_832763c9788bfe 1-5
+sql-playground/problems/04-job-queue/problem.json
+  s_8772a817eccd11::t_f815d3fb8deed1 1-26
+sql-playground/problems/03-bank-transfer/joins/full.sql
+  s_8772a817eccd11::t_f060ab06607c4f 1-5
+sql-playground/problems/01-vending-machine/joins/inner.sql
+  s_8772a817eccd11::t_05549a8509b23e 1-6
+sql-playground/scripts/sql-console.sh
+  s_8772a817eccd11::t_74b58fc8ea53cf 1-12
+sql-playground/problems/02-ticket-booking/joins/left.sql
+  s_8772a817eccd11::t_d70e425dd2ef94 1-5
+sql-playground/problems/04-job-queue/joins/right.sql
+  s_8772a817eccd11::t_f815d3fb8deed1 1-4
+sql-playground/src/App.jsx
+  s_8772a817eccd11::t_45bf0b4c00a3bb 190-192
+  s_8772a817eccd11::t_273675c6433bf2 1-23,25-189,193-202
+  s_3b53f3faf7302c::t_bc7d2dfda45e35 24
+sql-playground/problems/01-vending-machine/joins/left.sql
+  s_8772a817eccd11::t_05549a8509b23e 1-6
+sql-playground/problems/04-job-queue/naive.sql
+  s_8772a817eccd11::t_f815d3fb8deed1 1-11
+sql-playground/backend/db.js
+  s_8772a817eccd11::t_f850a5eb440ae7 1-27
+sql-playground/problems/03-bank-transfer/naive.sql
+  s_8772a817eccd11::t_f060ab06607c4f 1-18
+sql-playground/problems/06-idempotent-payments/problem.json
+  s_8772a817eccd11::t_832763c9788bfe 1-26
+sql-playground/index.html
+  s_3b53f3faf7302c::t_46ed6c1cb99bde 1-14
+sql-playground/problems/02-ticket-booking/joins/semi.sql
+  s_8772a817eccd11::t_d70e425dd2ef94 1-10
+sql-playground/problems/01-vending-machine/joins/self.sql
+  s_8772a817eccd11::t_05549a8509b23e 1-4
+sql-playground/problems/03-bank-transfer/joins/left.sql
+  s_8772a817eccd11::t_f060ab06607c4f 1-6
+sql-playground/problems/02-ticket-booking/joins/lateral.sql
+  s_8772a817eccd11::t_d70e425dd2ef94 1-11
+sql-playground/problems/02-ticket-booking/problem.json
+  s_8772a817eccd11::t_d70e425dd2ef94 1-26
+sql-playground/scripts/ui.sh
+  s_8772a817eccd11::t_74b58fc8ea53cf 1-12
+sql-playground/backend/seed/03-shop-order-items.sql
+  s_8772a817eccd11::t_2bb275b75b5cfb 1-12
+sql-playground/problems/02-ticket-booking/joins/right.sql
+  s_8772a817eccd11::t_d70e425dd2ef94 1-6
+sql-playground/backend/seed/08-shop-analyze.sql
+  s_8772a817eccd11::t_2bb275b75b5cfb 1
+sql-playground/problems/06-idempotent-payments/joins/cross.sql
+  s_8772a817eccd11::t_832763c9788bfe 1-6
+sql-playground/problems/01-vending-machine/joins/right.sql
+  s_8772a817eccd11::t_05549a8509b23e 1-4
+sql-playground/scripts/stop-all.sh
+  s_8772a817eccd11::t_74b58fc8ea53cf 1-21
+sql-playground/problems/03-bank-transfer/joins/self.sql
+  s_8772a817eccd11::t_f060ab06607c4f 1-4
+sql-playground/electron/menu.cjs
+  s_8772a817eccd11::t_1e2367e9022229 1-35
+sql-playground/problems/06-idempotent-payments/joins/lateral.sql
+  s_8772a817eccd11::t_832763c9788bfe 1-10
+sql-playground/problems/03-bank-transfer/joins/semi.sql
+  s_8772a817eccd11::t_f060ab06607c4f 1-3
+sql-playground/backend/server.js
+  s_3b53f3faf7302c::t_fac4f11c52fe59 27
+  s_8772a817eccd11::t_28c90b05830aab 1-26,28-75
+sql-playground/problems/03-bank-transfer/joins/lateral.sql
+  s_8772a817eccd11::t_f060ab06607c4f 1-10
+sql-playground/src/components/Playground.jsx
+  s_8772a817eccd11::t_f6da1cd697a8f4 1-196
+sql-playground/backend/seed/04-shop-orders.sql
+  s_8772a817eccd11::t_2bb275b75b5cfb 1-22
+sql-playground/src/components/HintsView.jsx
+  s_3b53f3faf7302c::t_8b2a0b662e5dab 1-26
+README.md
+  s_8772a817eccd11::t_3f9d2e62d8970d 131
+sql-playground/problems/04-job-queue/joins/self.sql
+  s_8772a817eccd11::t_f815d3fb8deed1 1-4
+sql-playground/scripts/status.sh
+  s_8772a817eccd11::t_74b58fc8ea53cf 1-18
+sql-playground/problems/04-job-queue/prepare.sql
+  s_8772a817eccd11::t_f815d3fb8deed1 1-3
+sql-playground/problems/04-job-queue/joins/full.sql
+  s_8772a817eccd11::t_f815d3fb8deed1 1-5
+sql-playground/backend/seed/02-shop-reference.sql
+  s_8772a817eccd11::t_2bb275b75b5cfb 1-37
+sql-playground/problems/01-vending-machine/check.sql
+  s_8772a817eccd11::t_05549a8509b23e 1-8
+sql-playground/vite.config.js
+  s_3b53f3faf7302c::t_46ed6c1cb99bde 1-15
+sql-playground/problems/01-vending-machine/setup.sql
+  s_8772a817eccd11::t_05549a8509b23e 1-34
+sql-playground/src/format.js
+  s_3b53f3faf7302c::t_6059bac18eb78f 7-9
+  s_3b53f3faf7302c::t_46ed6c1cb99bde 1-6,10-43
+sql-playground/problems/01-vending-machine/joins/lateral.sql
+  s_8772a817eccd11::t_05549a8509b23e 1-11
+sql-playground/problems/06-idempotent-payments/prepare.sql
+  s_8772a817eccd11::t_832763c9788bfe 1
+sql-playground/README.md
+  s_8772a817eccd11::t_da044f4527a8c4 1-241
+sql-playground/problems/01-vending-machine/joins/cross.sql
+  s_8772a817eccd11::t_05549a8509b23e 1-5
+sql-playground/public/logo.svg
+  s_3b53f3faf7302c::t_f94749679482e1 1-16
+sql-playground/problems/03-bank-transfer/check.sql
+  s_8772a817eccd11::t_f060ab06607c4f 1-7
+sql-playground/problems/02-ticket-booking/joins/self.sql
+  s_8772a817eccd11::t_d70e425dd2ef94 1-4
+sql-playground/backend/hints.js
+  s_3b53f3faf7302c::t_acd7a416a5a91e 109-110,126-130,187-190,195
+  s_8772a817eccd11::t_28c90b05830aab 1-108,111-125,131-186,191-194,196-211
+sql-playground/problems/06-idempotent-payments/joins/full.sql
+  s_8772a817eccd11::t_832763c9788bfe 1-5
+sql-playground/docs/architecture.svg
+  s_8772a817eccd11::t_525cabe2073ff8 12,50
+  s_8772a817eccd11::t_a7b677259a894f 1-11,13-49,51-67,70-76
+  s_3b53f3faf7302c::t_8e8341c4676f06 68-69
+sql-playground/problems/04-job-queue/joins/left.sql
+  s_8772a817eccd11::t_f815d3fb8deed1 1-5
+sql-playground/problems/02-ticket-booking/safe.sql
+  s_8772a817eccd11::t_d70e425dd2ef94 1-20
+sql-playground/problems/01-vending-machine/prepare.sql
+  s_8772a817eccd11::t_05549a8509b23e 1-2
+sql-playground/problems/07-hotel-overlap/problem.json
+  s_3b53f3faf7302c::t_acd7a416a5a91e 8-54
+  s_8772a817eccd11::t_b4931bb6700d8d 1-7
+sql-playground/problems/01-vending-machine/joins/anti.sql
+  s_8772a817eccd11::t_05549a8509b23e 1-8
+sql-playground/problems/04-job-queue/check.sql
+  s_8772a817eccd11::t_f815d3fb8deed1 1-13
+sql-playground/problems/02-ticket-booking/prepare.sql
+  s_8772a817eccd11::t_d70e425dd2ef94 1-2
+sql-playground/backend/problems.js
+  s_8772a817eccd11::t_f850a5eb440ae7 1-58,60-79
+  s_3b53f3faf7302c::t_acd7a416a5a91e 59
+sql-playground/backend/query.js
+  s_8772a817eccd11::t_e4c21347f121a2 1-6,8-41,43-49,51-77,79-118,120-132
+  s_8772a817eccd11::t_28c90b05830aab 7,42,50,78,119
+sql-playground/podman-compose.yml
+  s_8772a817eccd11::t_e2b9903ade1e36 1-24
+sql-playground/problems/04-job-queue/joins/cross.sql
+  s_8772a817eccd11::t_f815d3fb8deed1 1-6
+sql-playground/src/sqlCompletion.js
+  s_3b53f3faf7302c::t_8b2a0b662e5dab 84
+  s_8772a817eccd11::t_717c105cbaae45 1-83,85-123
+sql-playground/problems/02-ticket-booking/setup.sql
+  s_8772a817eccd11::t_457fa711be1ff0 25,27
+  s_8772a817eccd11::t_d70e425dd2ef94 1-24,26,28-43
+sql-playground/problems/01-vending-machine/safe.sql
+  s_8772a817eccd11::t_05549a8509b23e 1-8
+sql-playground/problems/03-bank-transfer/setup.sql
+  s_8772a817eccd11::t_f060ab06607c4f 1-27
+sql-playground/problems/06-idempotent-payments/safe-prepare.sql
+  s_8772a817eccd11::t_832763c9788bfe 1
+sql-playground/backend/ports.js
+  s_8772a817eccd11::t_f850a5eb440ae7 1-16
+sql-playground/problems/03-bank-transfer/joins/right.sql
+  s_8772a817eccd11::t_f060ab06607c4f 1-4
+sql-playground/problems/02-ticket-booking/naive.sql
+  s_8772a817eccd11::t_d70e425dd2ef94 1-16
+sql-playground/problems/02-ticket-booking/check.sql
+  s_8772a817eccd11::t_d70e425dd2ef94 1-6
+sql-playground/src/styles.css
+  s_8772a817eccd11::t_c4d46f764d69f9 1-335
+sql-playground/problems/02-ticket-booking/joins/full.sql
+  s_8772a817eccd11::t_d70e425dd2ef94 1-6
+sql-playground/problems/06-idempotent-payments/joins/right.sql
+  s_8772a817eccd11::t_832763c9788bfe 1-4
+sql-playground/problems/06-idempotent-payments/setup.sql
+  s_8772a817eccd11::t_832763c9788bfe 1-24
+sql-playground/problems/04-job-queue/joins/lateral.sql
+  s_8772a817eccd11::t_f815d3fb8deed1 1-10
+sql-playground/src/components/Dictionary.jsx
+  s_8772a817eccd11::t_d2018eea564472 1-118
+sql-playground/src/components/SqlEditor.jsx
+  s_8772a817eccd11::t_d044ec27618b78 34
+  s_3b53f3faf7302c::t_8b2a0b662e5dab 1-7,9-33,35-42,47-56,60-99
+  s_3b53f3faf7302c::t_1d714504143b76 8,43-46,57-59
+sql-playground/problems/01-vending-machine/naive.sql
+  s_8772a817eccd11::t_05549a8509b23e 1-11
+sql-playground/problems/04-job-queue/joins/semi.sql
+  s_8772a817eccd11::t_f815d3fb8deed1 1-3
+sql-playground/src/erLayout.js
+  s_8772a817eccd11::t_c1044d417b15cb 1-67
+sql-playground/scripts/setup.sh
+  s_8772a817eccd11::t_74b58fc8ea53cf 1-19
+sql-playground/problems/01-vending-machine/problem.json
+  s_8772a817eccd11::t_05549a8509b23e 1-26
+sql-playground/backend/catalog.js
+  s_8772a817eccd11::t_e4c21347f121a2 1-30,32,34-44,46-98,101-104
+  s_3b53f3faf7302c::t_acd7a416a5a91e 31,33,45,99-100
+sql-playground/electron/window-state.cjs
+  s_8772a817eccd11::t_5cab61bba2feec 1-45
+sql-playground/backend/seed.js
+  s_8772a817eccd11::t_6aabe06722b090 1-60
+sql-playground/backend/test/er-layout.test.js
+  s_8772a817eccd11::t_ededd0902c63f8 1-38
+sql-playground/backend/test/format.test.js
+  s_8772a817eccd11::t_40fd1399e5d3be 1-22
+sql-playground/backend/test/hints.test.js
+  s_8772a817eccd11::t_ea7849089d765a 1-72
+sql-playground/backend/test/integration.test.js
+  s_8772a817eccd11::t_b2770e9dd47374 1-97
+sql-playground/backend/test/query.test.js
+  s_8772a817eccd11::t_7c4f756599880d 1-19
+sql-playground/install.sh
+  s_8772a817eccd11::t_4c726867eeeb90 1-50
+sql-playground/package-lock.json
+  s_8772a817eccd11::t_651c443d056cb8 1-4499
+sql-playground/problems/05-hot-counter/check.sql
+  s_8772a817eccd11::t_a8e3cf1bce93f6 1-5
+sql-playground/problems/05-hot-counter/joins/anti.sql
+  s_8772a817eccd11::t_c1ee0db5bfa457 1-4
+sql-playground/problems/05-hot-counter/joins/cross.sql
+  s_8772a817eccd11::t_a0325e25ad3ee9 1-6
+sql-playground/problems/05-hot-counter/joins/full.sql
+  s_8772a817eccd11::t_da26d5de6a3129 1-4
+sql-playground/problems/05-hot-counter/joins/inner.sql
+  s_8772a817eccd11::t_ec7bf97a274986 1-6
+sql-playground/problems/05-hot-counter/joins/lateral.sql
+  s_8772a817eccd11::t_9513b385453d92 1-10
+sql-playground/problems/05-hot-counter/joins/left.sql
+  s_8772a817eccd11::t_c55d462364623a 1-5
+sql-playground/problems/05-hot-counter/joins/right.sql
+  s_8772a817eccd11::t_8c0bc972087796 1-4
+sql-playground/problems/05-hot-counter/joins/self.sql
+  s_8772a817eccd11::t_bc8b644b181b84 1-6
+sql-playground/problems/05-hot-counter/joins/semi.sql
+  s_8772a817eccd11::t_100ce807aecfa1 1-10
+sql-playground/problems/05-hot-counter/naive.sql
+  s_8772a817eccd11::t_d499cfb2196f5f 1-9
+sql-playground/problems/05-hot-counter/prepare.sql
+  s_8772a817eccd11::t_3a039868ffb66d 1-2
+sql-playground/problems/05-hot-counter/problem.json
+  s_8772a817eccd11::t_7557e136044337 1-26
+sql-playground/problems/05-hot-counter/safe.sql
+  s_8772a817eccd11::t_53fa096e5f4dc7 1-6
+sql-playground/problems/05-hot-counter/setup.sql
+  s_8772a817eccd11::t_b0e53a36ccafef 1-29
+sql-playground/problems/07-hotel-overlap/check.sql
+  s_8772a817eccd11::t_59bc71f847d999 1-6
+sql-playground/problems/07-hotel-overlap/joins/anti.sql
+  s_8772a817eccd11::t_ebf0279e936b61 1-6
+sql-playground/problems/07-hotel-overlap/joins/cross.sql
+  s_8772a817eccd11::t_c4ec4d3abac03c 1-5
+sql-playground/problems/07-hotel-overlap/joins/full.sql
+  s_8772a817eccd11::t_8f1fdc2a00f0cf 1-5
+sql-playground/problems/07-hotel-overlap/joins/inner.sql
+  s_8772a817eccd11::t_938e191b593239 1-6
+sql-playground/problems/07-hotel-overlap/joins/lateral.sql
+  s_8772a817eccd11::t_9ca2fbf74a3a48 1-10
+sql-playground/problems/07-hotel-overlap/joins/left.sql
+  s_8772a817eccd11::t_0f1edc4109527e 1-5
+sql-playground/problems/07-hotel-overlap/joins/right.sql
+  s_8772a817eccd11::t_68917f227778e4 1-4
+sql-playground/problems/07-hotel-overlap/joins/self.sql
+  s_8772a817eccd11::t_479a28864174a5 1-3
+sql-playground/problems/07-hotel-overlap/joins/semi.sql
+  s_8772a817eccd11::t_9d3d77b61982ce 1-9
+sql-playground/problems/07-hotel-overlap/naive.sql
+  s_8772a817eccd11::t_4c50e604d8e39f 1-11
+sql-playground/problems/07-hotel-overlap/prepare.sql
+  s_8772a817eccd11::t_2119891f2685e4 1
+sql-playground/problems/07-hotel-overlap/safe.sql
+  s_8772a817eccd11::t_0f7ab013e52d42 1-9
+sql-playground/problems/07-hotel-overlap/setup.sql
+  s_8772a817eccd11::t_14587a9c398d97 1-24
+sql-playground/problems/08-rate-limiter/check.sql
+  s_8772a817eccd11::t_b85db8822f3f2e 1-6
+sql-playground/problems/08-rate-limiter/joins/anti.sql
+  s_8772a817eccd11::t_a36e2343887a77 1-4
+sql-playground/problems/08-rate-limiter/joins/cross.sql
+  s_8772a817eccd11::t_f708178a04e78c 1-6
+sql-playground/problems/08-rate-limiter/joins/full.sql
+  s_8772a817eccd11::t_fe49a0f4644b73 1-5
+sql-playground/problems/08-rate-limiter/joins/inner.sql
+  s_8772a817eccd11::t_d99b1f87f7c4b9 1-6
+sql-playground/problems/08-rate-limiter/joins/lateral.sql
+  s_8772a817eccd11::t_ebcfc34cf68cc8 1-10
+sql-playground/problems/08-rate-limiter/joins/left.sql
+  s_8772a817eccd11::t_bff1313d63cec5 1-5
+sql-playground/problems/08-rate-limiter/joins/right.sql
+  s_8772a817eccd11::t_cf663c077a3bb4 1-4
+sql-playground/problems/08-rate-limiter/joins/self.sql
+  s_8772a817eccd11::t_0965f1ce2a843b 1-4
+sql-playground/problems/08-rate-limiter/joins/semi.sql
+  s_8772a817eccd11::t_c04351c5302292 1-6
+sql-playground/problems/08-rate-limiter/naive.sql
+  s_8772a817eccd11::t_6ffa79770f1ff5 1-13
+sql-playground/problems/08-rate-limiter/prepare.sql
+  s_8772a817eccd11::t_4974208606042b 1
+sql-playground/problems/08-rate-limiter/problem.json
+  s_8772a817eccd11::t_2edfd0844e95c2 1-26
+sql-playground/problems/08-rate-limiter/safe.sql
+  s_8772a817eccd11::t_efad63e76db923 1-18
+sql-playground/problems/08-rate-limiter/setup.sql
+  s_8772a817eccd11::t_ebe39379605161 1-23
+sql-playground/uninstall.sh
+  s_8772a817eccd11::t_eaeafef6f159f4 1-44
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "6e2fd192642f147922e234440f4320a6fbef85db",
+  "prompts": {},
+  "sessions": {
+    "s_3b53f3faf7302c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7b7528e4-a24f-44b8-a1f0-3181aa699c71",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "diegopacheco <diego.pacheco.it@gmail.com>"
+    },
+    "s_8772a817eccd11": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "23a121af-833e-4342-9856-a60091024218",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "diegopacheco <diego.pacheco.it@gmail.com>"
+    }
+  }
+}
