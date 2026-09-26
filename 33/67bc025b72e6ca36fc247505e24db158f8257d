@@ -1,0 +1,75 @@
+sail-vs-spark-connect/scripts/start-all.sh
+  s_dde22dd2cd9c7d::t_52209b42ff1139 1-36
+sail-vs-spark-connect/printscreens/architecture.svg
+  s_dde22dd2cd9c7d::t_d9fd1baa239050 33
+  s_dde22dd2cd9c7d::t_8fb00ae6a39128 1-32,34-48
+sail-vs-spark-connect/scripts/common.sh
+  s_dde22dd2cd9c7d::t_2b2eeaaba88d7e 1-93
+sail-vs-spark-connect/scripts/status.sh
+  s_dde22dd2cd9c7d::t_4e8e7a1e047b88 1-13
+sail-vs-spark-connect/podman-compose.yml
+  s_dde22dd2cd9c7d::t_431a0d4b1041f5 1-76
+sail-vs-spark-connect/scripts/test-all.sh
+  s_dde22dd2cd9c7d::t_b7ba88b4727a2a 1-14,16-17
+  s_dde22dd2cd9c7d::t_01e492f65ae5ef 15
+sail-vs-spark-connect/scripts/bench.sh
+  s_dde22dd2cd9c7d::t_edf990d13d9c1f 1-13
+sail-vs-spark-connect/scripts/stop-all.sh
+  s_dde22dd2cd9c7d::t_a71ee768bc9006 1-15
+sail-vs-spark-connect/app/index.html
+  s_dde22dd2cd9c7d::t_57a0961cf6e2dc 144
+  s_dde22dd2cd9c7d::t_828562369de4e5 1-37,39-100,102-143,145-167
+  s_dde22dd2cd9c7d::t_d9fd1baa239050 38,101
+sail-vs-spark-connect/app/server.py
+  s_dde22dd2cd9c7d::t_5f5c8d9b654b48 1-42
+sail-vs-spark-connect/app/queries.py
+  s_dde22dd2cd9c7d::t_df2998c22d9a00 1-114
+sail-vs-spark-connect/scripts/setup.sh
+  s_dde22dd2cd9c7d::t_8967fa9496d838 1-23
+sail-vs-spark-connect/tests/test_bench.py
+  s_dde22dd2cd9c7d::t_d3238cab1d52c7 1-2,4-8,10-18,23-24,30-31,41-45,47-53,55-58,60-63,66-69,71-128,130-133,135-161
+  s_dde22dd2cd9c7d::t_f828ec5c85c91a 9
+  s_dde22dd2cd9c7d::t_c131b8a6341e3a 19-22,25-29,32-40,46,54,59,64-65,70,134
+  s_dde22dd2cd9c7d::t_7b59df6b2a1c3b 3,129
+sail-vs-spark-connect/.gitignore
+  s_dde22dd2cd9c7d::t_b60e8bc30f608f 1-4
+sail-vs-spark-connect/scripts/ports.env
+  s_dde22dd2cd9c7d::t_267ab8ed8490a0 1-4
+sail-vs-spark-connect/README.md
+  s_dde22dd2cd9c7d::t_b09e7bf969238e 1-143,145-146,148,150-187
+  s_dde22dd2cd9c7d::t_4e2eefb84eb0a7 144,147,149
+README.md
+  s_dde22dd2cd9c7d::t_1499c7311358c6 45
+sail-vs-spark-connect/results/results.json
+  s_dde22dd2cd9c7d::t_cec33209ac1ffc 1,3,6-9,11-15,17-26,28-30,32,38,40-68,70,76,78-112,114-116,118,124,126-185,187,193,195-260,262-264,266,272,274-950,952,958,960-1642,1644-1646,1648,1654,1656-1774,1776,1782,1784-1908,1910-1912,1914,1920,1922-2510,2512,2518,2520-3114,3116-3118,3120,3126,3128-3217,3219,3225,3227-3322,3324-3326,3328,3334,3336-3496,3498,3504,3506-3676,3678,3684,3686-3742,3744-3746,3748,3754,3756-3788,3790,3796,3798-3832
+  s_dde22dd2cd9c7d::t_a1ede2a1ffdf8a 73
+  s_dde22dd2cd9c7d::t_48f4ad361a5b49 4-5,10,16
+  s_dde22dd2cd9c7d::t_78cfd1ad0c2e5b 2,27,31,33-37,39,69,71-72,74-75,77,113,117,119-123,125,186,188-192,194,261,265,267-271,273,951,953-957,959,1643,1647,1649-1653,1655,1775,1777-1781,1783,1909,1913,1915-1919,1921,2511,2513-2517,2519,3115,3119,3121-3125,3127,3218,3220-3224,3226,3323,3327,3329-3333,3335,3497,3499-3503,3505,3677,3679-3683,3685,3743,3747,3749-3753,3755,3789,3791-3795,3797
+sail-vs-spark-connect/app/bench.py
+  s_dde22dd2cd9c7d::t_7f13ae836938a3 1-117
+sail-vs-spark-connect/Containerfile
+  s_dde22dd2cd9c7d::t_be5a60b0aa922c 1-8
+sail-vs-spark-connect/requirements.txt
+  s_dde22dd2cd9c7d::t_cb2b004680f468 3
+  s_dde22dd2cd9c7d::t_2c625bb76d6a96 1-2
+sail-vs-spark-connect/app/gen.py
+  s_dde22dd2cd9c7d::t_47c21df019e828 1-69
+sail-vs-spark-connect/scripts/ui.sh
+  s_dde22dd2cd9c7d::t_9cef8594548714 1-8
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "3367bc025b72e6ca36fc247505e24db158f8257d",
+  "prompts": {},
+  "sessions": {
+    "s_dde22dd2cd9c7d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2d754554-d602-4dbd-8996-a2c4d4376a54",
+        "model": "unknown"
+      },
+      "human_author": "diegopacheco <diego.pacheco.it@gmail.com>"
+    }
+  }
+}
