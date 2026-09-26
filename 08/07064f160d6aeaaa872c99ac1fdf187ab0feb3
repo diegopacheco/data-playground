@@ -1,0 +1,70 @@
+lakekeeper-iceberg-catalog/scripts/ports.env
+  s_14c0915619db27::t_1f783a88a867e7 1-5
+lakekeeper-iceberg-catalog/.containerignore
+  s_14c0915619db27::t_9f5b9dbe8babb2 1-4
+lakekeeper-iceberg-catalog/README.md
+  s_14c0915619db27::t_fda5e9e2079182 1-158
+lakekeeper-iceberg-catalog/app/pipeline.py
+  s_14c0915619db27::t_9602f74d09522d 1-68
+lakekeeper-iceberg-catalog/podman-compose.yml
+  s_14c0915619db27::t_819545f2626a7c 1-102
+lakekeeper-iceberg-catalog/scripts/test-all.sh
+  s_14c0915619db27::t_37133cf104aeb3 46-48
+  s_14c0915619db27::t_08a440e5485be6 1-45,49-78
+lakekeeper-iceberg-catalog/.gitignore
+  s_14c0915619db27::t_efbae8294b0b2b 1-4
+lakekeeper-iceberg-catalog/app/lakekeeper.py
+  s_14c0915619db27::t_934758a63be390 1-28,30-70
+  s_14c0915619db27::t_d1287feb97d01e 29
+lakekeeper-iceberg-catalog/scripts/pipeline.sh
+  s_14c0915619db27::t_5f043fb82415a7 10
+  s_14c0915619db27::t_4401439d92e44b 1-9
+lakekeeper-iceberg-catalog/scripts/stop-all.sh
+  s_14c0915619db27::t_fc9c787d837e44 1-15
+lakekeeper-iceberg-catalog/scripts/start-all.sh
+  s_14c0915619db27::t_5f043fb82415a7 17,26
+  s_14c0915619db27::t_fb3aa5716c5d71 1-16,18-25,27-44
+lakekeeper-iceberg-catalog/app/index.html
+  s_14c0915619db27::t_710dd93e2263ed 1-166
+lakekeeper-iceberg-catalog/printscreens/architecture.svg
+  s_14c0915619db27::t_47b9afb49f8829 1-40,42-44
+  s_14c0915619db27::t_bfea37c3613933 41
+lakekeeper-iceberg-catalog/scripts/common.sh
+  s_14c0915619db27::t_2671644a94caca 1-100
+lakekeeper-iceberg-catalog/app/server.py
+  s_14c0915619db27::t_195b003f924ac0 1-65
+lakekeeper-iceberg-catalog/scripts/sql-console.sh
+  s_14c0915619db27::t_b39e6f3b8e4a08 1-6
+lakekeeper-iceberg-catalog/Containerfile
+  s_14c0915619db27::t_fb76354e5598af 1-8
+lakekeeper-iceberg-catalog/scripts/status.sh
+  s_14c0915619db27::t_da45d87e8c83f5 1-18
+lakekeeper-iceberg-catalog/scripts/setup.sh
+  s_14c0915619db27::t_3be4090ed37fbc 1-18
+lakekeeper-iceberg-catalog/scripts/ui.sh
+  s_14c0915619db27::t_a159a680670866 1-7
+lakekeeper-iceberg-catalog/requirements.txt
+  s_14c0915619db27::t_491245f6e4c8fe 1-3
+lakekeeper-iceberg-catalog/app/lake.py
+  s_14c0915619db27::t_fd442bbee92885 85
+  s_14c0915619db27::t_1ff3de03195658 1-51,53-84,86-87
+  s_14c0915619db27::t_2081631d04b0eb 52
+lakekeeper-iceberg-catalog/data/orders.csv
+  s_14c0915619db27::t_c51d6a1b12cad3 1-201
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "0807064f160d6aeaaa872c99ac1fdf187ab0feb3",
+  "prompts": {},
+  "sessions": {
+    "s_14c0915619db27": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "78bc23ff-c306-44c2-90f2-85a722724642",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "diegopacheco <diego.pacheco.it@gmail.com>"
+    }
+  }
+}
