@@ -1,0 +1,73 @@
+paradedb-search-analytics/README.md
+  s_14c0915619db27::t_681a18b991e262 67
+  s_14c0915619db27::t_776fc69afe4a13 86
+  s_14c0915619db27::t_caf6c284b37f30 1-62,64-66,68-85,87-182
+  s_14c0915619db27::t_26afebdb60fb0e 63
+paradedb-search-analytics/scripts/stop-all.sh
+  s_14c0915619db27::t_baaa7e5d799a9d 1-11
+paradedb-search-analytics/scripts/sql-console.sh
+  s_14c0915619db27::t_029538c097eed1 1-6
+paradedb-search-analytics/app/queries.py
+  s_14c0915619db27::t_2e3885292e5c3e 76-80
+  s_14c0915619db27::t_44d7bd40ef7e4b 72
+  s_14c0915619db27::t_41287cfb7d08fd 87
+  s_14c0915619db27::t_1468ccc01d3e35 110,112
+  s_14c0915619db27::t_c2f482bd97d3c9 1-71,73-75,81-86,88-109,111,113-129
+paradedb-search-analytics/app/index.html
+  s_14c0915619db27::t_13f45d6eb6739e 43
+  s_14c0915619db27::t_70395d708540c9 167
+  s_14c0915619db27::t_dd20801accecf9 117
+  s_14c0915619db27::t_d3d63cbacc6d7b 1-42,44-116,118-166,168-177
+paradedb-search-analytics/scripts/status.sh
+  s_14c0915619db27::t_2793ea8cd06826 1-13
+paradedb-search-analytics/sql/load.sql
+  s_14c0915619db27::t_c5971633144785 1,3-42
+  s_14c0915619db27::t_51e50fecef48af 2
+paradedb-search-analytics/podman-compose.yml
+  s_14c0915619db27::t_8c73e19cdd4025 1-47
+paradedb-search-analytics/.gitignore
+  s_14c0915619db27::t_6c2b26731cd3df 1-3
+paradedb-search-analytics/scripts/ports.env
+  s_14c0915619db27::t_310d3e9713f671 1-2
+paradedb-search-analytics/data/products.csv
+  s_14c0915619db27::t_97a776ef0ef612 1-36
+paradedb-search-analytics/printscreens/architecture.svg
+  s_14c0915619db27::t_6953eab01d70e9 38-40
+  s_14c0915619db27::t_0cca4287eefb46 1-37,41-44
+paradedb-search-analytics/scripts/pipeline.sh
+  s_14c0915619db27::t_63af2452e97719 1-7
+paradedb-search-analytics/Containerfile
+  s_14c0915619db27::t_885bd48677276f 1-7
+paradedb-search-analytics/scripts/common.sh
+  s_14c0915619db27::t_a4292157f96397 1-95
+paradedb-search-analytics/scripts/ui.sh
+  s_14c0915619db27::t_8d9258012843d3 1-6
+paradedb-search-analytics/requirements.txt
+  s_14c0915619db27::t_e6e8ea716d06e7 1
+paradedb-search-analytics/scripts/test-all.sh
+  s_14c0915619db27::t_07b6a2bb68fece 1-73
+paradedb-search-analytics/scripts/start-all.sh
+  s_14c0915619db27::t_e4b89ec7f3b13a 1-29
+paradedb-search-analytics/scripts/setup.sh
+  s_14c0915619db27::t_b126b5bd26c6ec 1-14
+paradedb-search-analytics/app/server.py
+  s_14c0915619db27::t_04007f712f2277 1-63
+paradedb-search-analytics/data/orders.csv
+  s_14c0915619db27::t_bc763e9b260ec6 1-201
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "814c677488f45671dc3218e6ae3f0f6c1a9c5e45",
+  "prompts": {},
+  "sessions": {
+    "s_14c0915619db27": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "78bc23ff-c306-44c2-90f2-85a722724642",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "diegopacheco <diego.pacheco.it@gmail.com>"
+    }
+  }
+}
