@@ -1,0 +1,21 @@
+sql-playground/scripts/common.sh
+  s_7822d46c983119::t_04091a2d473add 103-114
+sql-playground/scripts/start-all.sh
+  s_7822d46c983119::t_04091a2d473add 8
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "4db57af864f261fef56167bbc16282a8e13fb783",
+  "prompts": {},
+  "sessions": {
+    "s_7822d46c983119": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "11b19e77-d927-48fc-bb50-3a1bec5565d4",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "diegopacheco <diego.pacheco.it@gmail.com>"
+    }
+  }
+}
