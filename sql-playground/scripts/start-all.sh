@@ -5,7 +5,7 @@ source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/common.sh"
 require podman-compose
 require node
 require npm
-[ -d "$ROOT/node_modules" ] || fail "dependencies missing, run ./scripts/setup.sh first"
+ensure_deps
 
 log "starting"
 mkdir -p "$ROOT/tmp/pgdata"

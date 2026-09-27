@@ -100,6 +100,18 @@ compose() {
   POSTGRES_PORT="$(service_port postgres)" podman-compose -f "$ROOT/podman-compose.yml" "$@"
 }
 
+ensure_deps() {
+  local marker
+  marker="$ROOT/node_modules/.package-lock.json"
+  if [ -f "$marker" ] && [ ! "$ROOT/package-lock.json" -nt "$marker" ] && [ ! "$ROOT/package.json" -nt "$marker" ]; then
+    return 0
+  fi
+  log "installing npm dependencies, see $LOGS/npm.log"
+  ( cd "$ROOT" && npm install --no-audit --no-fund >"$LOGS/npm.log" 2>&1 ) || fail "npm install failed, see $LOGS/npm.log"
+  [ -f "$marker" ] || fail "npm install did not create node_modules, see $LOGS/npm.log"
+  touch "$marker"
+}
+
 seed_status() {
   curl -s "http://localhost:$(service_port backend)/api/status" 2>/dev/null || true
 }
