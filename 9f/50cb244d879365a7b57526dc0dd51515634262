@@ -1,0 +1,64 @@
+apache-age-graph/app/gen.py
+  s_3b53f3faf7302c::t_fe14592f354d64 1-62
+apache-age-graph/scripts/setup.sh
+  s_3b53f3faf7302c::t_6b9969fd535a98 1-24
+apache-age-graph/app/graph.py
+  s_3b53f3faf7302c::t_42b226cf9d9ec9 129
+  s_3b53f3faf7302c::t_eb81b8409e0ff8 1-128,130-183
+apache-age-graph/.containerignore
+  s_3b53f3faf7302c::t_dfdb661fd3b542 1-5
+apache-age-graph/printscreens/architecture.svg
+  s_3b53f3faf7302c::t_d16dd86f8fc424 1-62
+apache-age-graph/Containerfile
+  s_3b53f3faf7302c::t_bba64de9c69934 1-8
+apache-age-graph/scripts/status.sh
+  s_3b53f3faf7302c::t_5327eaf0b23a78 1-13
+apache-age-graph/scripts/ui.sh
+  s_3b53f3faf7302c::t_5c13d10140b6b1 1-7
+apache-age-graph/tests/test_graph.py
+  s_3b53f3faf7302c::t_4e09bf7eacf645 1-141,143-152
+  s_3b53f3faf7302c::t_36f09f42b83910 142
+apache-age-graph/scripts/sql-console.sh
+  s_3b53f3faf7302c::t_3ed5a41f82ae16 7-8
+  s_3b53f3faf7302c::t_30170dab942537 1-6
+apache-age-graph/scripts/test-all.sh
+  s_3b53f3faf7302c::t_aaeb145e2c8a4b 1-15
+apache-age-graph/scripts/stop-all.sh
+  s_3b53f3faf7302c::t_5c086be5b5d2a7 1-15
+apache-age-graph/README.md
+  s_3b53f3faf7302c::t_3ba9f047d3a7b2 1-164
+apache-age-graph/app/index.html
+  s_3b53f3faf7302c::t_746e6db2af45e2 173-174
+  s_3b53f3faf7302c::t_9af1f0f8a2f8ae 1-172,175-246,248-278
+  s_3b53f3faf7302c::t_1ac06dfe0ecaa9 247
+apache-age-graph/scripts/common.sh
+  s_3b53f3faf7302c::t_069e5587c060e2 1-99
+apache-age-graph/scripts/start-all.sh
+  s_3b53f3faf7302c::t_7181b1011e63d2 1-26
+apache-age-graph/requirements.txt
+  s_3b53f3faf7302c::t_24d51e28cfbd55 1
+apache-age-graph/app/server.py
+  s_3b53f3faf7302c::t_c291b8893df546 1-74
+apache-age-graph/podman-compose.yml
+  s_3b53f3faf7302c::t_e65fab373db346 1-49
+apache-age-graph/scripts/ports.env
+  s_3b53f3faf7302c::t_81c86b6b2404ad 1-2
+apache-age-graph/.gitignore
+  s_3b53f3faf7302c::t_73986b5076d631 1-4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "9f50cb244d879365a7b57526dc0dd51515634262",
+  "prompts": {},
+  "sessions": {
+    "s_3b53f3faf7302c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7b7528e4-a24f-44b8-a1f0-3181aa699c71",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "diegopacheco <diego.pacheco.it@gmail.com>"
+    }
+  }
+}
