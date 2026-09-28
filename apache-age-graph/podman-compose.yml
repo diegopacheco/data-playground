@@ -1,0 +1,49 @@
+name: r15-apache-age-graph
+
+services:
+  r15-age:
+    image: docker.io/apache/age:release_PG18_1.8.0
+    container_name: r15-age
+    environment:
+      POSTGRES_USER: graph
+      POSTGRES_PASSWORD: graph
+      POSTGRES_DB: graph
+    command: ["postgres", "-c", "shared_buffers=128MB", "-c", "max_connections=40"]
+    mem_limit: 512m
+    cpus: 1
+    ports:
+      - "${postgres:-28000}:5432"
+    volumes:
+      - r15-age-data:/var/lib/postgresql
+    networks:
+      - r15-net
+
+  r15-app:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: r15-apache-age-graph:latest
+    container_name: r15-app
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://graph:graph@r15-age:5432/graph
+      DATA_DIR: /data
+      UI_PORT: "8080"
+    mem_limit: 256m
+    cpus: 1
+    ports:
+      - "${ui:-28001}:8080"
+    volumes:
+      - ./data:/data:ro
+    networks:
+      - r15-net
+    depends_on:
+      - r15-age
+
+volumes:
+  r15-age-data:
+    name: r15-age-data
+
+networks:
+  r15-net:
+    name: r15-net

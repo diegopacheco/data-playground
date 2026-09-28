@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Apache AGE Graph</title>
+<style>
+:root{--bg:#f7f8fb;--card:#fff;--ink:#1d2433;--muted:#667085;--line:#e3e7ef;--accent:#3056d3;--cust:#3e7bfa;--hot:#e8590c;--ok:#2f9e44}
+*{box-sizing:border-box}
+body{margin:0;font:14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink)}
+header{padding:18px 24px 8px;display:flex;flex-wrap:wrap;gap:16px;align-items:baseline}
+h1{font-size:20px;margin:0}
+.sub{color:var(--muted)}
+.pills{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto}
+.pill{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:12px}
+.pill b{color:var(--accent)}
+nav{display:flex;gap:4px;padding:0 24px;border-bottom:1px solid var(--line)}
+nav button{border:0;background:none;padding:10px 14px;font:inherit;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent}
+nav button.on{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
+main{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:16px;padding:16px 24px}
+@media (max-width:1000px){main{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+svg{width:100%;height:auto;display:block}
+.edge{stroke:#c3cad8;stroke-width:1}
+.edge.BOUGHT{stroke:#d9dee8;stroke-dasharray:3 3}
+.node circle,.node rect{stroke:#fff;stroke-width:1.5}
+.node text{font-size:9px;fill:#475467;pointer-events:none}
+.node{cursor:pointer}
+.dim{opacity:.12}
+.edge.hl{stroke:var(--hot);stroke-width:2.4;stroke-dasharray:none;opacity:1}
+.edge.hl2{stroke:#9db4f5;stroke-width:1.6;stroke-dasharray:none;opacity:1}
+.node.src circle,.node.src rect{stroke:var(--ink);stroke-width:3}
+.node.hit circle,.node.hit rect{stroke:var(--hot);stroke-width:3}
+.node.hit text,.node.src text{font-weight:700;fill:var(--ink)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:8px}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.sw{width:10px;height:10px;border-radius:50%;display:inline-block}
+.sq{border-radius:2px}
+label{font-size:12px;color:var(--muted);display:block;margin:8px 0 3px}
+select{width:100%;padding:6px;border:1px solid var(--line);border-radius:6px;font:inherit;background:#fff}
+.row{display:flex;gap:10px}.row>div{flex:1}
+h2{font-size:15px;margin:14px 0 6px}
+pre{background:#f1f3f8;border:1px solid var(--line);border-radius:6px;padding:8px;font-size:11.5px;white-space:pre-wrap;margin:6px 0}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th,td{text-align:left;padding:4px 6px;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font-weight:600}
+td.n{text-align:right;font-variant-numeric:tabular-nums}
+.bar{height:8px;background:var(--accent);border-radius:4px;opacity:.75}
+.chain{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.chip{background:#fff4ec;border:1px solid #ffc9a3;border-radius:6px;padding:2px 8px}
+.hop{display:inline-block;min-width:20px;text-align:center;border-radius:4px;color:#fff;font-size:11px;padding:0 4px}
+.muted{color:var(--muted)}
+#tip{position:fixed;pointer-events:none;background:#1d2433;color:#fff;font-size:12px;padding:5px 8px;border-radius:6px;display:none}
+</style>
+</head>
+<body>
+<header>
+  <h1>Apache AGE graph on PostgreSQL</h1>
+  <span class="sub">openCypher and SQL over the same database</span>
+  <div class="pills" id="pills"></div>
+</header>
+<nav id="tabs">
+  <button data-tab="graph" class="on">Graph</button>
+  <button data-tab="khop">K-hop</button>
+  <button data-tab="path">Shortest path</button>
+  <button data-tab="also">Also bought</button>
+  <button data-tab="mix">Cypher + SQL</button>
+</nav>
+<main>
+  <section class="card">
+    <svg id="svg" viewBox="0 0 900 640"></svg>
+    <div class="legend" id="legend"></div>
+  </section>
+  <aside class="card" id="panel"></aside>
+</main>
+<div id="tip"></div>
+<script>
+const W = 900, H = 640, NS = "http://www.w3.org/2000/svg";
+const PALETTE = ["#f08c00", "#2f9e44", "#ae3ec9", "#e03131", "#0c8599", "#5c940d"];
+const HOPS = ["#e8590c", "#f59f00", "#94a3b8", "#94a3b8"];
+const state = {tab: "graph", customer: 1, target: 2, product: 1, k: 2};
+let G, byKey, nodeEls = {}, edgeEls = [], cats = {};
+
+const $ = s => document.querySelector(s);
+const el = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); parent && parent.appendChild(e); return e; };
+const api = async p => { const r = await fetch(p); const j = await r.json(); if (!r.ok) throw new Error(j.error); return j; };
+const money = c => "$" + (c / 100).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+const esc = s => String(s).replace(/[&<>]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;"}[c]));
+const cname = id => byKey["c" + id].name;
+
+function rng(seed) { return () => (seed = (seed * 1664525 + 1013904223) % 4294967296) / 4294967296; }
+
+function layout() {
+  const r = rng(7), n = G.nodes;
+  n.forEach((d, i) => { const a = i / n.length * Math.PI * 2; const rad = d.type === "Customer" ? 170 : 270; d.x = W / 2 + Math.cos(a) * rad + r() * 20; d.y = H / 2 + Math.sin(a) * rad * 0.8 + r() * 20; });
+  const links = G.edges.map(e => [byKey[e.from], byKey[e.to], e.type === "FOLLOWS" ? 70 : 95]);
+  for (let it = 0; it < 500; it++) {
+    const t = 1 - it / 500;
+    for (let i = 0; i < n.length; i++) for (let j = i + 1; j < n.length; j++) {
+      const a = n[i], b = n[j]; let dx = a.x - b.x, dy = a.y - b.y, d2 = dx * dx + dy * dy + 0.01;
+      if (d2 > 40000) continue;
+      const f = 900 / d2; a.x += dx * f * t; a.y += dy * f * t; b.x -= dx * f * t; b.y -= dy * f * t;
+    }
+    for (const [a, b, len] of links) {
+      const dx = b.x - a.x, dy = b.y - a.y, d = Math.sqrt(dx * dx + dy * dy) + 0.01, f = (d - len) / d * 0.04 * t;
+      a.x += dx * f; a.y += dy * f; b.x -= dx * f; b.y -= dy * f;
+    }
+    for (const d of n) { d.x += (W / 2 - d.x) * 0.004; d.y += (H / 2 - d.y) * 0.004; d.x = Math.max(24, Math.min(W - 24, d.x)); d.y = Math.max(20, Math.min(H - 20, d.y)); }
+  }
+}
+
+function draw() {
+  const svg = $("#svg");
+  svg.innerHTML = "";
+  const defs = el("defs", {}, svg);
+  const m = el("marker", {id: "arr", viewBox: "0 0 10 10", refX: 17, refY: 5, markerWidth: 6, markerHeight: 6, orient: "auto-start-reverse"}, defs);
+  el("path", {d: "M0,0L10,5L0,10z", fill: "#98a2b3"}, m);
+  const eg = el("g", {}, svg), ng = el("g", {}, svg);
+  edgeEls = G.edges.map(e => {
+    const a = byKey[e.from], b = byKey[e.to];
+    const line = el("line", {x1: a.x, y1: a.y, x2: b.x, y2: b.y, class: "edge " + e.type}, eg);
+    if (e.type === "FOLLOWS") line.setAttribute("marker-end", "url(#arr)");
+    return {e, line};
+  });
+  for (const d of G.nodes) {
+    const g = el("g", {class: "node", transform: `translate(${d.x},${d.y})`}, ng);
+    if (d.type === "Customer") el("circle", {r: 8, fill: "var(--cust)"}, g);
+    else el("rect", {x: -7, y: -7, width: 14, height: 14, rx: 3, fill: cats[d.category]}, g);
+    el("text", {x: 11, y: 4}, g).textContent = d.name;
+    g.addEventListener("mousemove", ev => { const t = $("#tip"); t.style.display = "block"; t.style.left = ev.clientX + 12 + "px"; t.style.top = ev.clientY + 12 + "px"; t.textContent = d.type === "Customer" ? `Customer ${d.id}: ${d.name}, ${d.city}` : `Product ${d.id}: ${d.name} (${d.category}) ${money(d.price_cents)}`; });
+    g.addEventListener("mouseleave", () => $("#tip").style.display = "none");
+    g.addEventListener("click", () => pick(d));
+    nodeEls[d.key] = g;
+  }
+  $("#legend").innerHTML = `<span><i class="sw" style="background:var(--cust)"></i>Customer</span>` +
+    Object.entries(cats).map(([c, col]) => `<span><i class="sw sq" style="background:${col}"></i>${c}</span>`).join("") +
+    `<span>solid arrow = FOLLOWS</span><span>dashed = BOUGHT</span>`;
+}
+
+function highlight(src, hits, edges, soft) {
+  const on = src || hits;
+  for (const k in nodeEls) {
+    const g = nodeEls[k];
+    g.classList.toggle("src", !!src && src.has(k));
+    g.classList.toggle("hit", !!hits && hits.has(k));
+    g.classList.toggle("dim", !!on && !(src && src.has(k)) && !(hits && hits.has(k)) && !(soft && soft.has(k)));
+  }
+  for (const {e, line} of edgeEls) {
+    const id = e.from + ">" + e.to;
+    line.classList.toggle("hl", !!edges && edges.has(id));
+    line.classList.toggle("hl2", !!soft && !(edges && edges.has(id)) && soft.has(e.from) && soft.has(e.to));
+    line.classList.toggle("dim", !!on && !(edges && edges.has(id)) && !(soft && soft.has(e.from) && soft.has(e.to)));
+  }
+}
+
+function hopColor(h) { return HOPS[Math.min(h - 1, HOPS.length - 1)]; }
+
+function options(type, selected) {
+  return G.nodes.filter(d => d.type === type).map(d => `<option value="${d.id}" ${d.id === selected ? "selected" : ""}>${d.id} - ${esc(d.name)}</option>`).join("");
+}
+function kOptions() { return [1, 2, 3, 4].map(k => `<option ${k === state.k ? "selected" : ""}>${k}</option>`).join(""); }
+function bind(id, key) { $(id).onchange = e => { state[key] = +e.target.value; render(); }; }
+
+function pick(d) {
+  if (d.type === "Customer") {
+    if (state.tab === "path") { state.target = d.id; } else { state.customer = d.id; if (state.tab === "graph" || state.tab === "also") state.tab = "khop"; }
+  } else { state.product = d.id; state.tab = "also"; }
+  render();
+}
+
+async function render() {
+  document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("on", b.dataset.tab === state.tab));
+  history.replaceState(null, "", "#" + state.tab);
+  resetColors();
+  const p = $("#panel");
+  try {
+    if (state.tab === "graph") return renderGraph(p);
+    if (state.tab === "khop") return await renderKhop(p);
+    if (state.tab === "path") return await renderPath(p);
+    if (state.tab === "also") return await renderAlso(p);
+    if (state.tab === "mix") return await renderMix(p);
+  } catch (e) { p.innerHTML = `<h2>Error</h2><pre>${esc(e.message)}</pre>`; }
+}
+
+function renderGraph(p) {
+  highlight();
+  const s = G.stats;
+  p.innerHTML = `<h2>What is loaded</h2>
+  <p class="muted">Plain SQL tables in schema <code>sales</code> are loaded from CSV with COPY, then the graph <code>shop</code> is built from them with Cypher <code>UNWIND ... CREATE</code>. Both live in the same PostgreSQL ${esc(s.postgres)} database with Apache AGE ${esc(s.age)}.</p>
+  <table><tr><th>SQL table</th><th class="n">rows</th></tr>${Object.entries(s.tables).map(([t, n]) => `<tr><td>sales.${t}</td><td class="n">${n}</td></tr>`).join("")}</table>
+  <h2>Graph shop</h2>
+  <table><tr><th>Vertex label</th><th class="n">count</th></tr>${Object.entries(s.nodes).map(([t, n]) => `<tr><td>:${t}</td><td class="n">${n}</td></tr>`).join("")}
+  <tr><th>Edge label</th><th class="n">count</th></tr>${Object.entries(s.edges).map(([t, n]) => `<tr><td>:${t}</td><td class="n">${n}</td></tr>`).join("")}</table>
+  <pre>(:Customer {id, name, city})-[:FOLLOWS]->(:Customer)
+(:Customer)-[:BOUGHT {orders, quantity}]->(:Product {id, name, category, price_cents})</pre>
+  <p class="muted">BOUGHT is one edge per distinct customer and product, so ${s.tables.orders} order lines became ${s.edges.BOUGHT} edges. Click a customer to see its k-hop reach, a product to see what its buyers also bought.</p>`;
+}
+
+async function renderKhop(p) {
+  p.innerHTML = `<div class="row"><div><label>Customer</label><select id="c">${options("Customer", state.customer)}</select></div><div style="flex:.4"><label>Hops (k)</label><select id="k">${kOptions()}</select></div></div><div id="out" class="muted">loading</div>`;
+  bind("#c", "customer"); bind("#k", "k");
+  const r = await api(`/api/khop?customer=${state.customer}&k=${state.k}`);
+  const reach = new Set(r.reached.map(x => "c" + x.id)), src = "c" + state.customer, all = new Set([...reach, src]);
+  const edges = new Set(G.edges.filter(e => e.type === "FOLLOWS" && all.has(e.from) && reach.has(e.to)).map(e => e.from + ">" + e.to));
+  highlight(new Set([src]), reach, edges);
+  for (const x of r.reached) nodeEls["c" + x.id].querySelector("circle").setAttribute("fill", hopColor(x.hops));
+  const byHop = {}; r.reached.forEach(x => (byHop[x.hops] = byHop[x.hops] || []).push(x));
+  $("#out").innerHTML = `<h2>${r.reached.length} customers within ${r.k} hops of ${esc(cname(r.customer))}</h2>` +
+    Object.entries(byHop).map(([h, xs]) => `<p><span class="hop" style="background:${hopColor(+h)}">${h}</span> ${xs.map(x => esc(x.name)).join(", ")}</p>`).join("") +
+    `<h2>Cypher</h2><pre>${esc(r.cypher)}</pre>`;
+}
+
+async function renderPath(p) {
+  p.innerHTML = `<div class="row"><div><label>From</label><select id="a">${options("Customer", state.customer)}</select></div><div><label>To</label><select id="b">${options("Customer", state.target)}</select></div></div><p class="muted">Click a customer on the graph to set the target.</p><div id="out" class="muted">loading</div>`;
+  bind("#a", "customer"); bind("#b", "target");
+  const r = await api(`/api/path?from=${state.customer}&to=${state.target}`);
+  if (!r.path) {
+    highlight(new Set(["c" + r.from, "c" + r.to]), new Set(), new Set());
+    $("#out").innerHTML = `<h2>No path</h2><p>${esc(cname(r.from))} cannot reach ${esc(cname(r.to))} by following FOLLOWS edges within ${r.max_hops} hops.</p><h2>Cypher</h2><pre>${esc(r.cypher)}</pre>`;
+    return;
+  }
+  const keys = r.path.map(i => "c" + i), edges = new Set(keys.slice(1).map((k, i) => keys[i] + ">" + k));
+  highlight(new Set([keys[0], keys[keys.length - 1]]), new Set(keys), edges);
+  $("#out").innerHTML = `<h2>${r.hops} hop${r.hops === 1 ? "" : "s"}</h2><div class="chain">${r.path.map(i => `<span class="chip">${esc(cname(i))}</span>`).join("&rarr;")}</div><h2>Cypher</h2><pre>${esc(r.cypher)}</pre>`;
+}
+
+async function renderAlso(p) {
+  p.innerHTML = `<label>Product</label><select id="pr">${options("Product", state.product)}</select><div id="out" class="muted">loading</div>`;
+  bind("#pr", "product");
+  const r = await api(`/api/recommend?product=${state.product}`);
+  const src = "p" + r.product, buyers = new Set(r.buyers.map(i => "c" + i)), recs = new Set(r.also_bought.map(x => "p" + x.id));
+  const edges = new Set(G.edges.filter(e => e.type === "BOUGHT" && buyers.has(e.from) && (e.to === src || recs.has(e.to))).map(e => e.from + ">" + e.to));
+  highlight(new Set([src]), recs, edges, buyers);
+  const max = Math.max(1, ...r.also_bought.map(x => x.buyers));
+  $("#out").innerHTML = `<h2>${r.buyers.length} customers bought ${esc(byKey[src].name)}</h2><p>${r.buyers.map(i => esc(cname(i))).join(", ") || "nobody"}</p>
+  <h2>Customers who bought it also bought</h2>
+  <table><tr><th>Product</th><th>Category</th><th class="n">buyers</th><th style="width:30%"></th></tr>${r.also_bought.map(x => `<tr><td>${esc(x.name)}</td><td>${esc(x.category)}</td><td class="n">${x.buyers}</td><td><div class="bar" style="width:${x.buyers / max * 100}%"></div></td></tr>`).join("")}</table>
+  <h2>Cypher</h2><pre>${esc(r.cypher)}</pre>`;
+}
+
+async function renderMix(p) {
+  p.innerHTML = `<div class="row"><div><label>Customer</label><select id="c">${options("Customer", state.customer)}</select></div><div style="flex:.4"><label>Hops (k)</label><select id="k">${kOptions()}</select></div></div><div id="out" class="muted">loading</div>`;
+  bind("#c", "customer"); bind("#k", "k");
+  const [r, reach] = await Promise.all([api(`/api/network?customer=${state.customer}&k=${state.k}`), api(`/api/khop?customer=${state.customer}&k=${state.k}`)]);
+  const src = "c" + state.customer, net = new Set(reach.reached.map(x => "c" + x.id)), picks = new Set(r.picks.map(x => "p" + x.id));
+  const edges = new Set(G.edges.filter(e => net.has(e.from) && picks.has(e.to)).map(e => e.from + ">" + e.to));
+  highlight(new Set([src]), picks, edges, new Set([...net, src]));
+  const max = Math.max(1, ...r.spend.map(s => s.revenue_cents)), total = r.spend.reduce((a, s) => a + s.revenue_cents, 0);
+  $("#out").innerHTML = `<h2>Spend of ${esc(cname(r.customer))}'s ${r.k}-hop network: ${money(total)}</h2>
+  <p class="muted">Cypher finds who ${esc(cname(r.customer))} reaches, SQL joins those ids with <code>sales.orders</code> and <code>sales.products</code> in one statement.</p>
+  <table><tr><th>Category</th><th class="n">buyers</th><th class="n">lines</th><th class="n">revenue</th><th style="width:25%"></th></tr>${r.spend.map(s => `<tr><td>${esc(s.category)}</td><td class="n">${s.customers}</td><td class="n">${s.order_lines}</td><td class="n">${money(s.revenue_cents)}</td><td><div class="bar" style="width:${s.revenue_cents / max * 100}%"></div></td></tr>`).join("")}</table>
+  <h2>Picks: bought by the network, not yet by ${esc(cname(r.customer))}</h2>
+  <table><tr><th>Product</th><th>Category</th><th class="n">network buyers</th></tr>${r.picks.map(x => `<tr><td>${esc(x.name)}</td><td>${esc(x.category)}</td><td class="n">${x.buyers}</td></tr>`).join("")}</table>
+  <h2>SQL with an embedded cypher() call</h2>${r.sql.map(s => `<pre>${esc(s)}</pre>`).join("")}`;
+}
+
+function resetColors() { for (const d of G.nodes) if (d.type === "Customer") nodeEls[d.key].querySelector("circle").setAttribute("fill", "var(--cust)"); }
+
+async function init() {
+  const [g, s] = await Promise.all([api("/api/graph"), api("/api/stats")]);
+  G = g; G.stats = s;
+  byKey = Object.fromEntries(G.nodes.map(d => [d.key, d]));
+  [...new Set(G.nodes.filter(d => d.type === "Product").map(d => d.category))].forEach((c, i) => cats[c] = PALETTE[i % PALETTE.length]);
+  const target = G.nodes.filter(d => d.type === "Customer").map(d => d.id);
+  state.target = target[Math.min(5, target.length - 1)];
+  $("#pills").innerHTML = `<span class="pill">PostgreSQL <b>${esc(s.postgres)}</b></span><span class="pill">Apache AGE <b>${esc(s.age)}</b></span>` +
+    `<span class="pill"><b>${G.nodes.length}</b> vertices</span><span class="pill"><b>${G.edges.length}</b> edges</span>`;
+  layout(); draw();
+  const hash = location.hash.slice(1);
+  if (hash) state.tab = hash;
+  document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => { state.tab = b.dataset.tab; render(); });
+  render();
+}
+
+init().catch(e => $("#panel").innerHTML = `<h2>Error</h2><pre>${esc(e.message)}</pre>`);
+</script>
+</body>
+</html>
