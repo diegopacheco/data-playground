@@ -1,0 +1,95 @@
+arrow-flight-java-python/src/main/java/flight/BenchData.java
+  s_9121753c4a3d76::t_66aa48275a92f2 1-66
+arrow-flight-java-python/scripts/stop-all.sh
+  s_9121753c4a3d76::t_dce45948979370 1-17
+arrow-flight-java-python/scripts/status.sh
+  s_9121753c4a3d76::t_dce45948979370 1-18
+arrow-flight-java-python/client/index.html
+  s_9121753c4a3d76::t_81273fb5625b30 14-16,47,62-65,67,71,75,78,174-177,180,205-209
+  s_9121753c4a3d76::t_04da59ec8261a9 153,197,202-204
+  s_9121753c4a3d76::t_83cd7f92d2ca36 1-13,17-46,48-61,66,68-70,72-74,76-77,79-152,154-173,178-179,181-196,198-201,210-212
+arrow-flight-java-python/podman-compose.yml
+  s_9121753c4a3d76::t_99b57af2784de4 1-27
+arrow-flight-java-python/src/main/java/flight/CsvHttpServer.java
+  s_9121753c4a3d76::t_ea041f8a6e63f5 1-48
+arrow-flight-java-python/scripts/ui.sh
+  s_9121753c4a3d76::t_dce45948979370 1-9
+arrow-flight-java-python/scripts/common.sh
+  s_9121753c4a3d76::t_a99cef79d4ad2c 32-33
+  s_9121753c4a3d76::t_1c91c1f0fa11d4 12-14
+  s_9121753c4a3d76::t_6426dda04d97be 1-11,15-31,34-123
+  s_9121753c4a3d76::t_6df49c3d77f4d8 124-143
+arrow-flight-java-python/data/new_orders.csv
+  s_9121753c4a3d76::t_f319bf0bb3a2c5 1-6
+arrow-flight-java-python/src/main/java/flight/OrderStore.java
+  s_9121753c4a3d76::t_1fff60a0b58974 1-43
+arrow-flight-java-python/client/settings.py
+  s_9121753c4a3d76::t_fe89d0f0ffec4a 1-3,6-18
+  s_9121753c4a3d76::t_890de2ab20048f 4-5
+arrow-flight-java-python/client/app.py
+  s_9121753c4a3d76::t_628e07704ec780 1-86
+  s_9121753c4a3d76::t_67e4afb329b461 87
+  s_9121753c4a3d76::t_0e28c27e2586c5 88-90
+arrow-flight-java-python/README.md
+  s_9121753c4a3d76::t_e1392c169cd188 1-195
+arrow-flight-java-python/scripts/setup.sh
+  s_9121753c4a3d76::t_dce45948979370 1-20
+arrow-flight-java-python/src/main/java/flight/OrderVectors.java
+  s_9121753c4a3d76::t_fafeb51d7a5a54 57-66
+  s_9121753c4a3d76::t_9d5f6cae1a5e35 1-56,67-89
+arrow-flight-java-python/.gitignore
+  s_9121753c4a3d76::t_fd7d5d430f9594 1-5
+arrow-flight-java-python/architecture.svg
+  s_9121753c4a3d76::t_81273fb5625b30 10,22
+  s_9121753c4a3d76::t_546e1b5409747e 1-8,11-13,16-19,23-43
+  s_9121753c4a3d76::t_67019156cbfa81 9,14-15,20-21
+arrow-flight-java-python/scripts/test-all.sh
+  s_9121753c4a3d76::t_dce45948979370 1-14
+arrow-flight-java-python/client/flight_client.py
+  s_9121753c4a3d76::t_90807d3d9de939 1-116
+arrow-flight-java-python/src/test/java/flight/FlightServerTest.java
+  s_9121753c4a3d76::t_851d5c1719ff00 1-161
+arrow-flight-java-python/scripts/start-all.sh
+  s_9121753c4a3d76::t_dce45948979370 1-25
+arrow-flight-java-python/src/main/java/flight/Revenue.java
+  s_9121753c4a3d76::t_04cc9c212b4b38 1-70
+arrow-flight-java-python/src/main/java/flight/Main.java
+  s_9121753c4a3d76::t_5dae2b5f896249 1-54
+arrow-flight-java-python/scripts/ports.env
+  s_9121753c4a3d76::t_6426dda04d97be 1-3
+arrow-flight-java-python/src/main/java/flight/Order.java
+  s_9121753c4a3d76::t_f60a30826b31a5 1-17
+arrow-flight-java-python/client/requirements.txt
+  s_9121753c4a3d76::t_9dafd25a2ab681 1-2
+arrow-flight-java-python/src/main/java/flight/OrdersProducer.java
+  s_9121753c4a3d76::t_bd789623dbf387 1-130
+arrow-flight-java-python/pom.xml
+  s_9121753c4a3d76::t_c7a04fb380c949 1-16,18-44,46-93
+  s_9121753c4a3d76::t_72b8856291f28b 45
+  s_9121753c4a3d76::t_c4cf8b5ba7d986 17
+arrow-flight-java-python/Containerfile
+  s_9121753c4a3d76::t_732ccfe543c9a5 1-16
+arrow-flight-java-python/client/tests/test_flight.py
+  s_9121753c4a3d76::t_909504754ef7b4 5,7
+  s_9121753c4a3d76::t_6eeb1b5610b668 1-4,6,8-85
+arrow-flight-java-python/client/cli.py
+  s_9121753c4a3d76::t_d6fa4f810b6d71 1-40
+arrow-flight-java-python/data/orders.csv
+  s_9121753c4a3d76::t_80e245373f0387 1-201
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "17b4063e0253e26a6ec51c9a1e9a5f196716c2fe",
+  "prompts": {},
+  "sessions": {
+    "s_9121753c4a3d76": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "39b421dc-22e8-4dc0-93df-749df3c5cb41",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "diegopacheco <diego.pacheco.it@gmail.com>"
+    }
+  }
+}
