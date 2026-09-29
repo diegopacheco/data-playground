@@ -1,0 +1,6 @@
+order_id,customer,product,category,quantity,price,ts
+900001,Ana Lima,Chess Board,games,2,34.90,2026-09-01T10:00:00Z
+900002,Rui Costa,Puzzle 1000 Pieces,games,1,19.99,2026-09-01T10:30:00Z
+900003,Emma Brown,Mystery Novel,books,3,14.50,2026-09-01T11:00:00Z
+900004,Sofia Rossi,Yoga Mat,sports,2,27.75,2026-09-01T11:30:00Z
+900005,Liam Smith,Desk Lamp,home,4,22.10,2026-09-01T12:00:00Z

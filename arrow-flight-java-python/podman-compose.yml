@@ -1,0 +1,27 @@
+name: i13-arrow-flight
+
+x-podman:
+  in_pod: false
+
+services:
+  flight-server:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: localhost/i13-flight-server:1.0.0
+    container_name: i13-flight-server
+    ports:
+      - "21300:21300"
+      - "21301:21301"
+    environment:
+      FLIGHT_PORT: "21300"
+      HTTP_PORT: "21301"
+      BENCH_ROWS: "1000000"
+      ORDERS_CSV: /app/data/orders.csv
+    mem_limit: 1536m
+    networks:
+      - i13-net
+
+networks:
+  i13-net:
+    name: i13-net

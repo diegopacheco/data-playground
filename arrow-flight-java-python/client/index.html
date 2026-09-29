@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Arrow Flight Orders</title>
+<style>
+  :root { --bg:#f7f8fa; --card:#fff; --ink:#1f2933; --muted:#6b7785; --line:#e3e7ec; --flight:#2f6fde; --csv:#e0823d; --csv2:#f3bf8f; --ok:#1d8a4e; --up:#e6f4ea; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif; }
+  header { padding:20px 24px; background:var(--card); border-bottom:1px solid var(--line); }
+  header h1 { margin:0; font-size:20px; }
+  header p { margin:4px 0 0; color:var(--muted); }
+  main { max-width:1180px; margin:0 auto; padding:20px 16px; display:grid; gap:16px; }
+  .split { display:grid; gap:16px; grid-template-columns:1fr 1fr; align-items:start; }
+  @media (max-width:760px) { .split { grid-template-columns:1fr; } }
+  section { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px; min-width:0; }
+  h2 { margin:0 0 10px; font-size:15px; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th,td { text-align:left; padding:5px 6px; border-bottom:1px solid var(--line); white-space:nowrap; }
+  th { color:var(--muted); font-weight:600; }
+  td.num,th.num { text-align:right; font-variant-numeric:tabular-nums; }
+  tr.new td { background:var(--up); }
+  .scroll { overflow-x:auto; }
+  .bar-row { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; }
+  button { font:inherit; padding:7px 14px; border-radius:7px; border:1px solid var(--line); background:#fff; cursor:pointer; }
+  button.primary { background:var(--flight); border-color:var(--flight); color:#fff; }
+  button:disabled { opacity:.5; cursor:wait; }
+  .kpis { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px; }
+  .kpi { flex:1 1 120px; border:1px solid var(--line); border-radius:8px; padding:8px 10px; }
+  .kpi b { display:block; font-size:20px; }
+  .kpi span { color:var(--muted); font-size:12px; }
+  .delta { color:var(--ok); font-weight:600; }
+  .muted { color:var(--muted); }
+  .legend { display:flex; gap:14px; font-size:12px; color:var(--muted); margin-top:6px; flex-wrap:wrap; }
+  .legend i { display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:5px; vertical-align:middle; }
+  svg text { font:12px system-ui,sans-serif; fill:var(--ink); }
+  #status { font-size:12px; color:var(--muted); margin-left:auto; align-self:center; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Arrow Flight orders</h1>
+  <p>Java 25 Flight server streams Arrow record batches; Python 3.14 pyarrow.flight client fetches, uploads with do_put and benchmarks against CSV over HTTP.</p>
+</header>
+<main>
+  <section>
+    <div class="bar-row">
+      <button class="primary" id="upload">do_put new orders batch</button>
+      <button id="reset">reset to CSV</button>
+      <button id="refresh">refresh streams</button>
+      <span id="status"></span>
+    </div>
+    <div class="kpis" id="kpis"></div>
+  </section>
+  <section>
+    <h2>list_flights</h2>
+    <div class="scroll"><table id="flights"></table></div>
+  </section>
+  <section>
+    <h2>revenue_by_category (computed on the server)</h2>
+    <div class="split">
+      <svg id="revenueChart" width="100%" height="200"></svg>
+      <div class="scroll"><table id="revenue"></table></div>
+    </div>
+  </section>
+  <section>
+    <h2>orders stream (last 10 rows)</h2>
+    <div class="scroll"><table id="orders"></table></div>
+  </section>
+  <section>
+    <h2>Benchmark: Arrow Flight do_get vs CSV over plain HTTP (same 1M rows)</h2>
+    <div class="bar-row">
+      <button class="primary" id="bench">run benchmark (3 rounds)</button>
+      <span class="muted" id="benchNote">Both sides end with an identical pyarrow Table; CSV time includes download plus parse. The server runs in a podman container, so host traffic crosses the podman port forwarder.</span>
+    </div>
+    <div class="kpis" id="benchKpis"></div>
+    <svg id="benchChart" width="100%" height="90"></svg>
+    <div class="legend"><span><i style="background:var(--flight)"></i>Flight do_get</span><span><i style="background:var(--csv)"></i>CSV download</span><span><i style="background:var(--csv2)"></i>CSV parse</span></div>
+    <div class="scroll"><table id="benchTable"></table></div>
+  </section>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const fmt = n => Number(n).toLocaleString("en-US");
+const money = n => Number(n).toLocaleString("en-US", {minimumFractionDigits:2, maximumFractionDigits:2});
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
+let previousRevenue = null;
+let uploadedIds = new Set();
+
+async function api(path, method = "GET") {
+  const res = await fetch(path, {method});
+  const body = await res.json();
+  if (!res.ok) throw new Error(body.error || res.statusText);
+  return body;
+}
+
+function table(el, headers, rows, rowClass = () => "") {
+  el.innerHTML = "<tr>" + headers.map(h => `<th class="${h.num ? "num" : ""}">${h.label}</th>`).join("") + "</tr>" +
+    rows.map(r => `<tr class="${rowClass(r)}">` + headers.map(h => `<td class="${h.num ? "num" : ""}">${h.value(r)}</td>`).join("") + "</tr>").join("");
+}
+
+function kpis(el, items) {
+  el.innerHTML = items.map(([value, label]) => `<div class="kpi"><b>${value}</b><span>${label}</span></div>`).join("");
+}
+
+function drawRevenue(rows) {
+  const svg = $("revenueChart");
+  const width = svg.clientWidth || 400, barH = 22, gap = 6, left = 90, right = 80;
+  svg.setAttribute("height", rows.length * (barH + gap) + 4);
+  const max = Math.max(...rows.map(r => r.revenue), 1);
+  svg.innerHTML = rows.map((r, i) => {
+    const y = i * (barH + gap), w = Math.max(2, (width - left - right) * r.revenue / max);
+    return `<text x="0" y="${y + 15}">${esc(r.category)}</text><rect x="${left}" y="${y}" width="${w}" height="${barH}" rx="3" fill="var(--flight)"></rect><text x="${left + w + 6}" y="${y + 15}">${money(r.revenue)}</text>`;
+  }).join("");
+}
+
+function renderRevenue(rows) {
+  const before = previousRevenue ? Object.fromEntries(previousRevenue.map(r => [r.category, r])) : null;
+  const delta = r => {
+    if (!before) return "";
+    const b = before[r.category];
+    const d = r.revenue - (b ? b.revenue : 0);
+    return Math.abs(d) < 0.005 ? "" : `<span class="delta">${d > 0 ? "+" : ""}${money(d)}</span>`;
+  };
+  table($("revenue"), [
+    {label:"category", value:r => esc(r.category)},
+    {label:"orders", num:true, value:r => fmt(r.orders)},
+    {label:"units", num:true, value:r => fmt(r.units)},
+    {label:"revenue", num:true, value:r => money(r.revenue)},
+    {label:"change", num:true, value:delta},
+  ], rows, r => before && !before[r.category] ? "new" : "");
+  drawRevenue(rows);
+}
+
+async function refresh(keepBaseline = true) {
+  const [flights, orders, revenue] = await Promise.all([api("/api/flights"), api("/api/orders"), api("/api/revenue")]);
+  table($("flights"), [
+    {label:"descriptor", value:f => `<b>${esc(f.name)}</b>`},
+    {label:"records", num:true, value:f => f.records < 0 ? "-" : fmt(f.records)},
+    {label:"bytes", num:true, value:f => f.bytes < 0 ? "-" : fmt(f.bytes)},
+    {label:"schema", value:f => `<span class="muted">${esc(f.schema.join(", "))}</span>`},
+  ], flights);
+  table($("orders"), ["order_id","customer","product","category","quantity","price","ts"].map(k => ({
+    label:k, num:["order_id","quantity","price"].includes(k), value:r => k === "price" ? money(r[k]) : esc(r[k])
+  })), orders.tail, r => uploadedIds.has(r.order_id) ? "new" : "");
+  renderRevenue(revenue);
+  const total = revenue.reduce((s, r) => s + r.revenue, 0);
+  kpis($("kpis"), [[fmt(orders.rows), "rows in orders stream"], [revenue.length, "categories"], ["$" + money(total), "total revenue"]]);
+  if (!keepBaseline || !previousRevenue) previousRevenue = revenue;
+}
+
+async function run(work) {
+  document.querySelectorAll("button").forEach(b => b.disabled = true);
+  $("status").textContent = "working...";
+  try { await work(); $("status").textContent = "done " + new Date().toLocaleTimeString(); }
+  catch (e) { $("status").textContent = "error: " + e.message; }
+  finally { document.querySelectorAll("button").forEach(b => b.disabled = false); }
+}
+
+function drawBench(result) {
+  const svg = $("benchChart");
+  const width = svg.clientWidth || 600, left = 70, right = 70, barH = 30;
+  const f = result.flight, c = result.csv;
+  const max = Math.max(f.median_seconds, c.median_seconds);
+  const scale = s => (width - left - right) * s / max;
+  const dl = scale(c.median_download_seconds), ps = scale(c.median_parse_seconds);
+  svg.innerHTML =
+    `<text x="0" y="24">Flight</text><rect x="${left}" y="5" width="${scale(f.median_seconds)}" height="${barH}" rx="3" fill="var(--flight)"></rect><text x="${left + scale(f.median_seconds) + 6}" y="24">${f.median_seconds}s</text>` +
+    `<text x="0" y="74">CSV+HTTP</text><rect x="${left}" y="55" width="${dl}" height="${barH}" fill="var(--csv)"></rect><rect x="${left + dl}" y="55" width="${ps}" height="${barH}" fill="var(--csv2)"></rect><text x="${left + dl + ps + 6}" y="74">${c.median_seconds}s</text>`;
+}
+
+async function bench() {
+  showBench(await api("/api/bench?rounds=3"));
+}
+
+function showBench(r) {
+  kpis($("benchKpis"), [
+    [fmt(r.rows), "rows per transfer"],
+    [(r.speedup >= 1 ? r.speedup : (1 / r.speedup).toFixed(2)) + "x", (r.speedup >= 1 ? "Flight" : "CSV+HTTP") + " faster (median)"],
+    [r.identical ? "identical" : "DIFFERENT", "tables compared"],
+    ["$" + money(r.revenue), "revenue of the 1M rows"],
+  ]);
+  drawBench(r);
+  table($("benchTable"), [
+    {label:"transport", value:x => x.name},
+    {label:"median s", num:true, value:x => x.median_seconds},
+    {label:"download s", num:true, value:x => x.median_download_seconds},
+    {label:"parse s", num:true, value:x => x.median_parse_seconds},
+    {label:"bytes", num:true, value:x => fmt(x.bytes)},
+    {label:"rows/s", num:true, value:x => fmt(x.rows_per_second)},
+    {label:"MB/s", num:true, value:x => x.mb_per_second},
+    {label:"runs (s)", value:x => x.runs.join(", ")},
+  ], [{name:"Arrow Flight do_get", ...r.flight}, {name:"CSV over HTTP + pyarrow.csv", ...r.csv}]);
+}
+
+$("upload").onclick = () => run(async () => {
+  const r = await api("/api/upload", "POST");
+  r.tail.filter(o => o.order_id >= 900000).forEach(o => uploadedIds.add(o.order_id));
+  await refresh(true);
+});
+$("reset").onclick = () => run(async () => { await api("/api/reset", "POST"); uploadedIds.clear(); previousRevenue = null; await refresh(false); });
+$("refresh").onclick = () => run(() => refresh(true));
+$("bench").onclick = () => run(bench);
+run(async () => {
+  await refresh(false);
+  const last = await api("/api/bench/last");
+  if (last) showBench(last);
+});
+</script>
+</body>
+</html>
