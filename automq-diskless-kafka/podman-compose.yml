@@ -1,0 +1,126 @@
+name: r9-automq-diskless-kafka
+
+x-automq-env: &automq-env
+  KAFKA_S3_ACCESS_KEY: r9admin
+  KAFKA_S3_SECRET_KEY: r9password
+  KAFKA_HEAP_OPTS: "-Xms512m -Xmx512m -XX:MetaspaceSize=96m -XX:MaxDirectMemorySize=400m"
+  CLUSTER_ID: j68lIxwZS0Ki60nWJB2mzw
+  S3_DATA: "0@s3://r9-automq-data?region=us-east-1&endpoint=http://r9-minio:9000&pathStyle=true"
+  S3_OPS: "1@s3://r9-automq-ops?region=us-east-1&endpoint=http://r9-minio:9000&pathStyle=true"
+
+services:
+  r9-minio:
+    image: docker.io/pgsty/minio:RELEASE.2026-08-04T00-00-00Z
+    container_name: r9-minio
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: r9admin
+      MINIO_ROOT_PASSWORD: r9password
+    mem_limit: 384m
+    ports:
+      - "${minio:-27400}:9000"
+      - "${console:-27401}:9001"
+    volumes:
+      - r9-minio-data:/data
+    networks:
+      - r9-net
+
+  r9-app:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: r9-automq-diskless-kafka:latest
+    container_name: r9-app
+    restart: unless-stopped
+    environment:
+      S3_ENDPOINT: http://r9-minio:9000
+      S3_ACCESS_KEY: r9admin
+      S3_SECRET_KEY: r9password
+      BOOTSTRAP: r9-controller:9092,r9-broker:9092
+      MINIO_CONSOLE_URL: "http://localhost:${console:-27401}"
+      UI_PORT: "8080"
+    mem_limit: 384m
+    ports:
+      - "${ui:-27404}:8080"
+    volumes:
+      - ./data:/data:ro
+      - ./results:/app/results
+    networks:
+      - r9-net
+    depends_on:
+      - r9-minio
+
+  r9-controller:
+    image: docker.io/automqinc/automq:1.7.4
+    container_name: r9-controller
+    stop_grace_period: 30s
+    environment: *automq-env
+    mem_limit: 1152m
+    ports:
+      - "${controller:-27402}:9094"
+    volumes:
+      - r9-controller-meta:/data/kafka
+    networks:
+      r9-net:
+        ipv4_address: 10.209.27.10
+    command:
+      - bash
+      - -c
+      - |
+        exec /opt/automq/kafka/bin/kafka-server-start.sh /opt/automq/kafka/config/kraft/server.properties \
+        --override cluster.id=$$CLUSTER_ID \
+        --override node.id=0 \
+        --override process.roles=broker,controller \
+        --override log.dirs=/data/kafka \
+        --override controller.quorum.voters=0@r9-controller:9093 \
+        --override controller.quorum.bootstrap.servers=r9-controller:9093 \
+        --override listeners=PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094 \
+        --override advertised.listeners=PLAINTEXT://r9-controller:9092,EXTERNAL://localhost:${controller:-27402} \
+        --override listener.security.protocol.map=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT \
+        --override s3.data.buckets="$$S3_DATA" \
+        --override s3.ops.buckets="$$S3_OPS" \
+        --override s3.wal.path="$$S3_DATA"
+
+  r9-broker:
+    image: docker.io/automqinc/automq:1.7.4
+    container_name: r9-broker
+    stop_grace_period: 30s
+    environment: *automq-env
+    mem_limit: 1152m
+    ports:
+      - "${broker:-27403}:9094"
+    networks:
+      r9-net:
+        ipv4_address: 10.209.27.11
+    depends_on:
+      - r9-controller
+    command:
+      - bash
+      - -c
+      - |
+        exec /opt/automq/kafka/bin/kafka-server-start.sh /opt/automq/kafka/config/kraft/server.properties \
+        --override cluster.id=$$CLUSTER_ID \
+        --override node.id=1 \
+        --override process.roles=broker \
+        --override log.dirs=/data/kafka \
+        --override controller.quorum.voters=0@r9-controller:9093 \
+        --override controller.quorum.bootstrap.servers=r9-controller:9093 \
+        --override listeners=PLAINTEXT://:9092,EXTERNAL://:9094 \
+        --override advertised.listeners=PLAINTEXT://r9-broker:9092,EXTERNAL://localhost:${broker:-27403} \
+        --override listener.security.protocol.map=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT \
+        --override s3.data.buckets="$$S3_DATA" \
+        --override s3.ops.buckets="$$S3_OPS" \
+        --override s3.wal.path="$$S3_DATA"
+
+volumes:
+  r9-minio-data:
+    name: r9-minio-data
+  r9-controller-meta:
+    name: r9-controller-meta
+
+networks:
+  r9-net:
+    name: r9-net
+    ipam:
+      config:
+        - subnet: 10.209.27.0/24

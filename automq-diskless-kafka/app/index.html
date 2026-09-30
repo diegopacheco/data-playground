@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AutoMQ Diskless Kafka</title>
+<style>
+  :root { --bg: #f6f7f9; --card: #fff; --ink: #1f2933; --muted: #616e7c; --line: #e4e7eb; --n0: #1c7ed6; --n1: #e8590c; --none: #adb5bd; --ok: #2b8a3e; --bad: #c92a2a; --accent: #7048e8; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--ink); }
+  header { background: var(--card); border-bottom: 1px solid var(--line); padding: 14px 20px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; }
+  header h1 { font-size: 18px; margin: 0; }
+  header .sub { color: var(--muted); }
+  nav { display: flex; gap: 4px; padding: 0 20px; background: var(--card); border-bottom: 1px solid var(--line); }
+  nav button { border: 0; background: none; padding: 10px 14px; font: inherit; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; }
+  nav button.active { color: var(--ink); border-bottom-color: var(--accent); font-weight: 600; }
+  main { padding: 20px; max-width: 1200px; margin: 0 auto; }
+  .tab { display: none; }
+  .tab.active { display: block; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin-bottom: 16px; }
+  .tile, .card { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; }
+  .tile .label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+  .tile .value { font-size: 22px; font-weight: 650; margin-top: 4px; overflow-wrap: anywhere; }
+  .tile .hint { color: var(--muted); font-size: 12px; margin-top: 2px; }
+  .card { margin-bottom: 16px; overflow-x: auto; }
+  .card h2 { font-size: 15px; margin: 0 0 10px; }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th { color: var(--muted); font-weight: 600; font-size: 12px; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  td.key { font-family: ui-monospace, Menlo, monospace; font-size: 12px; white-space: normal; word-break: break-all; }
+  .badge { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 12px; font-weight: 600; }
+  .badge.ok { background: #d3f9d8; color: var(--ok); }
+  .badge.bad { background: #ffe3e3; color: var(--bad); }
+  .timeline { list-style: none; margin: 0; padding: 0; }
+  .timeline li { display: grid; grid-template-columns: 34px 1fr; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+  .timeline li:last-child { border-bottom: 0; }
+  .step { width: 30px; height: 30px; border-radius: 50%; background: #f3f0ff; color: var(--accent); display: grid; place-items: center; font-weight: 700; }
+  .ev-title { font-weight: 600; }
+  .ev-meta { color: var(--muted); font-size: 12px; margin-top: 2px; }
+  .leaders { display: flex; gap: 4px; margin-top: 8px; flex-wrap: wrap; align-items: center; }
+  .pbox { width: 44px; padding: 3px 0; text-align: center; border-radius: 4px; color: #fff; font-size: 11px; font-weight: 600; }
+  .n0 { background: var(--n0); } .n1 { background: var(--n1); } .nnone { background: var(--none); }
+  .legend { display: flex; gap: 14px; color: var(--muted); font-size: 12px; margin-bottom: 8px; flex-wrap: wrap; }
+  .dot { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; vertical-align: -1px; }
+  .bar { height: 10px; background: #e5dbff; border-radius: 5px; position: relative; min-width: 160px; }
+  .bar span { position: absolute; left: 0; top: 0; bottom: 0; background: var(--accent); border-radius: 5px; }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
+  .actions button { font: inherit; padding: 7px 14px; border-radius: 6px; border: 1px solid var(--accent); background: #fff; color: var(--accent); cursor: pointer; font-weight: 600; }
+  .actions button:disabled { opacity: .5; cursor: wait; }
+  .muted { color: var(--muted); }
+  .nodes { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 12px; }
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+<header>
+  <h1>AutoMQ 1.7.4: diskless Kafka on S3 (MinIO)</h1>
+  <span class="sub">standard Kafka clients, data in object storage, stateless brokers</span>
+</header>
+<nav>
+  <button class="active" data-tab="proof">Proof</button>
+  <button data-tab="storage">Object storage</button>
+  <button data-tab="cluster">Cluster</button>
+</nav>
+<main>
+  <section id="proof" class="tab active">
+    <div class="tiles" id="proof-tiles"></div>
+    <div class="actions">
+      <button id="btn-produce">Recreate topic and produce</button>
+      <button id="btn-consume">Consume from offset 0 and verify</button>
+      <span class="muted" id="action-msg">The broker kill and controller restart need podman, run scripts/proof.sh for the full sequence.</span>
+    </div>
+    <div class="card">
+      <h2>Proof timeline</h2>
+      <div class="legend"><span><i class="dot n0"></i>leader node 0 (r9-controller)</span><span><i class="dot n1"></i>leader node 1 (r9-broker)</span><span><i class="dot nnone"></i>no leader yet</span></div>
+      <ul class="timeline" id="timeline"></ul>
+    </div>
+  </section>
+  <section id="storage" class="tab">
+    <div id="buckets"></div>
+  </section>
+  <section id="cluster" class="tab">
+    <div class="tiles" id="cluster-tiles"></div>
+    <div class="card"><h2>Brokers</h2><table id="brokers"></table></div>
+    <div class="card"><h2>Partitions of the orders topic</h2><table id="partitions"></table></div>
+    <div class="card"><h2>Local disk of each node after the produce</h2><p class="muted">Only KRaft metadata and preallocated index caches live on disk. There is no orders partition directory and no segment file.</p><div class="nodes" id="disks"></div></div>
+  </section>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+const fmt = n => Number(n).toLocaleString("en-US");
+const mb = n => (n / 1048576).toFixed(2) + " MB";
+const tile = (label, value, hint) => `<div class="tile"><div class="label">${label}</div><div class="value">${value}</div>${hint ? `<div class="hint">${hint}</div>` : ""}</div>`;
+const badge = ok => `<span class="badge ${ok ? "ok" : "bad"}">${ok ? "match" : "mismatch"}</span>`;
+
+document.querySelectorAll("nav button").forEach(b => b.onclick = () => {
+  document.querySelectorAll("nav button, .tab").forEach(e => e.classList.remove("active"));
+  b.classList.add("active");
+  $(b.dataset.tab).classList.add("active");
+});
+
+async function api(path, method) {
+  const r = await fetch(path, {method: method || "GET"});
+  const body = await r.json();
+  if (!r.ok) throw new Error(body.error || r.statusText);
+  return body;
+}
+
+function leaders(cluster) {
+  const topic = (cluster.topics || []).find(t => t.name === "orders");
+  if (!topic) return "";
+  return `<div class="leaders">${topic.partitions.map(p => `<div class="pbox ${p.leader === 0 ? "n0" : p.leader === 1 ? "n1" : "nnone"}" title="partition ${p.partition} leader ${p.leader}">p${p.partition}:${p.leader < 0 ? "-" : p.leader}</div>`).join("")}<span class="muted" style="margin-left:6px">brokers alive: ${cluster.brokers.map(b => b.id).join(", ")}</span></div>`;
+}
+
+function describe(e) {
+  const d = e.detail;
+  if (e.step === "produce") return `${fmt(d.records)} records, ${mb(d.bytes)} payload. S3 received ${fmt(d.s3_written.objects)} new objects (${d.s3_written.wal_objects} WAL objects), ${mb(d.s3_written.bytes)}.`;
+  if (e.step === "local-disk") return d.nodes.map(n => `${n.container}: ${fmt(n.orders_partition_bytes)} bytes of orders partition data, ${n.orders_segment_files} segment files`).join(" | ");
+  if (e.step === "recreate-broker") return `container ${d.old_container} removed with kill, container ${d.new_container} created from the image with an empty disk, serving again after ${d.seconds_to_serve} s.`;
+  if (e.step === "restart-controller") return `container ${d.container} restarted, cluster serving again after ${d.seconds_to_serve} s. Both nodes now start with cold caches, reads must come from S3.`;
+  if (e.step === "consume") return `${fmt(d.records)} records read in ${d.seconds} s, missing ${d.missing}, duplicates ${d.duplicates} ${badge(d.matches_input)}`;
+  return "";
+}
+
+function renderProof(p) {
+  if (!p.events || !p.events.length) {
+    $("proof-tiles").innerHTML = tile("Status", "no proof yet", "run scripts/proof.sh");
+    $("timeline").innerHTML = "";
+    return;
+  }
+  const ev = Object.fromEntries(p.events.map(e => [e.step, e]));
+  const c = p.consumed;
+  const disk = ev["local-disk"] ? ev["local-disk"].detail.nodes.reduce((a, n) => a + n.orders_partition_bytes, 0) : null;
+  $("proof-tiles").innerHTML =
+    tile("Input records", fmt(p.input.records), p.input.file) +
+    tile("Consumed after restarts", c ? fmt(c.records) : "-", c ? badge(c.matches_input) + ` missing ${c.missing}, duplicates ${c.duplicates}` : "not consumed yet") +
+    tile("Written to S3 by produce", mb(p.produced.s3_written.bytes), `payload was ${mb(p.produced.bytes)}`) +
+    tile("Orders bytes on broker disks", disk === null ? "-" : fmt(disk), "both nodes, after the produce") +
+    tile("Broker replaced in", ev["recreate-broker"] ? ev["recreate-broker"].detail.seconds_to_serve + " s" : "-", "kill, new container, serving");
+  $("timeline").innerHTML = p.events.map((e, i) => `<li><div class="step">${i + 1}</div><div><div class="ev-title">${esc(e.title)}</div><div class="ev-meta">${esc(e.at)}, data bucket ${fmt(e.storage["r9-automq-data"].objects)} objects, ${mb(e.storage["r9-automq-data"].bytes)}</div><div>${describe(e)}</div>${leaders(e.cluster)}</div></li>`).join("");
+}
+
+function renderStorage(s, console) {
+  $("buckets").innerHTML = s.buckets.map(b => {
+    const max = Math.max(1, ...b.kinds.map(k => k.bytes));
+    return `<div class="tiles">${tile("Bucket", esc(b.bucket))}${tile("Objects", fmt(b.objects))}${tile("Bytes", mb(b.bytes))}</div>
+    <div class="card"><h2>${esc(b.bucket)} by object kind</h2><table><tr><th>Kind</th><th class="num">Objects</th><th class="num">Bytes</th><th></th></tr>
+    ${b.kinds.map(k => `<tr><td>${esc(k.kind)}</td><td class="num">${fmt(k.objects)}</td><td class="num">${mb(k.bytes)}</td><td><div class="bar"><span style="width:${(100 * k.bytes / max).toFixed(1)}%"></span></div></td></tr>`).join("")}</table></div>
+    <div class="card"><h2>${esc(b.bucket)} most recent objects</h2><table><tr><th>Key</th><th>Kind</th><th class="num">Bytes</th><th>Modified</th></tr>
+    ${b.recent.map(o => `<tr><td class="key">${esc(o.key)}</td><td>${esc(o.kind)}</td><td class="num">${fmt(o.size)}</td><td>${esc(o.modified)}</td></tr>`).join("")}</table></div>`;
+  }).join("") + `<p class="muted">MinIO console: <a href="${esc(console)}" target="_blank">${esc(console)}</a></p>`;
+}
+
+function renderCluster(c, p) {
+  const topic = c.topics.find(t => t.name === "orders");
+  $("cluster-tiles").innerHTML = tile("Cluster id", `<span style="font-size:16px">${esc(c.cluster_id)}</span>`) + tile("Brokers alive", c.brokers.length) + tile("Controller", "node " + c.controller) + tile("Orders partitions", topic ? topic.partitions.length : 0, "replication factor 1, durability comes from S3");
+  $("brokers").innerHTML = `<tr><th>Node</th><th>Advertised</th><th>Role</th><th class="num">Partitions led</th></tr>` + c.brokers.map(b => `<tr><td>${b.id}</td><td>${esc(b.host)}:${b.port}</td><td>${b.id === 0 ? "controller + broker, KRaft metadata volume" : "broker only, no volume"}</td><td class="num">${topic ? topic.partitions.filter(x => x.leader === b.id).length : 0}</td></tr>`).join("");
+  $("partitions").innerHTML = `<tr><th>Partition</th><th>Leader</th><th>Replicas</th><th>ISR</th></tr>` + (topic ? topic.partitions.map(x => `<tr><td>${x.partition}</td><td><span class="pbox ${x.leader === 0 ? "n0" : x.leader === 1 ? "n1" : "nnone"}" style="display:inline-block">${x.leader}</span></td><td>${x.replicas.join(", ")}</td><td>${x.isr.join(", ")}</td></tr>`).join("") : "");
+  const disk = (p.events || []).find(e => e.step === "local-disk");
+  $("disks").innerHTML = disk ? disk.detail.nodes.map(n => `<div><b>${esc(n.container)}</b> <span class="muted">${mb(n.files_total_bytes)} on disk, ${fmt(n.orders_partition_bytes)} bytes of orders data</span><table><tr><th>File</th><th class="num">Bytes</th></tr>${n.files.map(f => `<tr><td class="key">${esc(f.path)}</td><td class="num">${fmt(f.size)}</td></tr>`).join("")}</table></div>`).join("") : `<p class="muted">no measurement yet</p>`;
+}
+
+async function load() {
+  const [p, s, c] = await Promise.allSettled([api("/api/proof"), api("/api/storage"), api("/api/cluster")]);
+  if (p.status === "fulfilled") renderProof(p.value);
+  if (s.status === "fulfilled") renderStorage(s.value, p.status === "fulfilled" ? p.value.minio_console : "");
+  if (c.status === "fulfilled") renderCluster(c.value, p.status === "fulfilled" ? p.value : {});
+}
+
+async function act(button, path, label) {
+  document.querySelectorAll(".actions button").forEach(b => b.disabled = true);
+  $("action-msg").textContent = label + " ...";
+  try { await api(path, "POST"); $("action-msg").textContent = label + " done"; }
+  catch (e) { $("action-msg").textContent = label + " failed: " + e.message; }
+  document.querySelectorAll(".actions button").forEach(b => b.disabled = false);
+  load();
+}
+
+$("btn-produce").onclick = e => act(e.target, "/api/produce", "recreating the topic and producing");
+$("btn-consume").onclick = e => act(e.target, "/api/consume", "consuming and verifying");
+load();
+</script>
+</body>
+</html>

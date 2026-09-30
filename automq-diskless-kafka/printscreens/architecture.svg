@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="520" viewBox="0 0 1100 520">
+  <defs>
+    <style>@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&amp;display=swap'); text { font-family: 'Caveat', 'Comic Sans MS', cursive; fill: #1f2933; }</style>
+    <filter id="wobble"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="3"/></filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1f2933"/></marker>
+  </defs>
+  <rect width="1100" height="520" fill="#ffffff"/>
+  <g filter="url(#wobble)" stroke="#1f2933" stroke-width="2">
+    <rect x="30" y="200" width="240" height="130" rx="10" fill="#d3f9d8"/>
+    <rect x="390" y="110" width="270" height="120" rx="10" fill="#d0ebff"/>
+    <rect x="390" y="300" width="270" height="120" rx="10" fill="#ffd8a8"/>
+    <rect x="780" y="180" width="290" height="170" rx="10" fill="#e5dbff"/>
+    <rect x="780" y="390" width="290" height="80" rx="10" fill="#fff3bf"/>
+    <rect x="30" y="400" width="240" height="95" rx="10" fill="#f1f3f5"/>
+    <line x1="270" y1="245" x2="387" y2="180" marker-end="url(#arrow)"/>
+    <line x1="270" y1="285" x2="387" y2="350" marker-end="url(#arrow)"/>
+    <line x1="660" y1="170" x2="777" y2="230" marker-end="url(#arrow)"/>
+    <line x1="660" y1="360" x2="777" y2="300" marker-end="url(#arrow)"/>
+    <polyline points="150,200 150,100 925,100 925,177" fill="none" stroke-dasharray="6 6" marker-end="url(#arrow)"/>
+    <line x1="525" y1="232" x2="525" y2="297" stroke-dasharray="4 4" marker-end="url(#arrow)"/>
+    <line x1="925" y1="350" x2="925" y2="387" stroke-dasharray="4 4" marker-end="url(#arrow)"/>
+    <line x1="150" y1="400" x2="150" y2="333" marker-end="url(#arrow)"/>
+  </g>
+  <text x="550" y="38" font-size="34" font-weight="700" text-anchor="middle">automq-diskless-kafka</text>
+  <text x="550" y="68" font-size="20" text-anchor="middle">Kafka API on top, S3 (MinIO) underneath, nothing on the broker disks</text>
+  <text x="150" y="232" font-size="24" text-anchor="middle">r9-app</text>
+  <text x="150" y="257" font-size="17" text-anchor="middle">confluent-kafka producer</text>
+  <text x="150" y="279" font-size="17" text-anchor="middle">and consumer (acks=all)</text>
+  <text x="150" y="301" font-size="17" text-anchor="middle">S3 SigV4 lister, REST + UI</text>
+  <text x="150" y="323" font-size="16" text-anchor="middle">port 27404</text>
+  <text x="525" y="142" font-size="24" text-anchor="middle">r9-controller, node 0</text>
+  <text x="525" y="167" font-size="17" text-anchor="middle">AutoMQ 1.7.4, KRaft controller + broker</text>
+  <text x="525" y="190" font-size="17" text-anchor="middle">volume: KRaft metadata only</text>
+  <text x="525" y="212" font-size="16" text-anchor="middle">port 27402</text>
+  <text x="525" y="332" font-size="24" text-anchor="middle">r9-broker, node 1</text>
+  <text x="525" y="357" font-size="17" text-anchor="middle">AutoMQ 1.7.4, broker only</text>
+  <text x="525" y="380" font-size="17" text-anchor="middle">no volume, killed and recreated</text>
+  <text x="525" y="402" font-size="16" text-anchor="middle">port 27403</text>
+  <text x="925" y="212" font-size="24" text-anchor="middle">r9-minio (S3)</text>
+  <text x="925" y="240" font-size="17" text-anchor="middle">r9-automq-data: WAL objects</text>
+  <text x="925" y="262" font-size="17" text-anchor="middle">and stream data objects</text>
+  <text x="925" y="290" font-size="17" text-anchor="middle">r9-automq-ops: logs, metrics</text>
+  <text x="925" y="318" font-size="16" text-anchor="middle">ports 27400 (S3), 27401 (console)</text>
+  <text x="720" y="195" font-size="16" text-anchor="middle">WAL + data</text>
+  <text x="745" y="358" font-size="16" text-anchor="middle">WAL + data</text>
+  <text x="1000" y="92" font-size="16" text-anchor="middle">S3 ListObjectsV2</text>
+  <text x="600" y="275" font-size="15" text-anchor="middle">KRaft heartbeats</text>
+  <text x="925" y="422" font-size="18" text-anchor="middle">failover: a dead node's WAL</text>
+  <text x="925" y="446" font-size="18" text-anchor="middle">is replayed from S3 by a live node</text>
+  <text x="150" y="428" font-size="20" text-anchor="middle">scripts/proof.sh</text>
+  <text x="150" y="452" font-size="16" text-anchor="middle">produce, du local disks, kill + recreate</text>
+  <text x="150" y="474" font-size="16" text-anchor="middle">broker, restart controller, consume</text>
+</svg>
