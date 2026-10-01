@@ -1,0 +1,59 @@
+name: i8-xtable
+
+x-spark: &spark
+  image: docker.io/library/eclipse-temurin:17-jre
+  entrypoint: ["java", "-cp", "/app/lib/*:/app/lake-jobs.jar", "xtable.App"]
+  environment:
+    JAVA_TOOL_OPTIONS: "-Xmx512m --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.util.concurrent=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED --add-opens=java.base/sun.nio.cs=ALL-UNNAMED --add-opens=java.base/sun.security.action=ALL-UNNAMED --add-opens=java.base/sun.util.calendar=ALL-UNNAMED"
+
+services:
+  writer:
+    <<: *spark
+    container_name: i8-writer
+    command: ["write"]
+    volumes:
+      - ./spark/target:/app:ro
+      - ./data:/data:ro
+      - ./lake:/lake
+      - ./results:/results
+
+  files:
+    <<: *spark
+    container_name: i8-files
+    command: ["files", "before"]
+    volumes:
+      - ./spark/target:/app:ro
+      - ./lake:/lake:ro
+      - ./results:/results
+
+  xtable:
+    image: docker.io/library/eclipse-temurin:17-jre
+    container_name: i8-xtable-sync
+    entrypoint: ["java", "-Xmx512m", "--add-opens=java.base/sun.nio.ch=ALL-UNNAMED", "--add-opens=java.base/java.nio=ALL-UNNAMED", "--add-opens=java.base/java.lang.invoke=ALL-UNNAMED", "--add-opens=java.base/java.util=ALL-UNNAMED", "--add-opens=java.base/java.lang=ALL-UNNAMED", "-jar", "/opt/xtable/xtable.jar", "--datasetConfig", "/opt/xtable/xtable.yaml"]
+    volumes:
+      - ./xtable/dist/xtable.jar:/opt/xtable/xtable.jar:ro
+      - ./xtable/xtable.yaml:/opt/xtable/xtable.yaml:ro
+      - ./lake:/lake
+
+  reader:
+    <<: *spark
+    container_name: i8-reader
+    command: ["read"]
+    volumes:
+      - ./spark/target:/app:ro
+      - ./lake:/lake:ro
+      - ./results:/results
+
+  ui:
+    image: docker.io/library/eclipse-temurin:25-jdk-alpine
+    container_name: i8-ui
+    command: ["java", "-Xmx128m", "/app/Server.java"]
+    environment:
+      PORT: "20800"
+      INDEX_HTML: /app/index.html
+    ports:
+      - "20800:20800"
+    volumes:
+      - ./ui:/app:ro
+      - ./data:/data:ro
+      - ./results:/results:ro

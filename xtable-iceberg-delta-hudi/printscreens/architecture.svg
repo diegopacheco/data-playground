@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 520" width="1000" height="520">
+  <defs>
+    <filter id="wobble"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="3" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="3"/></filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#444"/></marker>
+    <style>@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&amp;display=swap'); text{font-family:'Caveat',cursive;fill:#222} .t{font-size:24px;font-weight:700} .s{font-size:18px}</style>
+  </defs>
+  <rect width="1000" height="520" fill="#fffdf8"/>
+  <g filter="url(#wobble)" stroke="#444" stroke-width="2">
+    <rect x="30" y="40" width="170" height="80" rx="12" fill="#fde2c8"/>
+    <rect x="270" y="40" width="200" height="80" rx="12" fill="#cfe3ff"/>
+    <rect x="270" y="200" width="460" height="140" rx="14" fill="#f3f3f3"/>
+    <rect x="540" y="40" width="190" height="80" rx="12" fill="#e4d7ff"/>
+    <rect x="800" y="40" width="170" height="80" rx="12" fill="#d7f5e3"/>
+    <rect x="800" y="390" width="170" height="90" rx="12" fill="#fff3b0"/>
+    <rect x="270" y="400" width="460" height="80" rx="12" fill="#cfe3ff"/>
+    <rect x="30" y="400" width="170" height="80" rx="12" fill="#fde2c8"/>
+  </g>
+  <g stroke="#444" stroke-width="2" fill="none" marker-end="url(#arrow)">
+    <path d="M200,80 L266,80"/>
+    <path d="M370,120 L370,196"/>
+    <path d="M635,120 L635,196"/>
+    <path d="M470,80 L536,80"/>
+    <path d="M500,340 L500,396"/>
+    <path d="M730,440 L796,440"/>
+    <path d="M885,120 L885,386"/>
+    <path d="M200,440 L266,440" stroke-dasharray="6 5"/>
+  </g>
+  <text x="50" y="75" class="t">orders.csv</text>
+  <text x="50" y="102" class="s">200 rows</text>
+  <text x="285" y="75" class="t">Spark 3.4 writer</text>
+  <text x="285" y="102" class="s">Hudi 0.15.1 COW insert</text>
+  <text x="555" y="75" class="t">XTable 0.4.0 sync</text>
+  <text x="555" y="102" class="s">Hudi to Delta + Iceberg</text>
+  <text x="815" y="75" class="t">file listing</text>
+  <text x="815" y="102" class="s">sha256 before / after</text>
+  <text x="290" y="232" class="t">lake/orders (one copy of Parquet)</text>
+  <text x="290" y="262" class="s">books/ clothing/ electronics/ home/ sports/ toys/  6 parquet files</text>
+  <text x="290" y="290" class="s">.hoodie/  written by Hudi</text>
+  <text x="290" y="316" class="s">_delta_log/  and  metadata/  added by XTable, metadata only</text>
+  <text x="285" y="435" class="t">Spark 3.4 reader</text>
+  <text x="285" y="462" class="s">format hudi, delta, iceberg, same aggregates</text>
+  <text x="815" y="425" class="t">Java 25 UI</text>
+  <text x="815" y="452" class="s">:20800 /api/readers</text>
+  <text x="815" y="472" class="s">/api/files /api/expected</text>
+  <text x="50" y="435" class="t">awk check</text>
+  <text x="50" y="462" class="s">test-all.sh</text>
+</svg>

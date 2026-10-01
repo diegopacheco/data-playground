@@ -1,0 +1,6 @@
+FROM docker.io/library/maven:3.9.16-eclipse-temurin-17
+ARG XTABLE_TAG=0.4.0-incubating
+ENV XTABLE_TAG=${XTABLE_TAG}
+WORKDIR /src
+RUN curl -fsSL https://github.com/apache/incubator-xtable/archive/refs/tags/${XTABLE_TAG}.tar.gz | tar xz --strip-components=1
+CMD MAVEN_OPTS="-Xmx1g" mvn -B -q -f xtable-utilities/pom.xml package -DskipTests -Dmaven.build.cache.enabled=false -Dspotless.check.skip=true -Dspotless.apply.skip=true -Drat.skip=true -Dlicense.skip=true -Dmaven.javadoc.skip=true && cp xtable-utilities/target/xtable-utilities_2.12-${XTABLE_TAG}-bundled.jar /out/xtable.jar
