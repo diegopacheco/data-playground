@@ -1,0 +1,97 @@
+xtable-iceberg-delta-hudi/scripts/ui.sh
+  s_9121753c4a3d76::t_e95f075e6938ac 1-6
+xtable-iceberg-delta-hudi/spark/src/main/java/xtable/ReadAll.java
+  s_9121753c4a3d76::t_262a6553c8f0a9 1-70
+xtable-iceberg-delta-hudi/results/datafiles_hudi.txt
+  s_9121753c4a3d76::t_4827e6650c19ef 1-6
+xtable-iceberg-delta-hudi/spark/src/main/java/xtable/WriteHudi.java
+  s_9121753c4a3d76::t_2189139a5daf8a 1-39
+xtable-iceberg-delta-hudi/results/datafiles_delta.txt
+  s_9121753c4a3d76::t_4827e6650c19ef 1-6
+xtable-iceberg-delta-hudi/results/datafiles_iceberg.txt
+  s_9121753c4a3d76::t_c4da3931f739bb 1-6
+xtable-iceberg-delta-hudi/ui/Server.java
+  s_9121753c4a3d76::t_010c3450a9caa4 1-158
+xtable-iceberg-delta-hudi/data/orders.csv
+  s_9121753c4a3d76::t_82c3ea8e92bb0f 1-201
+xtable-iceberg-delta-hudi/results/agg_iceberg.tsv
+  s_9121753c4a3d76::t_c4da3931f739bb 1-6
+xtable-iceberg-delta-hudi/scripts/status.sh
+  s_9121753c4a3d76::t_5c0e3ad1293ace 1-12
+xtable-iceberg-delta-hudi/xtable/Containerfile
+  s_9121753c4a3d76::t_12e5b58bdf203f 2,4
+  s_9121753c4a3d76::t_db84d6dfd4bedf 1,3,5-6
+xtable-iceberg-delta-hudi/printscreens/architecture.svg
+  s_9121753c4a3d76::t_587a23f7f8f334 33
+  s_9121753c4a3d76::t_165faebded6c89 1-32,34-47
+xtable-iceberg-delta-hudi/ui/index.html
+  s_9121753c4a3d76::t_2bb48e0ff144cb 1-115
+xtable-iceberg-delta-hudi/README.md
+  s_9121753c4a3d76::t_eb11ddc462f701 1-118
+xtable-iceberg-delta-hudi/.gitignore
+  s_9121753c4a3d76::t_54d76fccb8c45a 4
+  s_9121753c4a3d76::t_ec38561c04c820 1-3
+xtable-iceberg-delta-hudi/spark/src/main/java/xtable/App.java
+  s_9121753c4a3d76::t_1e5ba99cf5361a 1-33
+xtable-iceberg-delta-hudi/results/files_after.tsv
+  s_9121753c4a3d76::t_2b6738af481448 10-11,17-18,23,26-27,30,54,60
+  s_9121753c4a3d76::t_ed832d04845398 1-9,12-16,19-22,24-25,28-29,31-53,55-59,61-68
+xtable-iceberg-delta-hudi/spark/src/main/java/xtable/Paths.java
+  s_9121753c4a3d76::t_0421ff0bddf74f 1-31
+xtable-iceberg-delta-hudi/scripts/setup.sh
+  s_9121753c4a3d76::t_eb43124f3b01c2 1-12,14,35
+  s_9121753c4a3d76::t_c0779c3efd3034 13,15-34
+xtable-iceberg-delta-hudi/podman-compose.yml
+  s_9121753c4a3d76::t_b28407be15d9c6 30,32,34-35
+  s_9121753c4a3d76::t_2f0161b1150afb 1-2,9-10,12-14,16-20,22-24,26-29,31,33,36-38,40-42,44-47,49,51-52,54-56,58-59
+  s_9121753c4a3d76::t_0e89862397e1ad 3-8,11,15,21,25,39,43,48,50,53,57
+xtable-iceberg-delta-hudi/spark/src/main/java/xtable/Spark.java
+  s_9121753c4a3d76::t_f6c3ab8faf405a 20
+  s_9121753c4a3d76::t_29c0850362b3e5 1-17,23-25
+  s_9121753c4a3d76::t_842efa51048005 18-19
+  s_9121753c4a3d76::t_d8f7b11dfd604f 21-22
+xtable-iceberg-delta-hudi/results/agg_delta.tsv
+  s_9121753c4a3d76::t_abe9df71241a53 1-6
+xtable-iceberg-delta-hudi/spark/pom.xml
+  s_9121753c4a3d76::t_04fe598b81f47e 14
+  s_9121753c4a3d76::t_9ab3243976402b 1-13,15-62
+xtable-iceberg-delta-hudi/xtable/xtable.yaml
+  s_9121753c4a3d76::t_0cd7dec607185a 1-9
+xtable-iceberg-delta-hudi/spark/src/main/java/xtable/LakeFiles.java
+  s_9121753c4a3d76::t_f5ec810bb24b3b 1-52
+xtable-iceberg-delta-hudi/scripts/ports.env
+  s_9121753c4a3d76::t_9648e54df5a40b 1
+xtable-iceberg-delta-hudi/scripts/test-all.sh
+  s_9121753c4a3d76::t_c55258929b55c5 1-63
+xtable-iceberg-delta-hudi/scripts/stop-all.sh
+  s_9121753c4a3d76::t_7ff676b19df782 1-10
+xtable-iceberg-delta-hudi/results/agg_hudi.tsv
+  s_9121753c4a3d76::t_0560e874d91d82 1-6
+xtable-iceberg-delta-hudi/results/readers.tsv
+  s_9121753c4a3d76::t_c4da3931f739bb 1-3
+xtable-iceberg-delta-hudi/results/files_before.tsv
+  s_9121753c4a3d76::t_a9ab2bf1f7ce34 1-9,12-16,19-22,24-25,28-29,31-54
+  s_9121753c4a3d76::t_01edb167197dc8 10-11,17-18,23,26-27,30
+xtable-iceberg-delta-hudi/scripts/start-all.sh
+  s_9121753c4a3d76::t_be3a3996b499f7 1-15,19-37
+  s_9121753c4a3d76::t_622801827624cc 16-18
+xtable-iceberg-delta-hudi/scripts/common.sh
+  s_9121753c4a3d76::t_6b9a6a1185dd39 16-21
+  s_9121753c4a3d76::t_b1b19f7efcd91c 1-15,22-115
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "2f1d7d4e6a781c1191b5a3aa6a2839bd722a6326",
+  "prompts": {},
+  "sessions": {
+    "s_9121753c4a3d76": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "39b421dc-22e8-4dc0-93df-749df3c5cb41",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "diegopacheco <diego.pacheco.it@gmail.com>"
+    }
+  }
+}
