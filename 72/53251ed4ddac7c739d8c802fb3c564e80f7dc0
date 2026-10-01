@@ -1,0 +1,69 @@
+bytewax-python-streaming/dataflow/csv_to_json.py
+  s_9121753c4a3d76::t_7e6ac1f916a4dc 1-9
+bytewax-python-streaming/dataflow/store.py
+  s_9121753c4a3d76::t_042d6f88dcf796 1-57
+bytewax-python-streaming/scripts/stop-all.sh
+  s_9121753c4a3d76::t_02d247dfd7f272 1-18
+bytewax-python-streaming/dataflow/flow.py
+  s_9121753c4a3d76::t_c605cc59a7df8f 1-27
+bytewax-python-streaming/README.md
+  s_9121753c4a3d76::t_fc89620dc75c7c 67
+  s_9121753c4a3d76::t_53c53860c100bc 1-66,68-157
+bytewax-python-streaming/ui/server.py
+  s_9121753c4a3d76::t_477fa1ab800d22 1-57
+bytewax-python-streaming/scripts/common.sh
+  s_9121753c4a3d76::t_2223532b8a5690 1-92,94-95,100,102-173,183-203,205-248
+  s_9121753c4a3d76::t_6551e75461522f 174-182,204
+  s_9121753c4a3d76::t_4b4c16389a3301 93
+  s_9121753c4a3d76::t_833a2532c3368f 96-99,101
+bytewax-python-streaming/scripts/sql-console.sh
+  s_9121753c4a3d76::t_ff8b5b8a42fc2d 1-8
+bytewax-python-streaming/.gitignore
+  s_9121753c4a3d76::t_abccbea09a2685 1-4
+bytewax-python-streaming/scripts/ui.sh
+  s_9121753c4a3d76::t_531050124c8f2b 1-8
+bytewax-python-streaming/data/orders.csv
+  s_9121753c4a3d76::t_a136530285af64 1-201
+bytewax-python-streaming/scripts/ports.env
+  s_9121753c4a3d76::t_8830e34198c401 1-2
+bytewax-python-streaming/scripts/setup.sh
+  s_9121753c4a3d76::t_05e0f3718f3414 1-20
+bytewax-python-streaming/podman-compose.yml
+  s_9121753c4a3d76::t_14813a6af69b5d 1-34
+bytewax-python-streaming/printscreens/architecture.svg
+  s_9121753c4a3d76::t_e5433fec3bcc62 1-41
+bytewax-python-streaming/scripts/test-all.sh
+  s_9121753c4a3d76::t_4d25db3d6b53a9 1-31,34-82
+  s_9121753c4a3d76::t_6551e75461522f 32-33
+bytewax-python-streaming/scripts/start-all.sh
+  s_9121753c4a3d76::t_360ff1be425d1c 1-35
+bytewax-python-streaming/ui/index.html
+  s_9121753c4a3d76::t_44b83b36d683eb 1-70,77-129
+  s_9121753c4a3d76::t_ef330369647927 71-76
+bytewax-python-streaming/tests/test_core.py
+  s_9121753c4a3d76::t_079666405bb76a 1-91,93-103,105,107,111-116
+  s_9121753c4a3d76::t_6c94c6688b3202 92,104
+  s_9121753c4a3d76::t_f04c504b22d4ae 106,108-110
+bytewax-python-streaming/dataflow/requirements.txt
+  s_9121753c4a3d76::t_59d821a3160a9c 1
+bytewax-python-streaming/scripts/status.sh
+  s_9121753c4a3d76::t_d3d6d07b093d0b 1-26
+bytewax-python-streaming/dataflow/core.py
+  s_9121753c4a3d76::t_7117f82ea302ed 1-74
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "7253251ed4ddac7c739d8c802fb3c564e80f7dc0",
+  "prompts": {},
+  "sessions": {
+    "s_9121753c4a3d76": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "39b421dc-22e8-4dc0-93df-749df3c5cb41",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "diegopacheco <diego.pacheco.it@gmail.com>"
+    }
+  }
+}
