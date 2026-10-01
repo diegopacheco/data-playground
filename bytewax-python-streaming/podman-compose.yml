@@ -1,0 +1,34 @@
+name: i28-bytewax
+
+services:
+  redpanda:
+    image: docker.io/redpandadata/redpanda:v26.2.3
+    container_name: i28-redpanda
+    command:
+      - redpanda
+      - start
+      - --smp
+      - "1"
+      - --memory
+      - 512M
+      - --overprovisioned
+      - --mode
+      - dev-container
+      - --kafka-addr
+      - internal://0.0.0.0:9092,external://0.0.0.0:22892
+      - --advertise-kafka-addr
+      - internal://i28-redpanda:9092,external://localhost:22892
+    ports:
+      - "22892:22892"
+    volumes:
+      - i28-redpanda-data:/var/lib/redpanda/data
+    networks:
+      - i28-net
+
+volumes:
+  i28-redpanda-data:
+    name: i28-redpanda-data
+
+networks:
+  i28-net:
+    name: i28-net
