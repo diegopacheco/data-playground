@@ -1,0 +1,84 @@
+trino-federated-join/scripts/ui.sh
+  s_9121753c4a3d76::t_d645bf3fb06dd4 1-5
+trino-federated-join/.gitignore
+  s_9121753c4a3d76::t_97b47f260bef36 1-4
+trino-federated-join/trino/catalog/cassandra.properties
+  s_9121753c4a3d76::t_c19a2741a21518 1-4
+trino-federated-join/app/trino.py
+  s_9121753c4a3d76::t_e211c6582cf025 1-25
+trino-federated-join/scripts/start-all.sh
+  s_9121753c4a3d76::t_749421a0870db1 23
+  s_9121753c4a3d76::t_0af1ce4fecf6a3 1-22,26-37
+  s_9121753c4a3d76::t_7efe0562dc8983 24-25
+trino-federated-join/scripts/setup.sh
+  s_9121753c4a3d76::t_d5b54aa14ee327 1-14
+trino-federated-join/architecture.svg
+  s_9121753c4a3d76::t_cae5252d94f692 1-54
+trino-federated-join/app/dimensions.py
+  s_9121753c4a3d76::t_5752711c5dd89f 1-35,37-47,49-61
+  s_9121753c4a3d76::t_798f5a9998e3c2 36
+  s_9121753c4a3d76::t_bcb3636d510493 48
+trino-federated-join/app/index.html
+  s_9121753c4a3d76::t_3386a2eb353176 86-88
+  s_9121753c4a3d76::t_6c888cf5a52bdb 1-85,89-134
+trino-federated-join/trino/jvm.config
+  s_9121753c4a3d76::t_415236f73afb41 1-14
+trino-federated-join/sql/cassandra.cql
+  s_9121753c4a3d76::t_14f381fbdade1e 1-5
+trino-federated-join/trino/catalog/postgres.properties
+  s_9121753c4a3d76::t_a6cbbf7dbca8c7 1-4
+trino-federated-join/app/server.py
+  s_9121753c4a3d76::t_38bf60795272b5 1-72
+trino-federated-join/app/load_products.py
+  s_9121753c4a3d76::t_3cd896c942d002 1-32
+trino-federated-join/scripts/sql-console.sh
+  s_9121753c4a3d76::t_220a9a807ae74a 1-4,6
+  s_9121753c4a3d76::t_cde88a2c9ad162 5
+trino-federated-join/sql/federated.sql
+  s_9121753c4a3d76::t_d8a7748f5cb922 7,9-10
+  s_9121753c4a3d76::t_64bdde3b059acf 1-6,8,11-15
+trino-federated-join/scripts/test-all.sh
+  s_9121753c4a3d76::t_ce027059064593 12-14
+  s_9121753c4a3d76::t_ba8a1b6b94a15a 5,8
+  s_9121753c4a3d76::t_61c3d23a2d96b4 1-4,6-7,9-11,15-18
+trino-federated-join/Containerfile
+  s_9121753c4a3d76::t_b50a5111125d05 1-6
+trino-federated-join/README.md
+  s_9121753c4a3d76::t_d70f5b0e9b1e1c 1-149
+trino-federated-join/scripts/ports.env
+  s_9121753c4a3d76::t_43658cf2396bb9 1-7
+trino-federated-join/scripts/stop-all.sh
+  s_9121753c4a3d76::t_80512cf4e57776 1-14
+trino-federated-join/scripts/common.sh
+  s_9121753c4a3d76::t_3bb1eac013435a 89
+  s_9121753c4a3d76::t_0a9f32a44d6dcd 1-88,90-123
+trino-federated-join/scripts/status.sh
+  s_9121753c4a3d76::t_79ab7314c47722 1-14
+trino-federated-join/app/verify.py
+  s_9121753c4a3d76::t_ece7c4d52f0d2a 1-27,29-70
+  s_9121753c4a3d76::t_32084b2712e074 28
+trino-federated-join/podman-compose.yml
+  s_9121753c4a3d76::t_11f1cfe0fbbedc 1-106
+trino-federated-join/trino/catalog/iceberg.properties
+  s_9121753c4a3d76::t_b2a54f27837a06 1-10
+trino-federated-join/sql/postgres.sql
+  s_9121753c4a3d76::t_5d664fd46708ce 1-9
+trino-federated-join/data/orders.csv
+  s_9121753c4a3d76::t_44d1301d1f5a5e 1-201
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "94ce9465815e4b6be24355fe363ac8064db02525",
+  "prompts": {},
+  "sessions": {
+    "s_9121753c4a3d76": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "39b421dc-22e8-4dc0-93df-749df3c5cb41",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "diegopacheco <diego.pacheco.it@gmail.com>"
+    }
+  }
+}
