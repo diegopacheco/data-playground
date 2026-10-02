@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trino Federated Join</title>
+<style>
+:root{--bg:#f7f8fa;--card:#fff;--ink:#1d2433;--muted:#667085;--line:#e4e7ec;--pg:#336791;--cs:#1287b1;--ice:#2f9e77;--accent:#dd00a1}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+header{padding:20px 28px;background:var(--card);border-bottom:1px solid var(--line)}
+h1{margin:0;font-size:20px}
+header p{margin:4px 0 0;color:var(--muted)}
+nav{display:flex;gap:4px;padding:0 28px;background:var(--card);border-bottom:1px solid var(--line)}
+nav button{border:0;background:none;padding:12px 14px;font:inherit;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent}
+nav button.on{color:var(--ink);border-bottom-color:var(--accent);font-weight:600}
+main{padding:20px 28px;max-width:1280px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.card .k{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.card .v{font-size:22px;font-weight:600}
+.card .t{font-family:ui-monospace,Menlo,monospace;font-size:12px}
+.tag{display:inline-block;padding:1px 8px;border-radius:10px;color:#fff;font-size:11px;font-weight:600}
+.postgres{background:var(--pg)}.cassandra{background:var(--cs)}.iceberg{background:var(--ice)}
+pre{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow:auto;font:12px/1.5 ui-monospace,Menlo,monospace;margin:0 0 18px}
+table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+th,td{padding:7px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{background:#f1f3f7;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
+td.n{text-align:right;font-variant-numeric:tabular-nums}
+.bar{display:inline-block;height:8px;background:var(--ice);border-radius:4px;margin-right:6px;vertical-align:middle}
+h2{font-size:15px;margin:0 0 8px}
+.meta{color:var(--muted);margin:0 0 10px}
+.scan{border-left:4px solid var(--line);padding:8px 12px;background:var(--card);margin-bottom:8px;border-radius:6px;font:12px/1.5 ui-monospace,Menlo,monospace;white-space:pre-wrap}
+.scan.postgres-b{border-left-color:var(--pg)}.scan.cassandra-b{border-left-color:var(--cs)}.scan.iceberg-b{border-left-color:var(--ice)}
+mark{background:#fff3c4;padding:0 2px}
+.err{color:#b42318}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<header>
+<h1>Trino Federated Join</h1>
+<p>One SQL query joins PostgreSQL customers, Cassandra orders and Iceberg products: revenue and margin by region x category x supplier.</p>
+</header>
+<nav>
+<button data-tab="result" class="on">Federated Result</button>
+<button data-tab="query">Query</button>
+<button data-tab="explain">Explain Plan</button>
+</nav>
+<main>
+<div class="cards" id="sources"></div>
+<section id="result">
+<p class="meta" id="meta">running federated query...</p>
+<div id="totals" class="cards"></div>
+<table id="grid"></table>
+</section>
+<section id="query" class="hidden">
+<h2>Federated SQL</h2>
+<pre id="sql"></pre>
+</section>
+<section id="explain" class="hidden">
+<h2>Table scans per connector</h2>
+<div id="scans"></div>
+<h2>Full EXPLAIN output</h2>
+<pre id="plan">loading...</pre>
+</section>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+const money = v => Number(v).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+const CATALOGS = ["postgres","cassandra","iceberg"];
+
+async function get(path){
+  const r = await fetch(path);
+  const body = await r.json();
+  if(!r.ok) throw new Error(body.error || r.status);
+  return body;
+}
+
+document.querySelectorAll("nav button").forEach(b => b.onclick = () => {
+  document.querySelectorAll("nav button").forEach(x => x.classList.toggle("on", x === b));
+  document.querySelectorAll("main section").forEach(s => s.classList.toggle("hidden", s.id !== b.dataset.tab));
+});
+
+const initial = document.querySelector(`nav button[data-tab="${location.hash.slice(1)}"]`);
+if(initial) initial.click();
+
+function renderSources(list){
+  $("sources").innerHTML = list.map(s => `<div class="card"><span class="tag ${s.catalog}">${s.catalog}</span>
+    <div class="v">${s.rows}</div><div class="t">${esc(s.table)}</div><div class="k">${esc(s.role)}</div></div>`).join("");
+}
+
+function renderResult(d){
+  $("sql").textContent = d.sql;
+  $("meta").textContent = `${d.rows.length} groups in ${d.elapsed_ms} ms`;
+  const sum = i => d.rows.reduce((a,r) => a + Number(r[i]), 0);
+  const rev = sum(5), margin = sum(7);
+  $("totals").innerHTML = [["orders",sum(3)],["units",sum(4)],["revenue",money(rev)],["margin",money(margin)],["margin %",(100*margin/rev).toFixed(2)]]
+    .map(([k,v]) => `<div class="card"><div class="k">${k}</div><div class="v">${v}</div></div>`).join("");
+  const max = Math.max(...d.rows.map(r => Number(r[7])));
+  const head = "<tr>" + d.columns.map(c => `<th>${esc(c)}</th>`).join("") + "</tr>";
+  const body = d.rows.map(r => "<tr>" + r.map((v,i) => {
+    if(i < 3) return `<td>${esc(v)}</td>`;
+    if(i === 7) return `<td class="n"><span class="bar" style="width:${Math.max(2,70*Number(v)/max)}px"></span>${money(v)}</td>`;
+    return `<td class="n">${i >= 5 ? money(v) : v}</td>`;
+  }).join("") + "</tr>").join("");
+  $("grid").innerHTML = head + body;
+}
+
+function renderPlan(plan){
+  $("plan").textContent = plan;
+  const lines = plan.split("\n");
+  const blocks = [];
+  lines.forEach((line, i) => {
+    const m = line.match(/table = (\w+):/);
+    if(!m || !CATALOGS.includes(m[1])) return;
+    const chunk = [line.trim()];
+    for(let j = i + 1; j < lines.length && j < i + 12; j++){
+      const t = lines[j].trim();
+      if(/^(└─|├─)/.test(t) || /Fragment|Output layout/.test(t) && !/^Layout/.test(t)) break;
+      chunk.push(t);
+    }
+    blocks.push(`<div class="scan ${m[1]}-b"><span class="tag ${m[1]}">${m[1]}</span>\n${esc(chunk.join("\n")).replace(/(constraint[^\n]*|columns=\[[^\]]*\]|projectedColumns[^\n]*|dynamicFilter[^\n]*)/gi, "<mark>$1</mark>")}</div>`);
+  });
+  $("scans").innerHTML = blocks.join("") || "<p class='meta'>no table scans found</p>";
+}
+
+get("/api/sources").then(d => renderSources(d.sources)).catch(e => $("sources").innerHTML = `<p class="err">${esc(e.message)}</p>`);
+get("/api/federated").then(renderResult).catch(e => $("meta").innerHTML = `<span class="err">${esc(e.message)}</span>`);
+get("/api/explain").then(d => renderPlan(d.plan)).catch(e => $("plan").textContent = e.message);
+</script>
+</body>
+</html>

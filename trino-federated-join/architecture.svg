@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1150 560" width="1150" height="560">
+<defs>
+<style>@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700');text{font-family:Caveat,'Comic Sans MS',cursive;fill:#1d2330}.t{font-size:24px;font-weight:700}.s{font-size:18px}</style>
+<filter id="w"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="3" seed="4"/><feDisplacementMap in="SourceGraphic" scale="3"/></filter>
+<marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#1d2330"/></marker>
+</defs>
+<rect width="1150" height="560" fill="#ffffff"/>
+<g filter="url(#w)" stroke="#1d2330" stroke-width="2">
+<rect x="30" y="200" width="170" height="150" rx="12" fill="#fff3c4"/>
+<rect x="290" y="30" width="250" height="110" rx="12" fill="#d7ecff"/>
+<rect x="290" y="200" width="250" height="110" rx="12" fill="#d6f1f7"/>
+<rect x="290" y="370" width="250" height="120" rx="12" fill="#dff5e1"/>
+<rect x="640" y="180" width="230" height="160" rx="12" fill="#f3e1ff"/>
+<rect x="950" y="190" width="170" height="140" rx="12" fill="#ffe0d6"/>
+<rect x="640" y="410" width="230" height="100" rx="12" fill="#e8e8e8"/>
+<path d="M200 250 L286 90" fill="none" marker-end="url(#a)"/>
+<path d="M200 275 L286 255" fill="none" marker-end="url(#a)"/>
+<path d="M200 300 L286 425" fill="none" marker-end="url(#a)"/>
+<path d="M540 85 L636 220" fill="none" marker-end="url(#a)"/>
+<path d="M540 255 L636 260" fill="none" marker-end="url(#a)"/>
+<path d="M540 430 L636 300" fill="none" marker-end="url(#a)"/>
+<path d="M870 260 L946 260" fill="none" marker-end="url(#a)"/>
+<path d="M1035 330 L874 455" fill="none" marker-end="url(#a)"/>
+<path d="M115 350 L115 535 L755 535 L755 514" fill="none" marker-end="url(#a)" stroke-dasharray="6 5"/>
+</g>
+<text x="115" y="238" text-anchor="middle" class="t">data/</text>
+<text x="115" y="266" text-anchor="middle" class="s">orders.csv</text>
+<text x="115" y="288" text-anchor="middle" class="s">customers.csv</text>
+<text x="115" y="310" text-anchor="middle" class="s">products.csv</text>
+<text x="115" y="334" text-anchor="middle" class="s">dimensions.py</text>
+<text x="415" y="66" text-anchor="middle" class="t">PostgreSQL 18.6</text>
+<text x="415" y="94" text-anchor="middle" class="s">customers: region, tier</text>
+<text x="415" y="118" text-anchor="middle" class="s">loaded with psql COPY</text>
+<text x="415" y="236" text-anchor="middle" class="t">Cassandra 5.0.9</text>
+<text x="415" y="264" text-anchor="middle" class="s">sales.orders fact</text>
+<text x="415" y="288" text-anchor="middle" class="s">loaded with cqlsh COPY</text>
+<text x="415" y="404" text-anchor="middle" class="t">Iceberg REST + MinIO</text>
+<text x="415" y="432" text-anchor="middle" class="s">lake.products: supplier, cost</text>
+<text x="415" y="456" text-anchor="middle" class="s">loaded with Trino INSERT</text>
+<text x="415" y="478" text-anchor="middle" class="s">parquet files in S3</text>
+<text x="755" y="216" text-anchor="middle" class="t">Trino 483 (1G heap)</text>
+<text x="755" y="246" text-anchor="middle" class="s">catalogs postgres,</text>
+<text x="755" y="268" text-anchor="middle" class="s">cassandra, iceberg</text>
+<text x="755" y="294" text-anchor="middle" class="s">one federated join</text>
+<text x="755" y="318" text-anchor="middle" class="s">plus EXPLAIN plan</text>
+<text x="1035" y="226" text-anchor="middle" class="t">UI server</text>
+<text x="1035" y="254" text-anchor="middle" class="s">Python 3.14 stdlib</text>
+<text x="1035" y="278" text-anchor="middle" class="s">/api/federated</text>
+<text x="1035" y="300" text-anchor="middle" class="s">/api/explain</text>
+<text x="1035" y="322" text-anchor="middle" class="s">index.html</text>
+<text x="755" y="446" text-anchor="middle" class="t">verify.py</text>
+<text x="755" y="474" text-anchor="middle" class="s">independent CSV join</text>
+<text x="755" y="496" text-anchor="middle" class="s">compares every group</text>
+</svg>

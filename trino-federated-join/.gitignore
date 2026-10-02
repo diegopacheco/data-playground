@@ -1,0 +1,4 @@
+.run/
+data/customers.csv
+data/products.csv
+__pycache__/

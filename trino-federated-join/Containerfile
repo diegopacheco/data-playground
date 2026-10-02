@@ -1,0 +1,6 @@
+FROM docker.io/library/python:3.14.7-slim
+WORKDIR /app
+COPY app app
+COPY sql sql
+COPY data data
+CMD ["python", "app/server.py"]

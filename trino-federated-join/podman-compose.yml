@@ -1,0 +1,106 @@
+name: i35-trino-federated-join
+
+services:
+  i35-minio:
+    image: docker.io/pgsty/minio:RELEASE.2026-08-04T00-00-00Z
+    container_name: i35-minio
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: i35admin
+      MINIO_ROOT_PASSWORD: i35password
+    ports:
+      - "${minio:-23500}:9000"
+      - "${minio_console:-23501}:9001"
+    volumes:
+      - i35-minio-data:/data
+    networks:
+      - i35-net
+
+  i35-rest:
+    image: docker.io/apache/iceberg-rest-fixture:1.10.1
+    container_name: i35-rest
+    environment:
+      JAVA_TOOL_OPTIONS: -Xmx256m
+      AWS_ACCESS_KEY_ID: i35admin
+      AWS_SECRET_ACCESS_KEY: i35password
+      AWS_REGION: us-east-1
+      CATALOG_WAREHOUSE: s3://i35-warehouse/
+      CATALOG_IO__IMPL: org.apache.iceberg.aws.s3.S3FileIO
+      CATALOG_S3_ENDPOINT: http://i35-minio:9000
+      CATALOG_S3_PATH__STYLE__ACCESS: "true"
+    ports:
+      - "${rest:-23502}:8181"
+    networks:
+      - i35-net
+    depends_on:
+      - i35-minio
+
+  i35-postgres:
+    image: docker.io/library/postgres:18.6
+    container_name: i35-postgres
+    environment:
+      POSTGRES_USER: i35
+      POSTGRES_PASSWORD: i35password
+      POSTGRES_DB: crm
+    ports:
+      - "${postgres:-23503}:5432"
+    volumes:
+      - i35-postgres-data:/var/lib/postgresql
+      - ./data:/data:ro,Z
+      - ./sql:/sql:ro,Z
+    networks:
+      - i35-net
+
+  i35-cassandra:
+    image: docker.io/library/cassandra:5.0.9
+    container_name: i35-cassandra
+    environment:
+      MAX_HEAP_SIZE: 512M
+      HEAP_NEWSIZE: 128M
+      CASSANDRA_DC: datacenter1
+    ports:
+      - "${cassandra:-23504}:9042"
+    volumes:
+      - i35-cassandra-data:/var/lib/cassandra
+      - ./data:/data:ro,Z
+      - ./sql:/sql:ro,Z
+    networks:
+      - i35-net
+
+  i35-trino:
+    image: docker.io/trinodb/trino:483
+    container_name: i35-trino
+    ports:
+      - "${trino:-23505}:8080"
+    volumes:
+      - ./trino/jvm.config:/etc/trino/jvm.config:ro,Z
+      - ./trino/catalog:/etc/trino/catalog:ro,Z
+    networks:
+      - i35-net
+
+  i35-ui:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: i35-trino-federated-join:latest
+    container_name: i35-ui
+    restart: unless-stopped
+    environment:
+      TRINO_URL: http://i35-trino:8080
+      UI_PORT: "${ui:-23506}"
+    ports:
+      - "${ui:-23506}:${ui:-23506}"
+    networks:
+      - i35-net
+
+networks:
+  i35-net:
+    name: i35-net
+
+volumes:
+  i35-minio-data:
+    name: i35-minio-data
+  i35-postgres-data:
+    name: i35-postgres-data
+  i35-cassandra-data:
+    name: i35-cassandra-data
