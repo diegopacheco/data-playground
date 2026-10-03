@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ClickHouse Kafka Engine</title>
+<style>
+  :root { --bg: #f7f8fa; --card: #fff; --ink: #1d2433; --muted: #6b7385; --line: #e3e6ec; --bar: #f2b33d; --accent: #2f6fde; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--ink); }
+  main { max-width: 960px; margin: 0 auto; padding: 24px 16px 48px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .sub { color: var(--muted); font-size: 14px; margin-bottom: 20px; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .tile, .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+  .tile .label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+  .tile .value { font-size: 24px; font-weight: 600; margin-top: 4px; font-variant-numeric: tabular-nums; }
+  .card { margin-bottom: 20px; overflow-x: auto; }
+  .card h2 { font-size: 15px; margin: 0 0 12px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+  th, td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: right; }
+  th:first-child, td:first-child { text-align: left; }
+  th { color: var(--muted); font-weight: 500; }
+  .live { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #2fa66a; margin-right: 6px; }
+  .live.off { background: #d9534f; }
+  svg text { font-size: 12px; fill: var(--ink); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Per-category totals from Kafka into ClickHouse</h1>
+  <div class="sub"><span id="dot" class="live"></span><span id="status">connecting</span></div>
+  <div class="tiles">
+    <div class="tile"><div class="label">Orders ingested</div><div class="value" id="orders">-</div></div>
+    <div class="tile"><div class="label">Categories</div><div class="value" id="categories">-</div></div>
+    <div class="tile"><div class="label">Revenue</div><div class="value" id="revenue">-</div></div>
+    <div class="tile"><div class="label">Latest order ts</div><div class="value" id="last" style="font-size:15px">-</div></div>
+  </div>
+  <div class="card">
+    <h2>Revenue by category</h2>
+    <svg id="chart" width="100%" height="0"></svg>
+  </div>
+  <div class="card">
+    <h2>sales.category_totals (SummingMergeTree)</h2>
+    <table>
+      <thead><tr><th>Category</th><th>Orders</th><th>Quantity</th><th>Revenue</th></tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+</main>
+<script>
+const money = n => Number(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const el = id => document.getElementById(id);
+
+function drawChart(rows) {
+  const svg = el("chart");
+  const width = svg.clientWidth || 800;
+  const labelWidth = 110, valueWidth = 90, barHeight = 26, gap = 8;
+  const max = Math.max(1, ...rows.map(r => r.revenue));
+  const room = Math.max(40, width - labelWidth - valueWidth);
+  svg.setAttribute("height", rows.length * (barHeight + gap));
+  svg.innerHTML = rows.map((r, i) => {
+    const y = i * (barHeight + gap);
+    const w = Math.max(2, room * r.revenue / max);
+    return `<text x="0" y="${y + 17}">${r.category}</text>` +
+      `<rect x="${labelWidth}" y="${y}" width="${w}" height="${barHeight}" rx="4" fill="var(--bar)"></rect>` +
+      `<text x="${labelWidth + w + 6}" y="${y + 17}">${money(r.revenue)}</text>`;
+  }).join("");
+}
+
+function drawTable(rows) {
+  el("rows").innerHTML = rows.map(r =>
+    `<tr><td>${r.category}</td><td>${r.orders}</td><td>${r.quantity}</td><td>${money(r.revenue)}</td></tr>`).join("");
+}
+
+async function refresh() {
+  try {
+    const [totals, stats] = await Promise.all([fetch("/api/totals"), fetch("/api/stats")].map(p => p.then(r => {
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return r.json();
+    })));
+    const s = stats[0];
+    el("orders").textContent = s.orders;
+    el("categories").textContent = s.categories;
+    el("revenue").textContent = money(s.revenue);
+    el("last").textContent = s.orders ? s.last_ts : "-";
+    drawChart(totals);
+    drawTable(totals);
+    el("dot").className = "live";
+    el("status").textContent = "live, refreshed " + new Date().toLocaleTimeString() + " every 2s";
+  } catch (e) {
+    el("dot").className = "live off";
+    el("status").textContent = "backend unavailable: " + e.message;
+  }
+}
+
+refresh();
+setInterval(refresh, 2000);
+</script>
+</body>
+</html>

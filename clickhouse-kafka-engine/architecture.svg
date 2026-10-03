@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="540" viewBox="0 0 1120 540">
+  <defs>
+    <filter id="wobble" filterUnits="userSpaceOnUse" x="0" y="0" width="1120" height="540">
+      <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="3" seed="3" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="3"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#374151"/>
+    </marker>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700');
+      text { font-family: 'Caveat', 'Comic Sans MS', cursive; fill: #1f2937; }
+      .title { font-size: 25px; font-weight: 700; }
+      .note { font-size: 18px; }
+      .label { font-size: 18px; fill: #4b5563; }
+      .box { stroke: #374151; stroke-width: 2.2; filter: url(#wobble); }
+      .flow { stroke: #374151; stroke-width: 2.4; fill: none; marker-end: url(#arrow); filter: url(#wobble); }
+    </style>
+  </defs>
+  <rect width="1120" height="540" fill="#ffffff"/>
+
+  <rect class="box" x="30" y="50" width="150" height="90" rx="14" fill="#fde2e4"/>
+  <text class="title" x="105" y="88" text-anchor="middle">orders.csv</text>
+  <text class="note" x="105" y="116" text-anchor="middle">200 rows</text>
+
+  <rect class="box" x="230" y="50" width="200" height="90" rx="14" fill="#e2ece9"/>
+  <text class="title" x="330" y="88" text-anchor="middle">awk to JSON</text>
+  <text class="note" x="330" y="116" text-anchor="middle">kafka-console-producer</text>
+
+  <rect class="box" x="480" y="50" width="180" height="90" rx="14" fill="#fff1c1"/>
+  <text class="title" x="570" y="88" text-anchor="middle">Kafka 4.3.1</text>
+  <text class="note" x="570" y="116" text-anchor="middle">topic orders, KRaft</text>
+
+  <rect class="box" x="710" y="50" width="240" height="90" rx="14" fill="#dbe7fb"/>
+  <text class="title" x="830" y="88" text-anchor="middle">sales.orders_queue</text>
+  <text class="note" x="830" y="116" text-anchor="middle">ENGINE = Kafka, JSONEachRow</text>
+
+  <path class="flow" d="M180,95 L226,95"/>
+  <path class="flow" d="M430,95 L476,95"/>
+  <path class="flow" d="M660,95 L706,95"/>
+
+  <rect class="box" x="560" y="250" width="230" height="90" rx="14" fill="#dbe7fb"/>
+  <text class="title" x="675" y="288" text-anchor="middle">sales.orders</text>
+  <text class="note" x="675" y="316" text-anchor="middle">MergeTree, one row per order</text>
+
+  <rect class="box" x="840" y="250" width="250" height="90" rx="14" fill="#dbe7fb"/>
+  <text class="title" x="965" y="288" text-anchor="middle">sales.category_totals</text>
+  <text class="note" x="965" y="316" text-anchor="middle">SummingMergeTree by category</text>
+
+  <path class="flow" d="M790,140 L690,246"/>
+  <text class="label" x="620" y="200">orders_mv</text>
+  <path class="flow" d="M870,140 L950,246"/>
+  <text class="label" x="925" y="200">category_totals_mv</text>
+
+  <rect class="box" x="840" y="420" width="250" height="90" rx="14" fill="#e8e1f5"/>
+  <text class="title" x="965" y="458" text-anchor="middle">server.py</text>
+  <text class="note" x="965" y="486" text-anchor="middle">Python 3.14 stdlib, /api/*</text>
+
+  <rect class="box" x="520" y="420" width="220" height="90" rx="14" fill="#fde2e4"/>
+  <text class="title" x="630" y="458" text-anchor="middle">index.html</text>
+  <text class="note" x="630" y="486" text-anchor="middle">polls every 2s, SVG bars</text>
+
+  <path class="flow" d="M965,340 L965,416"/>
+  <text class="label" x="975" y="385">HTTP SELECT</text>
+  <path class="flow" d="M720,340 L850,416"/>
+  <text class="label" x="700" y="392">stats</text>
+  <path class="flow" d="M840,480 L744,480"/>
+  <text class="label" x="762" y="505">JSON</text>
+
+  <text class="note" x="30" y="300">ClickHouse 26.9 pulls from Kafka itself:</text>
+  <text class="note" x="30" y="326">no consumer app, both views fire</text>
+  <text class="note" x="30" y="352">on every block the Kafka engine reads</text>
+</svg>
