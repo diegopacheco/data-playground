@@ -1,0 +1,95 @@
+columnar-encodings-from-scratch/src/codec/delta.rs
+  s_3b53f3faf7302c::t_b0a47719d058e3 1-40
+columnar-encodings-from-scratch/src/codec/alp.rs
+  s_3b53f3faf7302c::t_4ac1492cde9c60 1-100
+columnar-encodings-from-scratch/Cargo.toml
+  s_3b53f3faf7302c::t_0748104a91aae2 1-10
+columnar-encodings-from-scratch/Containerfile
+  s_3b53f3faf7302c::t_2b9279c46a14ec 1-15
+columnar-encodings-from-scratch/src/data.rs
+  s_3b53f3faf7302c::t_dad8a3b71c5b2a 1-69
+columnar-encodings-from-scratch/scripts/stop-all.sh
+  s_3b53f3faf7302c::t_460b387e93cf41 1-15
+columnar-encodings-from-scratch/scripts/setup.sh
+  s_3b53f3faf7302c::t_161697dc9f9278 1-17
+columnar-encodings-from-scratch/src/codec/mod.rs
+  s_3b53f3faf7302c::t_616e449ed62f07 1-5,7-75,77-94,96-195
+  s_8772a817eccd11::t_00deb4b260ad07 6,76,95
+columnar-encodings-from-scratch/src/bits.rs
+  s_3b53f3faf7302c::t_cb9ac18b56c784 1-2,5-55,57-161
+  s_3b53f3faf7302c::t_1919ae13a5be65 3-4,56
+columnar-encodings-from-scratch/src/bench.rs
+  s_3b53f3faf7302c::t_e2904eca3099a7 1-82
+columnar-encodings-from-scratch/podman-compose.yml
+  s_3b53f3faf7302c::t_13eb3a32c6e42b 1-25
+columnar-encodings-from-scratch/scripts/start-all.sh
+  s_3b53f3faf7302c::t_65220e52f592ef 1-22
+columnar-encodings-from-scratch/src/main.rs
+  s_3b53f3faf7302c::t_2aad301bd15f4c 1-212
+columnar-encodings-from-scratch/printscreens/architecture.svg
+  s_3b53f3faf7302c::t_20a4ee695a21d2 1-57
+columnar-encodings-from-scratch/src/codec/fsst.rs
+  s_3b53f3faf7302c::t_21882dbb48ae4a 1-182
+columnar-encodings-from-scratch/scripts/ui.sh
+  s_3b53f3faf7302c::t_aa46af0c009a95 1-7
+columnar-encodings-from-scratch/README.md
+  s_3b53f3faf7302c::t_f9a267d1de48dc 1-102,104-196
+  s_3b53f3faf7302c::t_d0a8deee0366e0 103
+columnar-encodings-from-scratch/scripts/status.sh
+  s_3b53f3faf7302c::t_6b5c87acbe0108 1-13
+columnar-encodings-from-scratch/tests/test_encodings.py
+  s_3b53f3faf7302c::t_fc48877ac475c7 71-78,80-81,96,103
+  s_3b53f3faf7302c::t_ad760be8b5a2b8 1-70,79,82-95,97-102,104-234
+columnar-encodings-from-scratch/src/codec/rle.rs
+  s_3b53f3faf7302c::t_6d36197d755201 1-35
+columnar-encodings-from-scratch/src/codec/dict.rs
+  s_3b53f3faf7302c::t_43bceb3f9099bd 1-20,22-40
+  s_3b53f3faf7302c::t_ff2942e50109ed 21
+columnar-encodings-from-scratch/.gitignore
+  s_3b53f3faf7302c::t_8c6b98ba22252e 1-3
+columnar-encodings-from-scratch/scripts/common.sh
+  s_3b53f3faf7302c::t_4c9c0782f69dd0 1-87
+columnar-encodings-from-scratch/web/index.html
+  s_3b53f3faf7302c::t_e6c6552c0a74f0 1-157,159-214
+  s_3b53f3faf7302c::t_b4063b85b9373e 158
+columnar-encodings-from-scratch/scripts/ports.env
+  s_3b53f3faf7302c::t_f6b8fa080b3c52 1
+columnar-encodings-from-scratch/src/codec/plain.rs
+  s_3b53f3faf7302c::t_a9d84fce09f7ca 1-22
+columnar-encodings-from-scratch/src/json.rs
+  s_3b53f3faf7302c::t_df508293e1ab95 1-45
+columnar-encodings-from-scratch/src/codec/bitpack.rs
+  s_3b53f3faf7302c::t_8b003c9afb8705 1-18
+columnar-encodings-from-scratch/src/codec/frame.rs
+  s_3b53f3faf7302c::t_ad46be578f797a 1-45
+columnar-encodings-from-scratch/scripts/test-all.sh
+  s_3b53f3faf7302c::t_3594a726804201 1-25
+columnar-encodings-from-scratch/src/duck.rs
+  s_3b53f3faf7302c::t_02656faaad79d1 1-75
+columnar-encodings-from-scratch/Cargo.lock
+  s_3b53f3faf7302c::t_3adeb5d2a3c328 1-7
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "258d5fc3ee12d7b41bc63cef0e1b42a3833f0303",
+  "prompts": {},
+  "sessions": {
+    "s_3b53f3faf7302c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7b7528e4-a24f-44b8-a1f0-3181aa699c71",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "diegopacheco <diego.pacheco.it@gmail.com>"
+    },
+    "s_8772a817eccd11": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "23a121af-833e-4342-9856-a60091024218",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "diegopacheco <diego.pacheco.it@gmail.com>"
+    }
+  }
+}
