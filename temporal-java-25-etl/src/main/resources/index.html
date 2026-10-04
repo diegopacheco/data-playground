@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Temporal ETL</title>
+<style>
+:root { --bg: #f7f8fb; --card: #ffffff; --ink: #1d2433; --muted: #667085; --line: #e4e7ec; --accent: #4f46e5; --ok: #067647; --okbg: #ecfdf3; --warn: #b54708; --warnbg: #fffaeb; --bad: #b42318; --badbg: #fef3f2; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.5 -apple-system, "Segoe UI", Roboto, sans-serif; }
+header { background: var(--card); border-bottom: 1px solid var(--line); padding: 18px 28px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+h1 { margin: 0; font-size: 20px; }
+h1 span { color: var(--muted); font-weight: 400; font-size: 14px; margin-left: 8px; }
+h2 { font-size: 16px; margin: 0 0 12px; }
+main { padding: 24px 28px; display: grid; gap: 20px; max-width: 1200px; margin: 0 auto; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; overflow-x: auto; }
+a.btn { background: var(--accent); color: #fff; text-decoration: none; padding: 8px 14px; border-radius: 8px; font-weight: 600; }
+a { color: var(--accent); }
+table { border-collapse: collapse; width: 100%; }
+th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .03em; }
+td.num { text-align: right; font-variant-numeric: tabular-nums; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.pill { display: inline-block; padding: 1px 9px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+.COMPLETED { color: var(--ok); background: var(--okbg); }
+.RUNNING, .STARTED, .SCHEDULED { color: var(--warn); background: var(--warnbg); }
+.FAILED, .TIMED_OUT, .TERMINATED { color: var(--bad); background: var(--badbg); }
+.wf { border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; margin-bottom: 14px; }
+.wf-head { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
+.wf-head b { font-family: ui-monospace, Menlo, monospace; }
+.meta { color: var(--muted); font-size: 12px; }
+.fail { color: var(--bad); font-size: 12px; white-space: normal; }
+@media (max-width: 800px) { .grid { grid-template-columns: 1fr; } main { padding: 16px; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Temporal ETL <span>extractOrders, transformAggregate, loadToPostgres</span></h1>
+  <a class="btn" id="temporal-link" href="#" target="_blank">Open Temporal Web UI</a>
+</header>
+<main>
+  <div class="grid">
+    <section class="card">
+      <h2>revenue_by_category in Postgres</h2>
+      <table id="revenue"><thead><tr><th>Category</th><th>Orders</th><th>Quantity</th><th>Revenue</th></tr></thead><tbody></tbody></table>
+      <p class="meta" id="owner"></p>
+    </section>
+    <section class="card">
+      <h2>Revenue per category</h2>
+      <svg id="chart" width="100%" viewBox="0 0 520 260"></svg>
+    </section>
+  </div>
+  <section class="card">
+    <h2>Workflow history summary</h2>
+    <div id="workflows"><p class="meta">loading</p></div>
+  </section>
+</main>
+<script>
+let temporalUi = "";
+const money = v => Number(v).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;" }[c]));
+const time = s => s ? new Date(s).toLocaleTimeString() : "";
+
+async function get(path) {
+  const res = await fetch(path);
+  if (!res.ok) throw new Error(path + " " + res.status);
+  return res.json();
+}
+
+function renderRevenue(rows) {
+  document.querySelector("#revenue tbody").innerHTML = rows.map(r =>
+    `<tr><td>${esc(r.category)}</td><td class="num">${r.total_orders}</td><td class="num">${r.total_quantity}</td><td class="num">${money(r.total_revenue)}</td></tr>`).join("");
+  const owners = [...new Set(rows.map(r => r.workflow_id))];
+  document.getElementById("owner").textContent = owners.length ? "last upserted by workflow " + owners.join(", ") : "no rows yet";
+  const max = Math.max(1, ...rows.map(r => Number(r.total_revenue)));
+  const barH = 30, gap = 10, left = 110, width = 330;
+  document.getElementById("chart").innerHTML = rows.map((r, i) => {
+    const y = 10 + i * (barH + gap), w = Math.max(2, width * Number(r.total_revenue) / max);
+    return `<text x="${left - 8}" y="${y + 20}" text-anchor="end" font-size="13" fill="#1d2433">${esc(r.category)}</text>
+      <rect x="${left}" y="${y}" width="${w}" height="${barH}" rx="5" fill="#818cf8"></rect>
+      <text x="${left + w + 6}" y="${y + 20}" font-size="12" fill="#667085">${money(r.total_revenue)}</text>`;
+  }).join("");
+}
+
+function renderWorkflows(list) {
+  if (!list.length) { document.getElementById("workflows").innerHTML = "<p class=\"meta\">no workflows yet</p>"; return; }
+  document.getElementById("workflows").innerHTML = list.map(w => {
+    const link = `${temporalUi}/namespaces/default/workflows/${encodeURIComponent(w.workflow_id)}`;
+    const r = w.result;
+    const result = r ? `orders ${r.orders}, categories ${r.categories}, rows upserted ${r.rowsUpserted}, extract attempt ${r.extractAttempt}, transform attempt ${r.transformAttempt}, transform resumed from order ${r.transformResumedFrom}` : "";
+    const acts = w.activities.map(a => `<tr><td>${esc(a.activity)}</td><td><span class="pill ${a.status}">${a.status}</span></td>
+      <td class="num">${a.times_scheduled}</td><td class="num">${a.attempt ?? ""}</td><td>${esc(a.completed_by ?? a.worker ?? "")}</td>
+      <td class="fail">${esc(a.last_failure)}</td></tr>`).join("");
+    return `<div class="wf"><div class="wf-head"><b>${esc(w.workflow_id)}</b><span class="pill ${w.status}">${w.status}</span>
+      <span class="meta">started ${time(w.started_at)} ${w.closed_at ? "closed " + time(w.closed_at) : ""} | ${w.event_count} events | workflow tasks by ${esc(w.workflow_task_workers.join(", "))}</span>
+      <a href="${link}" target="_blank">history in Temporal UI</a></div>
+      <div class="meta">${esc(result)}</div>
+      <table><thead><tr><th>Activity</th><th>Status</th><th>Scheduled</th><th>Attempt</th><th>Completed by</th><th>Last failure before success</th></tr></thead><tbody>${acts}</tbody></table></div>`;
+  }).join("");
+}
+
+async function refresh() {
+  try {
+    const [rows, wfs] = await Promise.all([get("/api/revenue"), get("/api/workflows")]);
+    renderRevenue(rows);
+    renderWorkflows(wfs);
+  } catch (e) {
+    document.getElementById("workflows").innerHTML = `<p class="fail">${esc(e.message)}</p>`;
+  }
+}
+
+get("/api/config").then(c => { temporalUi = c.temporal_ui; document.getElementById("temporal-link").href = temporalUi; refresh(); });
+setInterval(refresh, 5000);
+</script>
+</body>
+</html>
