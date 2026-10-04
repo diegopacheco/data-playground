@@ -1,0 +1,15 @@
+FROM docker.io/library/rust:1.98.1-slim AS build
+WORKDIR /src
+COPY Cargo.toml .
+COPY src src
+COPY web web
+RUN cargo build --release
+FROM docker.io/library/python:3.14.7-slim
+ARG TARGETARCH
+RUN python -c "import urllib.request as u; u.urlretrieve('https://github.com/duckdb/duckdb/releases/download/v1.5.5/duckdb_cli-linux-${TARGETARCH}.gz', '/tmp/duckdb.gz')" && gunzip /tmp/duckdb.gz && install -m 755 /tmp/duckdb /usr/local/bin/duckdb && rm /tmp/duckdb && duckdb --version
+COPY --from=build /src/target/release/columnar-encodings /usr/local/bin/columnar-encodings
+WORKDIR /app
+COPY tests tests
+ENV PORT=8080 WORK_DIR=/tmp/r18 PYTHONUNBUFFERED=1
+EXPOSE 8080
+CMD ["columnar-encodings"]

@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="560" viewBox="0 0 1200 560">
+  <defs>
+    <style>@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&amp;display=swap'); text { font-family: 'Caveat', 'Comic Sans MS', cursive; fill: #1f2933; }</style>
+    <filter id="wobble"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="3"/></filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1f2933"/></marker>
+  </defs>
+  <rect width="1200" height="560" fill="#ffffff"/>
+  <g filter="url(#wobble)" stroke="#1f2933" stroke-width="2">
+    <rect x="20" y="130" width="200" height="200" rx="10" fill="#fff3bf"/>
+    <rect x="270" y="100" width="330" height="260" rx="10" fill="#d0ebff"/>
+    <rect x="650" y="100" width="230" height="120" rx="10" fill="#d3f9d8"/>
+    <rect x="650" y="250" width="230" height="110" rx="10" fill="#ffd8a8"/>
+    <rect x="930" y="160" width="250" height="140" rx="10" fill="#e5dbff"/>
+    <rect x="270" y="410" width="330" height="110" rx="10" fill="#fcc2d7"/>
+    <rect x="930" y="410" width="250" height="110" rx="10" fill="#f1f3f5"/>
+    <line x1="220" y1="230" x2="268" y2="230" marker-end="url(#arrow)"/>
+    <line x1="600" y1="160" x2="648" y2="160" marker-end="url(#arrow)"/>
+    <line x1="600" y1="300" x2="648" y2="300" marker-end="url(#arrow)"/>
+    <line x1="880" y1="160" x2="928" y2="200" marker-end="url(#arrow)"/>
+    <line x1="880" y1="300" x2="928" y2="260" marker-end="url(#arrow)"/>
+    <line x1="1055" y1="410" x2="1055" y2="302" marker-end="url(#arrow)"/>
+    <line x1="435" y1="410" x2="435" y2="362" marker-end="url(#arrow)"/>
+  </g>
+  <text x="600" y="42" font-size="32" font-weight="700" text-anchor="middle">columnar-encodings-from-scratch</text>
+  <text x="600" y="72" font-size="20" text-anchor="middle">one Rust binary (no crates), container r18-app, port 28300</text>
+  <text x="120" y="165" font-size="24" text-anchor="middle">data.rs</text>
+  <text x="120" y="192" font-size="17" text-anchor="middle">seeded generator</text>
+  <text x="120" y="215" font-size="17" text-anchor="middle">7 columns x 1M rows</text>
+  <text x="120" y="240" font-size="17" text-anchor="middle">ints, timestamps, days</text>
+  <text x="120" y="263" font-size="17" text-anchor="middle">countries, URLs/emails</text>
+  <text x="120" y="286" font-size="17" text-anchor="middle">prices, random ints</text>
+  <text x="435" y="135" font-size="24" text-anchor="middle">codec/ (from scratch)</text>
+  <text x="435" y="168" font-size="18" text-anchor="middle">plain, rle, dict</text>
+  <text x="435" y="195" font-size="18" text-anchor="middle">delta (blocks of 128)</text>
+  <text x="435" y="222" font-size="18" text-anchor="middle">for (blocks of 1024), bitpack</text>
+  <text x="435" y="249" font-size="18" text-anchor="middle">fsst: 255-symbol table</text>
+  <text x="435" y="276" font-size="18" text-anchor="middle">alp: decimal exponents + exceptions</text>
+  <text x="435" y="310" font-size="17" text-anchor="middle">bits.rs: varint, zigzag, bit-packing</text>
+  <text x="435" y="335" font-size="17" text-anchor="middle">encode -> bytes -> decode</text>
+  <text x="765" y="135" font-size="24" text-anchor="middle">bench.rs</text>
+  <text x="765" y="162" font-size="17" text-anchor="middle">best of 3 encode/decode</text>
+  <text x="765" y="185" font-size="17" text-anchor="middle">size, ratio, MB/s</text>
+  <text x="765" y="208" font-size="17" text-anchor="middle">bit-exact round-trip</text>
+  <text x="765" y="282" font-size="24" text-anchor="middle">duck.rs</text>
+  <text x="765" y="309" font-size="17" text-anchor="middle">CSV -> DuckDB 1.5.5 CLI</text>
+  <text x="765" y="332" font-size="17" text-anchor="middle">storage_info + Parquet v1/v2</text>
+  <text x="1055" y="198" font-size="24" text-anchor="middle">REST API</text>
+  <text x="1055" y="225" font-size="17" text-anchor="middle">GET /api/results</text>
+  <text x="1055" y="248" font-size="17" text-anchor="middle">GET /api/column/{name}/values</text>
+  <text x="1055" y="271" font-size="17" text-anchor="middle">POST /api/roundtrip, /api/run</text>
+  <text x="1055" y="450" font-size="24" text-anchor="middle">Browser UI</text>
+  <text x="1055" y="477" font-size="17" text-anchor="middle">Sizes, Speed, Inside the bytes,</text>
+  <text x="1055" y="500" font-size="17" text-anchor="middle">DuckDB and Parquet, Try it</text>
+  <text x="435" y="445" font-size="24" text-anchor="middle">tests</text>
+  <text x="435" y="472" font-size="17" text-anchor="middle">cargo test: edge cases per codec</text>
+  <text x="435" y="497" font-size="17" text-anchor="middle">Python: sizes recomputed, round-trips</text>
+</svg>

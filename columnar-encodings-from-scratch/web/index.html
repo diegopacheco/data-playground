@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Columnar Encodings From Scratch</title>
+<style>
+:root{--bg:#f7f8fa;--card:#fff;--ink:#1f2933;--muted:#616e7c;--line:#e4e7eb;--accent:#2f6fde;--good:#1f9d55;--bad:#d64545;--best:#fff4d6}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+header{background:var(--card);border-bottom:1px solid var(--line);padding:18px 24px}
+h1{margin:0;font-size:22px}
+header p{margin:4px 0 0;color:var(--muted)}
+nav{display:flex;gap:4px;padding:0 24px;background:var(--card);border-bottom:1px solid var(--line);flex-wrap:wrap}
+nav button{border:0;background:none;padding:12px 14px;font-size:14px;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent}
+nav button.on{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
+main{padding:20px 24px;max-width:1280px;margin:0 auto}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px}
+.card h3{margin:0 0 2px;font-size:16px}
+.muted{color:var(--muted)}
+.small{font-size:12px}
+.bar-row{display:grid;grid-template-columns:70px 1fr 150px;align-items:center;gap:8px;margin:5px 0;font-size:13px}
+.bar{height:14px;background:#dbe6fb;border-radius:4px;position:relative}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:4px}
+.bar-row.best .bar i{background:#e8a317}
+.bar-row.best b{color:#b7791f}
+.pill{display:inline-block;padding:1px 8px;border-radius:10px;font-size:12px;background:#e6f4ea;color:var(--good);font-weight:600}
+.pill.bad{background:#fde8e8;color:var(--bad)}
+.pill.best{background:var(--best);color:#b7791f}
+table{border-collapse:collapse;width:100%;background:var(--card)}
+th,td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--line);vertical-align:top;font-size:13px}
+th{color:var(--muted);font-weight:600;background:#fafbfc}
+td.num{text-align:right;font-variant-numeric:tabular-nums}
+tr.best td{background:var(--best)}
+.hex{font-family:ui-monospace,Menlo,monospace;font-size:12px;word-break:break-all;color:#334e68}
+.hex span:nth-child(odd){color:#829ab1}
+select,textarea,button.go{font:inherit;border:1px solid var(--line);border-radius:6px;padding:6px 8px;background:#fff}
+button.go{background:var(--accent);color:#fff;border-color:var(--accent);cursor:pointer}
+textarea{width:100%;min-height:180px;font-family:ui-monospace,Menlo,monospace;font-size:12px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.stats{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:150px}
+.stat b{display:block;font-size:20px}
+.explain{background:#eef4ff;border:1px solid #d6e4ff;border-radius:8px;padding:10px 12px;margin:0 0 14px}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<header>
+<h1>Columnar encodings from scratch</h1>
+<p>RLE, dictionary, delta, frame-of-reference, bit-packing, FSST and ALP written in plain Rust, measured on 7 columns and compared with what DuckDB and Parquet pick.</p>
+</header>
+<nav id="tabs">
+<button data-tab="sizes" class="on">Sizes</button>
+<button data-tab="speed">Speed</button>
+<button data-tab="inside">Inside the bytes</button>
+<button data-tab="duck">DuckDB and Parquet</button>
+<button data-tab="try">Try it</button>
+</nav>
+<main>
+<div id="status" class="muted">Loading results...</div>
+<section id="sizes" class="tab"></section>
+<section id="speed" class="tab hidden"></section>
+<section id="inside" class="tab hidden"></section>
+<section id="duck" class="tab hidden"></section>
+<section id="try" class="tab hidden">
+<div class="explain">Paste one value per line, pick the type and every encoding for that type encodes and decodes it on the server. Exact means the decoded values are bit-for-bit equal to what you sent.</div>
+<div class="row">
+<select id="t-type"><option value="int">int (i64)</option><option value="float">float (f64)</option><option value="str">string (UTF-8)</option></select>
+<button class="go" id="t-fill">Fill with a sample</button>
+<button class="go" id="t-run">Encode and decode</button>
+</div>
+<textarea id="t-values"></textarea>
+<div id="t-out" style="margin-top:14px"></div>
+</section>
+</main>
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmt = n => n >= 1e6 ? (n/1e6).toFixed(2)+' MB' : n >= 1e3 ? (n/1e3).toFixed(1)+' KB' : n+' B';
+const ABOUT = {
+  plain: 'Baseline: 8 bytes per number, varint length plus bytes per string.',
+  rle: 'Run-length: (run length varint, value) pairs. Wins only when equal values sit next to each other.',
+  dict: 'Dictionary: distinct values stored once, each row becomes an id bit-packed at ceil(log2(cardinality)) bits.',
+  delta: 'Delta: first value, then differences in blocks of 128, each block stores its min delta and bit-packs the rest (Parquet DELTA_BINARY_PACKED style).',
+  for: 'Frame of reference: blocks of 1024 store the block minimum once and bit-pack value minus minimum.',
+  bitpack: 'Plain bit-packing: zigzag every value and pack all rows at one global width, no reference point.',
+  fsst: 'FSST: trains a table of up to 255 symbols (1-8 bytes) on a sample, each string becomes 1-byte codes, 255 escapes a literal byte.',
+  alp: 'ALP: per 1024-value vector, find exponents e,f so round(v * 10^e / 10^f) decodes back bit-exact, frame-of-reference + bit-pack the integers, keep misses as exceptions.'
+};
+let DATA = null;
+
+document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('#tabs button').forEach(x => x.classList.toggle('on', x === b));
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('hidden', t.id !== b.dataset.tab));
+  location.hash = b.dataset.tab;
+});
+
+function bars(c) {
+  const max = Math.max(...c.encodings.map(e => Math.log10(e.ratio + 1)));
+  return c.encodings.map(e => `<div class="bar-row ${e.name === c.best ? 'best' : ''}">
+    <b>${e.name}</b><div class="bar"><i style="width:${(Math.log10(e.ratio + 1) / max * 100).toFixed(1)}%"></i></div>
+    <span>${e.ratio.toFixed(2)}x &middot; ${fmt(e.bytes)} ${e.roundtrip ? '' : '<span class="pill bad">LOST</span>'}</span></div>`).join('');
+}
+
+function renderSizes(d) {
+  const exact = d.columns.every(c => c.encodings.every(e => e.roundtrip));
+  const total = d.columns.reduce((a, c) => a + c.encodings.length, 0);
+  $('#sizes').innerHTML = `<div class="stats">
+    <div class="stat"><span class="muted">rows per column</span><b>${d.rows.toLocaleString()}</b></div>
+    <div class="stat"><span class="muted">encodings measured</span><b>${total}</b></div>
+    <div class="stat"><span class="muted">exact round-trips</span><b style="color:${exact ? 'var(--good)' : 'var(--bad)'}">${d.columns.reduce((a, c) => a + c.encodings.filter(e => e.roundtrip).length, 0)} / ${total}</b></div>
+    <div class="stat"><span class="muted">benchmark time</span><b>${d.elapsed_s.toFixed(1)} s</b></div>
+  </div>
+  <div class="explain">Compression ratio = raw size / encoded size, bars on a log scale. Raw size is 8 bytes per number and bytes + 4-byte offset per string (Arrow layout). The winner of each column is highlighted.</div>
+  <div class="grid">${d.columns.map(c => `<div class="card">
+    <h3>${c.name} <span class="pill best">best: ${c.best}</span></h3>
+    <div class="muted small">${esc(c.about)} &middot; ${c.type} &middot; raw ${fmt(c.raw_bytes)}</div>
+    <div class="hex small" style="margin:6px 0 8px">${c.sample.map(esc).join(', ')}, ...</div>
+    ${bars(c)}</div>`).join('')}</div>`;
+}
+
+function renderSpeed(d) {
+  $('#speed').innerHTML = `<div class="explain">Best of ${d.runs} runs, single thread, MB/s of raw data. Encode includes FSST table training and ALP exponent search. Decode rebuilds the full column in memory.</div>` +
+    d.columns.map(c => {
+      const max = Math.max(...c.encodings.map(e => Math.max(e.encode_mbs, e.decode_mbs)));
+      return `<div class="card" style="margin-bottom:14px"><h3>${c.name}</h3><table><tr><th>encoding</th><th>encode MB/s</th><th></th><th>decode MB/s</th><th></th><th>encode ms</th><th>decode ms</th><th>round-trip</th></tr>
+      ${c.encodings.map(e => `<tr class="${e.name === c.best ? 'best' : ''}"><td><b>${e.name}</b></td>
+      <td class="num">${e.encode_mbs.toFixed(0)}</td><td style="width:18%"><div class="bar"><i style="width:${(e.encode_mbs / max * 100).toFixed(1)}%"></i></div></td>
+      <td class="num">${e.decode_mbs.toFixed(0)}</td><td style="width:18%"><div class="bar"><i style="width:${(e.decode_mbs / max * 100).toFixed(1)}%;background:var(--good)"></i></div></td>
+      <td class="num">${e.encode_ms.toFixed(2)}</td><td class="num">${e.decode_ms.toFixed(2)}</td>
+      <td>${e.roundtrip ? '<span class="pill">exact</span>' : '<span class="pill bad">LOST</span>'}</td></tr>`).join('')}</table></div>`;
+    }).join('');
+}
+
+function hexSpans(h) {
+  return (h.match(/../g) || []).map(b => `<span>${b}</span>`).join(' ');
+}
+
+function renderInside(d) {
+  const opts = d.columns.map(c => `<option>${c.name}</option>`).join('');
+  $('#inside').innerHTML = `<div class="row"><label>Column <select id="i-col">${opts}</select></label></div><div id="i-body"></div>`;
+  const draw = () => {
+    const c = d.columns.find(x => x.name === $('#i-col').value);
+    $('#i-body').innerHTML = `<div class="muted" style="margin-bottom:10px">${esc(c.about)}</div><div class="grid">` + c.encodings.map(e => `<div class="card" ${e.name === c.best ? 'style="border-color:#e8a317"' : ''}>
+      <h3>${e.name} <span class="muted small">${fmt(e.bytes)}, ${e.ratio.toFixed(2)}x</span></h3>
+      <p class="muted small">${ABOUT[e.name]}</p>
+      <p><b>What it did:</b> ${esc(e.detail)}</p>
+      <div class="small muted">first ${e.head_hex.length / 2} encoded bytes</div>
+      <div class="hex">${hexSpans(e.head_hex)}</div></div>`).join('') + '</div>';
+  };
+  $('#i-col').onchange = draw;
+  draw();
+}
+
+function renderDuck(d) {
+  $('#duck').innerHTML = `<div class="explain">Each column is loaded into DuckDB ${esc(d.duckdb_version.split(' ')[0])} (file database, CHECKPOINT) and written to Parquet three times. DuckDB storage lists the compression DuckDB chose per segment. Parquet sizes are the column chunk total_compressed_size from parquet_metadata. The count and checksum prove DuckDB saw the exact same values.</div>
+  <table><tr><th>column</th><th>best from scratch</th><th>DuckDB storage picks</th><th>DuckDB blocks</th><th>Parquet v1 uncompressed</th><th>Parquet v2 uncompressed</th><th>Parquet v1 + zstd</th><th>count / checksum</th></tr>
+  ${d.columns.map(c => { const b = c.encodings.find(e => e.name === c.best), k = c.duckdb; return `<tr>
+    <td><b>${c.name}</b><div class="muted small">raw ${fmt(c.raw_bytes)}</div></td>
+    <td><span class="pill best">${c.best}</span><div>${fmt(b.bytes)}</div></td>
+    <td>${k.storage.map(s => `${esc(s.compression)} <span class="muted small">x${s.segments}</span>`).join('<br>')}</td>
+    <td class="num">${fmt(k.db_bytes)}</td>
+    <td>${esc(k.parquet_v1.encodings)}<div>${fmt(k.parquet_v1.bytes)}</div></td>
+    <td>${esc(k.parquet_v2.encodings)}<div>${fmt(k.parquet_v2.bytes)}</div></td>
+    <td>${esc(k.parquet_zstd.encodings)}<div>${fmt(k.parquet_zstd.bytes)}</div></td>
+    <td class="small">${k.count.toLocaleString()}<br>${esc(k.checksum)}</td></tr>`; }).join('')}</table>
+  <p class="muted small">DuckDB blocks = used_blocks x block_size of the database file, so it moves in 256 KB steps and includes metadata.</p>`;
+}
+
+const SAMPLES = {
+  int: '1700000000000000\n1700000000000250\n1700000000000500\n1700000000000750\n-9223372036854775808\n9223372036854775807\n42\n42\n42',
+  float: '19.99\n4.5\n0.1\n1234.56\n-0.0\nNaN\ninf\n3.141592653589793\n19.99',
+  str: 'https://www.acme.com/products/yoga-mat-10?utm_source=google\nhttps://www.acme.com/products/desk-lamp-22?utm_source=google\nana.silva7@gmail.com\nnaive cafe ☕ 日本\n\nUS\nUS'
+};
+const toHex = s => Array.from(new TextEncoder().encode(s)).map(b => b.toString(16).padStart(2, '0')).join('');
+const fromHex = h => new TextDecoder().decode(new Uint8Array((h.match(/../g) || []).map(x => parseInt(x, 16))));
+function floatText(tok) {
+  const v = new DataView(new ArrayBuffer(8)); v.setBigUint64(0, BigInt(tok)); const f = v.getFloat64(0);
+  return Object.is(f, -0) ? '-0.0' : String(f);
+}
+$('#t-fill').onclick = () => { $('#t-values').value = SAMPLES[$('#t-type').value]; };
+$('#t-type').onchange = () => $('#t-fill').onclick();
+$('#t-run').onclick = async () => {
+  const type = $('#t-type').value, lines = $('#t-values').value.split('\n');
+  const toks = type === 'str' ? lines.map(toHex) : lines.map(l => l.trim()).filter(l => l !== '');
+  const r = await fetch(`/api/roundtrip?type=${type}`, {method: 'POST', body: toks.length + '\n' + toks.join('\n')});
+  const j = await r.json();
+  if (!r.ok) { $('#t-out').innerHTML = `<span class="pill bad">${esc(j.error)}</span>`; return; }
+  const show = t => type === 'str' ? JSON.stringify(fromHex(t)) : type === 'float' ? floatText(t) : t;
+  const best = j.results.reduce((a, b) => b.encoded_bytes < a.encoded_bytes ? b : a);
+  $('#t-out').innerHTML = `<p>${j.n} values, raw ${fmt(j.raw_bytes)}</p><table><tr><th>encoding</th><th>bytes</th><th>ratio</th><th>round-trip</th><th>what it did</th><th>decoded values</th></tr>` +
+    j.results.map(e => `<tr class="${e === best ? 'best' : ''}"><td><b>${e.encoding}</b></td><td class="num">${e.encoded_bytes}</td><td class="num">${(j.raw_bytes / Math.max(1, e.encoded_bytes)).toFixed(2)}x</td>
+    <td>${e.roundtrip ? '<span class="pill">exact</span>' : '<span class="pill bad">LOST</span>'}</td><td class="small">${esc(e.detail)}</td>
+    <td class="hex">${esc(e.values.slice(0, 12).map(show).join(', '))}</td></tr>`).join('') + '</table>';
+};
+
+async function load() {
+  const r = await fetch('/api/results');
+  if (r.status === 503) { $('#status').textContent = 'Benchmark running, refreshing...'; setTimeout(load, 1000); return; }
+  const d = await r.json();
+  if (!r.ok) { $('#status').textContent = 'Error: ' + d.error; return; }
+  DATA = d;
+  $('#status').textContent = '';
+  renderSizes(d); renderSpeed(d); renderInside(d); renderDuck(d);
+  const tab = location.hash.slice(1);
+  if (tab) document.querySelector(`#tabs button[data-tab="${tab}"]`)?.click();
+}
+$('#t-fill').onclick();
+load();
+</script>
+</body>
+</html>

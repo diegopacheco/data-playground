@@ -1,0 +1,10 @@
+[package]
+name = "columnar-encodings"
+version = "1.0.0"
+edition = "2024"
+
+[dependencies]
+
+[profile.release]
+opt-level = 3
+codegen-units = 1

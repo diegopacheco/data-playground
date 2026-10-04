@@ -1,0 +1,25 @@
+name: r18-columnar-encodings-from-scratch
+
+services:
+  r18-app:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: r18-columnar-encodings-from-scratch:latest
+    container_name: r18-app
+    restart: unless-stopped
+    environment:
+      ROWS: "1000000"
+      PORT: "8080"
+      WORK_DIR: /tmp/r18
+      UI_URL: http://localhost:8080
+    mem_limit: 1536m
+    cpus: 2
+    ports:
+      - "${ui:-28300}:8080"
+    networks:
+      - r18-net
+
+networks:
+  r18-net:
+    name: r18-net
