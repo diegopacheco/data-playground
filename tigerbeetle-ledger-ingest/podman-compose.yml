@@ -1,0 +1,28 @@
+name: i49-tigerbeetle
+
+services:
+  tigerbeetle:
+    image: ghcr.io/tigerbeetle/tigerbeetle:0.17.9
+    container_name: i49-tigerbeetle
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        [ -f /data/0_0.tigerbeetle ] || /tigerbeetle format --cluster=0 --replica=0 --replica-count=1 /data/0_0.tigerbeetle
+        exec /tigerbeetle start --addresses=0.0.0.0:3000 --cache-grid=128MiB /data/0_0.tigerbeetle
+    security_opt:
+      - seccomp=unconfined
+      - label=disable
+    ports:
+      - "24900:3000"
+    volumes:
+      - i49-tigerbeetle-data:/data
+    networks:
+      - i49-net
+
+volumes:
+  i49-tigerbeetle-data:
+    name: i49-tigerbeetle-data
+
+networks:
+  i49-net:
+    name: i49-net
