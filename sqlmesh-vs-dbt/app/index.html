@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SQLMesh vs dbt</title>
+<style>
+:root { --bg: #f7f8fa; --card: #ffffff; --ink: #1d2330; --muted: #5f6b7a; --line: #e3e7ee; --sq: #0f766e; --sq-soft: #ccfbf1; --dbt: #c2410c; --dbt-soft: #ffedd5; --ok: #15803d; --bad: #b91c1c; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.5 -apple-system, "Segoe UI", Roboto, sans-serif; }
+header { background: var(--card); border-bottom: 1px solid var(--line); padding: 20px 28px; }
+h1 { margin: 0 0 4px; font-size: 22px; }
+h2 { font-size: 16px; margin: 0 0 12px; }
+main { max-width: 1240px; margin: 0 auto; padding: 20px 16px 48px; display: grid; gap: 18px; }
+section { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 18px; overflow-x: auto; }
+.muted { color: var(--muted); }
+.badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.badge { border: 1px solid var(--line); border-radius: 999px; padding: 2px 10px; font-size: 12px; background: var(--bg); }
+.badge.ok { color: var(--ok); border-color: #bbf7d0; background: #f0fdf4; }
+.badge.bad { color: var(--bad); border-color: #fecaca; background: #fef2f2; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.kpi { border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; }
+.kpi .v { font-size: 28px; font-weight: 700; }
+.kpi.sq .v { color: var(--sq); }
+.kpi.dbt .v { color: var(--dbt); }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { text-align: left; padding: 7px 9px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 12px; color: var(--muted); font-weight: 600; background: var(--bg); }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.sqh { color: var(--sq); } .dbth { color: var(--dbt); }
+code { font: 12px ui-monospace, SFMono-Regular, Menlo, monospace; background: var(--bg); padding: 1px 5px; border-radius: 4px; }
+.pill { display: inline-block; border-radius: 4px; padding: 0 6px; font-size: 11px; font-weight: 600; }
+.BREAKING, .INDIRECT_BREAKING { background: #fee2e2; color: var(--bad); }
+.NON_BREAKING, .INDIRECT_NON_BREAKING { background: #dcfce7; color: var(--ok); }
+.models { font-size: 12px; color: var(--muted); }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 18px; }
+svg text { font: 12px -apple-system, "Segoe UI", Roboto, sans-serif; fill: var(--ink); }
+.legend { display: flex; gap: 14px; font-size: 12px; margin-bottom: 6px; }
+.sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; }
+.match { color: var(--ok); font-weight: 600; }
+.nomatch { color: var(--bad); font-weight: 600; }
+</style>
+</head>
+<body>
+<header>
+  <h1>SQLMesh vs dbt on DuckDB</h1>
+  <div class="muted">Same 4 models (stg_orders, fct_orders, revenue_by_category, daily_revenue) plus the orders seed, real runs of both tools.</div>
+  <div class="badges" id="badges"></div>
+</header>
+<main>
+  <section>
+    <h2>Models rebuilt for one small non-breaking change (dev + promote to prod)</h2>
+    <div class="kpis" id="kpis"></div>
+  </section>
+  <section>
+    <h2>Side-by-side runs</h2>
+    <table id="scenarios"></table>
+  </section>
+  <section>
+    <h2>Models rebuilt per scenario</h2>
+    <div class="legend"><span><span class="sw" style="background:var(--sq)"></span>SQLMesh</span><span><span class="sw" style="background:var(--dbt)"></span>dbt</span></div>
+    <svg id="chart" width="100%" height="360"></svg>
+  </section>
+  <section>
+    <h2>Change classification</h2>
+    <div class="grid2" id="classification"></div>
+  </section>
+  <section>
+    <h2>Lineage</h2>
+    <div class="grid2">
+      <div><div class="muted">SQLMesh column-level lineage</div><svg id="lineage" width="100%" height="300"></svg></div>
+      <div><div class="muted">dbt-core node-level lineage (manifest.json parent_map)</div><table id="dbtLineage"></table></div>
+    </div>
+  </section>
+  <section>
+    <h2>Feature comparison</h2>
+    <table id="features"></table>
+  </section>
+  <section>
+    <h2>revenue_by_category</h2>
+    <table id="rbc"></table>
+  </section>
+  <section>
+    <h2>daily_revenue</h2>
+    <table id="daily"></table>
+  </section>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+const money = v => Number(v).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+function badges(d) {
+  const v = Object.entries(d.versions).map(([k, x]) => `<span class="badge">${esc(k)} ${esc(x)}</span>`);
+  const c = Object.entries(d.checks).map(([k, x]) => `<span class="badge ${x ? "ok" : "bad"}">${esc(k.replaceAll("_", " "))}: ${x ? "yes" : "no"}</span>`);
+  $("badges").innerHTML = v.concat(c).join("");
+}
+
+function kpis(d) {
+  const k = d.small_change_models_rebuilt_dev_plus_prod;
+  $("kpis").innerHTML = `
+    <div class="kpi sq"><div class="muted">SQLMesh</div><div class="v">${k.sqlmesh}</div><div class="muted">stg_orders backfilled once in dev, promotion is a view swap</div></div>
+    <div class="kpi dbt"><div class="muted">dbt</div><div class="v">${k.dbt}</div><div class="muted">state:modified+ rebuilds 4 models in dev and 4 again in prod</div></div>
+    <div class="kpi"><div class="muted">Change applied</div><div style="margin-top:6px">${esc(d.changes.non_breaking)}</div></div>`;
+}
+
+function detail(c) {
+  const parts = [];
+  const x = c.detail;
+  if (x.intervals && Object.keys(x.intervals).length) parts.push(Object.entries(x.intervals).map(([m, v]) => `${esc(m)}: ${esc(typeof v === "number" ? v + " interval" : v)}`).join("<br>"));
+  if (x.audits !== undefined) parts.push(`${x.audits} audits, passed: ${x.passed}`);
+  if (x.tests) parts.push(`${x.tests_passed}/${x.tests} tests passed`);
+  if (x.rows_matching_incremental_filter !== undefined) parts.push(`${x.rows_matching_incremental_filter} rows matched is_incremental() filter, fct_orders rows ${x.fct_orders_rows_before} to ${x.fct_orders_rows_after}`);
+  return parts.join("<br>");
+}
+
+function side(c) {
+  if (!c) return `<td class="num muted">n/a</td><td class="num muted">-</td><td class="muted">no equivalent</td>`;
+  return `<td class="num"><b>${c.models_rebuilt}</b></td><td class="num">${c.seconds.toFixed(3)}</td><td><code>${esc(c.command)}</code><div class="models">${detail(c)}</div></td>`;
+}
+
+function scenarios(d) {
+  const head = `<tr><th rowspan="2">Scenario</th><th colspan="3" class="sqh">SQLMesh</th><th colspan="3" class="dbth">dbt</th></tr>
+    <tr><th class="num">models</th><th class="num">seconds</th><th>command / what ran</th><th class="num">models</th><th class="num">seconds</th><th>command / what ran</th></tr>`;
+  $("scenarios").innerHTML = head + d.scenarios.map(s => `<tr><td>${esc(s.scenario)}</td>${side(s.sqlmesh)}${side(s.dbt)}</tr>`).join("");
+}
+
+function chart(d) {
+  const svg = $("chart");
+  const w = svg.clientWidth || 900, h = 360, left = 250, right = 20, top = 10, rowH = (h - top - 10) / d.scenarios.length;
+  const max = 5, x = v => left + (w - left - right) * v / max;
+  let out = "";
+  for (let i = 0; i <= max; i++) out += `<line x1="${x(i)}" x2="${x(i)}" y1="${top}" y2="${h - 10}" stroke="#e3e7ee"/>`;
+  d.scenarios.forEach((s, i) => {
+    const y = top + i * rowH;
+    out += `<text x="${left - 8}" y="${y + rowH / 2 + 4}" text-anchor="end">${esc(s.scenario)}</text>`;
+    [["sqlmesh", "#0f766e", 3], ["dbt", "#c2410c", rowH / 2]].forEach(([k, color, off]) => {
+      const c = s[k];
+      const v = c ? c.models_rebuilt : 0;
+      const bh = rowH / 2 - 4;
+      out += `<rect x="${left}" y="${y + off}" width="${Math.max(x(v) - left, 1.5)}" height="${bh}" rx="2" fill="${c ? color : "#e3e7ee"}"><title>${k}: ${c ? v : "n/a"}</title></rect>`;
+      out += `<text x="${x(v) + 5}" y="${y + off + bh - 2}" style="font-size:11px">${c ? v : "n/a"}</text>`;
+    });
+  });
+  svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+  svg.innerHTML = out;
+}
+
+function classification(d) {
+  const block = (title, rows) => `<div><div class="muted">${esc(title)}</div><table><tr><th>model</th><th>SQLMesh category</th><th>dbt</th></tr>${rows.map(r => `<tr><td>${esc(r.model)}</td><td><span class="pill ${r.category}">${r.category}</span></td><td class="muted">state:modified${r.category.startsWith("INDIRECT") ? "+ (downstream)" : ""}, rebuilt</td></tr>`).join("")}</table></div>`;
+  $("classification").innerHTML = block(`Non-breaking: ${d.changes.non_breaking}`, d.classification.non_breaking) + block(`Breaking: ${d.changes.breaking}`, d.classification.breaking);
+}
+
+function lineage(d) {
+  const edges = Object.values(d.lineage.sqlmesh_columns).flat();
+  const layer = n => n.startsWith("raw.") ? 0 : n.includes("stg_orders") ? 1 : n.includes("fct_orders") ? 2 : 3;
+  const nodes = [...new Set(edges.flatMap(e => [e.from, e.to]))];
+  const layers = [[], [], [], []];
+  nodes.forEach(n => layers[layer(n)].push(n));
+  const svg = $("lineage"), w = svg.clientWidth || 560, h = 300, colW = w / 4, pos = {};
+  layers.forEach((ns, li) => ns.sort().forEach((n, i) => { pos[n] = { x: li * colW + 6, y: 30 + i * (h - 40) / Math.max(ns.length, 1) + 10 }; }));
+  const bw = colW - 18, bh = 34;
+  let out = "";
+  const seen = new Set();
+  edges.forEach(e => {
+    const k = e.from + e.to;
+    if (seen.has(k)) return;
+    seen.add(k);
+    const a = pos[e.from], b = pos[e.to];
+    out += `<path d="M${a.x + bw} ${a.y + bh / 2} C${a.x + bw + 30} ${a.y + bh / 2} ${b.x - 30} ${b.y + bh / 2} ${b.x} ${b.y + bh / 2}" fill="none" stroke="#0f766e" stroke-opacity=".55" stroke-width="1.5"/>`;
+  });
+  nodes.forEach(n => {
+    const p = pos[n], parts = n.split(".");
+    out += `<rect x="${p.x}" y="${p.y}" width="${bw}" height="${bh}" rx="6" fill="#ccfbf1" stroke="#0f766e"/>`;
+    out += `<text x="${p.x + 8}" y="${p.y + 14}" style="font-size:10px;fill:#5f6b7a">${esc(parts[parts.length - 2])}</text>`;
+    out += `<text x="${p.x + 8}" y="${p.y + 28}" style="font-weight:600">${esc(parts[parts.length - 1])}</text>`;
+  });
+  svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+  svg.innerHTML = out;
+  $("dbtLineage").innerHTML = `<tr><th>parent node</th><th>child node</th></tr>` + d.lineage.dbt_nodes.map(e => `<tr><td>${esc(e.from)}</td><td>${esc(e.to)}</td></tr>`).join("") +
+    `<tr><td colspan="2" class="muted">dbt-core knows total_revenue depends on the fct_orders node, not on which columns.</td></tr>`;
+}
+
+function features(d) {
+  $("features").innerHTML = `<tr><th>Feature</th><th class="sqh">SQLMesh</th><th class="dbth">dbt</th></tr>` +
+    d.features.map(f => `<tr><td><b>${esc(f.feature)}</b></td><td>${esc(f.sqlmesh)}</td><td>${esc(f.dbt)}</td></tr>`).join("");
+}
+
+function same(a, b) { return JSON.stringify(a) === JSON.stringify(b); }
+
+function results(d) {
+  const s = d.results.sqlmesh.revenue_by_category, b = d.results.dbt.revenue_by_category, a = d.results.awk_revenue_by_category;
+  $("rbc").innerHTML = `<tr><th>category</th><th class="num sqh">SQLMesh orders</th><th class="num sqh">qty</th><th class="num sqh">revenue</th><th class="num dbth">dbt orders</th><th class="num dbth">qty</th><th class="num dbth">revenue</th><th class="num">awk revenue</th><th>match</th></tr>` +
+    s.map((r, i) => {
+      const ok = same(r, b[i]) && same(r, a[i]);
+      return `<tr><td>${esc(r.category)}</td><td class="num">${r.total_orders}</td><td class="num">${r.total_quantity}</td><td class="num">${money(r.total_revenue)}</td><td class="num">${b[i].total_orders}</td><td class="num">${b[i].total_quantity}</td><td class="num">${money(b[i].total_revenue)}</td><td class="num">${money(a[i].total_revenue)}</td><td class="${ok ? "match" : "nomatch"}">${ok ? "identical" : "differs"}</td></tr>`;
+    }).join("");
+  const ds = d.results.sqlmesh.daily_revenue, db = d.results.dbt.daily_revenue;
+  $("daily").innerHTML = `<tr><th>order_date</th><th class="num sqh">SQLMesh orders</th><th class="num sqh">revenue</th><th class="num dbth">dbt orders</th><th class="num dbth">revenue</th><th>match</th></tr>` +
+    ds.map((r, i) => {
+      const ok = same(r, db[i]);
+      return `<tr><td>${esc(r.order_date)}</td><td class="num">${r.total_orders}</td><td class="num">${money(r.revenue)}</td><td class="num">${db[i].total_orders}</td><td class="num">${money(db[i].revenue)}</td><td class="${ok ? "match" : "nomatch"}">${ok ? "identical" : "differs"}</td></tr>`;
+    }).join("");
+}
+
+fetch("/api/comparison").then(r => r.json()).then(d => {
+  if (d.error) { document.querySelector("main").innerHTML = `<section>${esc(d.error)}</section>`; return; }
+  badges(d); kpis(d); scenarios(d); chart(d); classification(d); lineage(d); features(d); results(d);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+sales:
+  target: prod
+  outputs:
+    prod:
+      type: duckdb
+      path: warehouse.duckdb
+      schema: sales
+      threads: 1
+    dev:
+      type: duckdb
+      path: warehouse.duckdb
+      schema: sales_dev
+      threads: 1

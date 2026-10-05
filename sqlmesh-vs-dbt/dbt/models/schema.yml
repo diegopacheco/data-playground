@@ -1,0 +1,35 @@
+version: 2
+
+models:
+  - name: stg_orders
+    columns:
+      - name: order_id
+        data_tests: [unique, not_null]
+      - name: category
+        data_tests: [not_null]
+      - name: quantity
+        data_tests: [not_null]
+      - name: price
+        data_tests: [not_null]
+      - name: ts
+        data_tests: [not_null]
+  - name: fct_orders
+    columns:
+      - name: order_id
+        data_tests: [unique, not_null]
+      - name: order_date
+        data_tests: [not_null]
+      - name: revenue
+        data_tests: [not_null, non_negative]
+  - name: revenue_by_category
+    columns:
+      - name: category
+        data_tests: [unique, not_null]
+      - name: total_revenue
+        data_tests: [not_null, non_negative]
+  - name: daily_revenue
+    columns:
+      - name: order_date
+        data_tests: [unique, not_null]
+      - name: revenue
+        data_tests: [not_null, non_negative]

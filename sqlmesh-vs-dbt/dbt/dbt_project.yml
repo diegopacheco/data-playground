@@ -1,0 +1,25 @@
+name: sales
+version: '1.0.0'
+profile: sales
+
+model-paths: ["models"]
+seed-paths: ["../data"]
+test-paths: ["tests"]
+target-path: target
+clean-targets: ["target"]
+
+seeds:
+  sales:
+    orders:
+      +column_types:
+        order_id: integer
+        customer: varchar
+        product: varchar
+        category: varchar
+        quantity: integer
+        price: decimal(10,2)
+        ts: varchar
+
+models:
+  sales:
+    +materialized: table

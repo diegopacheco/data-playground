@@ -1,0 +1,9 @@
+SELECT
+  order_id::INT AS order_id,
+  trim(customer) AS customer,
+  trim(product) AS product,
+  lower(trim(category)) AS category,
+  quantity::INT AS quantity,
+  price::DECIMAL(10, 2) AS price,
+  strptime(ts, '%Y-%m-%dT%H:%M:%SZ') AS ts
+FROM {{ ref('orders') }}

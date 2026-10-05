@@ -1,0 +1,21 @@
+name: i38-sqlmesh-vs-dbt
+
+services:
+  i38-ui:
+    image: docker.io/library/python:3.14.7-slim
+    container_name: i38-ui
+    command: ["python", "/app/server.py"]
+    environment:
+      PORT: "8080"
+      COMPARISON_PATH: /data/comparison.json
+    ports:
+      - "${ui:-23800}:8080"
+    volumes:
+      - ./app:/app:ro,Z
+      - ./comparison.json:/data/comparison.json:ro,Z
+    networks:
+      - i38-net
+
+networks:
+  i38-net:
+    name: i38-net

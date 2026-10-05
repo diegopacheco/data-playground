@@ -1,0 +1,828 @@
+{
+  "versions": {
+    "python": "3.14.7",
+    "sqlmesh": "0.236.2",
+    "dbt-core": "1.12.5",
+    "dbt-duckdb": "1.11.0",
+    "duckdb": "1.5.5"
+  },
+  "changes": {
+    "non_breaking": "add projection customer_key to stg_orders",
+    "breaking": "add filter WHERE price >= 0 to stg_orders"
+  },
+  "scenarios": [
+    {
+      "scenario": "Initial build (seed + 4 models)",
+      "sqlmesh": {
+        "seconds": 0.518,
+        "models_rebuilt": 5,
+        "models": [
+          "raw.orders",
+          "sales.daily_revenue",
+          "sales.fct_orders",
+          "sales.revenue_by_category",
+          "sales.stg_orders"
+        ],
+        "command": "sqlmesh plan --auto-apply",
+        "detail": {
+          "intervals": {
+            "raw.orders": "full refresh",
+            "sales.daily_revenue": "full refresh",
+            "sales.fct_orders": "263 daily intervals",
+            "sales.revenue_by_category": "full refresh",
+            "sales.stg_orders": "full refresh"
+          },
+          "changes": [
+            {
+              "model": "raw.orders",
+              "category": "BREAKING"
+            },
+            {
+              "model": "sales.daily_revenue",
+              "category": "BREAKING"
+            },
+            {
+              "model": "sales.fct_orders",
+              "category": "BREAKING"
+            },
+            {
+              "model": "sales.revenue_by_category",
+              "category": "BREAKING"
+            },
+            {
+              "model": "sales.stg_orders",
+              "category": "BREAKING"
+            }
+          ]
+        }
+      },
+      "dbt": {
+        "seconds": 1.658,
+        "models_rebuilt": 5,
+        "models": [
+          "daily_revenue",
+          "fct_orders",
+          "orders",
+          "revenue_by_category",
+          "stg_orders"
+        ],
+        "command": "dbt build",
+        "detail": {
+          "tests": 19,
+          "tests_passed": 19
+        }
+      }
+    },
+    {
+      "scenario": "Run tests / audits",
+      "sqlmesh": {
+        "seconds": 0.152,
+        "models_rebuilt": 0,
+        "models": [],
+        "command": "sqlmesh audit",
+        "detail": {
+          "audits": 11,
+          "passed": true
+        }
+      },
+      "dbt": {
+        "seconds": 0.583,
+        "models_rebuilt": 0,
+        "models": [],
+        "command": "dbt test",
+        "detail": {
+          "tests": 19,
+          "tests_passed": 19
+        }
+      }
+    },
+    {
+      "scenario": "Incremental run, no new data",
+      "sqlmesh": {
+        "seconds": 0.134,
+        "models_rebuilt": 0,
+        "models": [],
+        "command": "sqlmesh run",
+        "detail": {
+          "intervals": {}
+        }
+      },
+      "dbt": {
+        "seconds": 0.429,
+        "models_rebuilt": 1,
+        "models": [
+          "fct_orders"
+        ],
+        "command": "dbt run --select fct_orders",
+        "detail": {
+          "tests": 0,
+          "tests_passed": 0,
+          "rows_matching_incremental_filter": 0,
+          "fct_orders_rows_before": 200,
+          "fct_orders_rows_after": 200
+        }
+      }
+    },
+    {
+      "scenario": "Next scheduled daily run",
+      "sqlmesh": {
+        "seconds": 0.314,
+        "models_rebuilt": 4,
+        "models": [
+          "sales.daily_revenue",
+          "sales.fct_orders",
+          "sales.revenue_by_category",
+          "sales.stg_orders"
+        ],
+        "command": "sqlmesh run --execution-time <now + 1 day>",
+        "detail": {
+          "intervals": {
+            "sales.revenue_by_category": 1,
+            "sales.stg_orders": 1,
+            "sales.fct_orders": 1,
+            "sales.daily_revenue": 1
+          }
+        }
+      },
+      "dbt": {
+        "seconds": 0.678,
+        "models_rebuilt": 5,
+        "models": [
+          "daily_revenue",
+          "fct_orders",
+          "orders",
+          "revenue_by_category",
+          "stg_orders"
+        ],
+        "command": "dbt build",
+        "detail": {
+          "tests": 19,
+          "tests_passed": 19
+        }
+      }
+    },
+    {
+      "scenario": "Reprocess 2026-01-10..11 of fct_orders",
+      "sqlmesh": {
+        "seconds": 0.254,
+        "models_rebuilt": 3,
+        "models": [
+          "sales.daily_revenue",
+          "sales.fct_orders",
+          "sales.revenue_by_category"
+        ],
+        "command": "sqlmesh plan --restate-model sales.fct_orders --start 2026-01-10 --end 2026-01-11",
+        "detail": {
+          "intervals": {
+            "sales.daily_revenue": "full refresh",
+            "sales.fct_orders": "2 daily intervals",
+            "sales.revenue_by_category": "full refresh"
+          },
+          "changes": []
+        }
+      },
+      "dbt": {
+        "seconds": 0.545,
+        "models_rebuilt": 3,
+        "models": [
+          "daily_revenue",
+          "fct_orders",
+          "revenue_by_category"
+        ],
+        "command": "dbt build --select fct_orders+ --full-refresh",
+        "detail": {
+          "tests": 13,
+          "tests_passed": 13
+        }
+      }
+    },
+    {
+      "scenario": "Create dev environment, no change",
+      "sqlmesh": {
+        "seconds": 0.302,
+        "models_rebuilt": 0,
+        "models": [],
+        "command": "sqlmesh plan dev --include-unmodified",
+        "detail": {
+          "intervals": {},
+          "changes": []
+        }
+      },
+      "dbt": {
+        "seconds": 0.952,
+        "models_rebuilt": 5,
+        "models": [
+          "daily_revenue",
+          "fct_orders",
+          "orders",
+          "revenue_by_category",
+          "stg_orders"
+        ],
+        "command": "dbt build --target dev",
+        "detail": {
+          "tests": 19,
+          "tests_passed": 19
+        }
+      }
+    },
+    {
+      "scenario": "Dev environment with --defer (slim)",
+      "sqlmesh": null,
+      "dbt": {
+        "seconds": 0.417,
+        "models_rebuilt": 0,
+        "models": [],
+        "command": "dbt build --target dev --select state:modified+ --defer --state state",
+        "detail": {
+          "tests": 0,
+          "tests_passed": 0
+        }
+      }
+    },
+    {
+      "scenario": "Unchanged project vs prod state",
+      "sqlmesh": {
+        "seconds": 0.263,
+        "models_rebuilt": 0,
+        "models": [],
+        "command": "sqlmesh plan",
+        "detail": {
+          "intervals": {},
+          "changes": []
+        }
+      },
+      "dbt": {
+        "seconds": 0.434,
+        "models_rebuilt": 0,
+        "models": [],
+        "command": "dbt build --select state:modified+ --state state",
+        "detail": {
+          "tests": 0,
+          "tests_passed": 0
+        }
+      }
+    },
+    {
+      "scenario": "Non-breaking change in dev",
+      "sqlmesh": {
+        "seconds": 0.376,
+        "models_rebuilt": 1,
+        "models": [
+          "sales.stg_orders"
+        ],
+        "command": "sqlmesh plan dev --include-unmodified",
+        "detail": {
+          "intervals": {
+            "sales.stg_orders": "full refresh"
+          },
+          "changes": [
+            {
+              "model": "sales.daily_revenue",
+              "category": "INDIRECT_NON_BREAKING"
+            },
+            {
+              "model": "sales.fct_orders",
+              "category": "INDIRECT_NON_BREAKING"
+            },
+            {
+              "model": "sales.revenue_by_category",
+              "category": "INDIRECT_NON_BREAKING"
+            },
+            {
+              "model": "sales.stg_orders",
+              "category": "NON_BREAKING"
+            }
+          ]
+        }
+      },
+      "dbt": {
+        "seconds": 0.679,
+        "models_rebuilt": 4,
+        "models": [
+          "daily_revenue",
+          "fct_orders",
+          "revenue_by_category",
+          "stg_orders"
+        ],
+        "command": "dbt build --target dev --select state:modified+ --state state",
+        "detail": {
+          "tests": 19,
+          "tests_passed": 19
+        }
+      }
+    },
+    {
+      "scenario": "Promote non-breaking change to prod",
+      "sqlmesh": {
+        "seconds": 0.367,
+        "models_rebuilt": 0,
+        "models": [],
+        "command": "sqlmesh plan",
+        "detail": {
+          "intervals": {},
+          "changes": []
+        }
+      },
+      "dbt": {
+        "seconds": 0.971,
+        "models_rebuilt": 4,
+        "models": [
+          "daily_revenue",
+          "fct_orders",
+          "revenue_by_category",
+          "stg_orders"
+        ],
+        "command": "dbt build --select state:modified+ --state state",
+        "detail": {
+          "tests": 19,
+          "tests_passed": 19
+        }
+      }
+    },
+    {
+      "scenario": "Breaking change in dev",
+      "sqlmesh": {
+        "seconds": 0.504,
+        "models_rebuilt": 4,
+        "models": [
+          "sales.daily_revenue",
+          "sales.fct_orders",
+          "sales.revenue_by_category",
+          "sales.stg_orders"
+        ],
+        "command": "sqlmesh plan dev --include-unmodified",
+        "detail": {
+          "intervals": {
+            "sales.daily_revenue": "full refresh",
+            "sales.fct_orders": "263 daily intervals",
+            "sales.revenue_by_category": "full refresh",
+            "sales.stg_orders": "full refresh"
+          },
+          "changes": [
+            {
+              "model": "sales.daily_revenue",
+              "category": "INDIRECT_BREAKING"
+            },
+            {
+              "model": "sales.fct_orders",
+              "category": "INDIRECT_BREAKING"
+            },
+            {
+              "model": "sales.revenue_by_category",
+              "category": "INDIRECT_BREAKING"
+            },
+            {
+              "model": "sales.stg_orders",
+              "category": "BREAKING"
+            }
+          ]
+        }
+      },
+      "dbt": {
+        "seconds": 1.016,
+        "models_rebuilt": 4,
+        "models": [
+          "daily_revenue",
+          "fct_orders",
+          "revenue_by_category",
+          "stg_orders"
+        ],
+        "command": "dbt build --target dev --select state:modified+ --state state",
+        "detail": {
+          "tests": 19,
+          "tests_passed": 19
+        }
+      }
+    }
+  ],
+  "small_change_models_rebuilt_dev_plus_prod": {
+    "sqlmesh": 1,
+    "dbt": 8
+  },
+  "classification": {
+    "non_breaking": [
+      {
+        "model": "sales.daily_revenue",
+        "category": "INDIRECT_NON_BREAKING"
+      },
+      {
+        "model": "sales.fct_orders",
+        "category": "INDIRECT_NON_BREAKING"
+      },
+      {
+        "model": "sales.revenue_by_category",
+        "category": "INDIRECT_NON_BREAKING"
+      },
+      {
+        "model": "sales.stg_orders",
+        "category": "NON_BREAKING"
+      }
+    ],
+    "breaking": [
+      {
+        "model": "sales.daily_revenue",
+        "category": "INDIRECT_BREAKING"
+      },
+      {
+        "model": "sales.fct_orders",
+        "category": "INDIRECT_BREAKING"
+      },
+      {
+        "model": "sales.revenue_by_category",
+        "category": "INDIRECT_BREAKING"
+      },
+      {
+        "model": "sales.stg_orders",
+        "category": "BREAKING"
+      }
+    ]
+  },
+  "features": [
+    {
+      "feature": "Change classification",
+      "sqlmesh": "Automatic per plan: BREAKING / NON_BREAKING / INDIRECT_*",
+      "dbt": "None: state:modified marks the node and everything downstream"
+    },
+    {
+      "feature": "Environments",
+      "sqlmesh": "Virtual: dev is a set of views over versioned physical tables, promotion is a view swap",
+      "dbt": "Physical: every target schema is rebuilt, --defer only reads prod relations"
+    },
+    {
+      "feature": "Incremental semantics",
+      "sqlmesh": "INCREMENTAL_BY_TIME_RANGE with tracked intervals, restate any date range",
+      "dbt": "is_incremental() filter written by hand (max(ts)), reprocess needs --full-refresh"
+    },
+    {
+      "feature": "Column-level lineage",
+      "sqlmesh": "Built in, parsed with sqlglot",
+      "dbt": "Not in dbt-core (node level from manifest.json)"
+    },
+    {
+      "feature": "Data quality",
+      "sqlmesh": "Audits run on every backfill (blocking)",
+      "dbt": "Data tests run by dbt test / dbt build"
+    },
+    {
+      "feature": "Change selection",
+      "sqlmesh": "Computed from model fingerprints in the state DB",
+      "dbt": "state:modified+ against a saved manifest.json"
+    }
+  ],
+  "lineage": {
+    "sqlmesh_columns": {
+      "sales.revenue_by_category.total_revenue": [
+        {
+          "from": "sales.fct_orders.revenue",
+          "to": "sales.revenue_by_category.total_revenue"
+        },
+        {
+          "from": "sales.stg_orders.price",
+          "to": "sales.fct_orders.revenue"
+        },
+        {
+          "from": "raw.orders.price",
+          "to": "sales.stg_orders.price"
+        },
+        {
+          "from": "sales.stg_orders.quantity",
+          "to": "sales.fct_orders.revenue"
+        },
+        {
+          "from": "raw.orders.quantity",
+          "to": "sales.stg_orders.quantity"
+        }
+      ],
+      "sales.daily_revenue.revenue": [
+        {
+          "from": "sales.fct_orders.revenue",
+          "to": "sales.daily_revenue.revenue"
+        },
+        {
+          "from": "sales.stg_orders.price",
+          "to": "sales.fct_orders.revenue"
+        },
+        {
+          "from": "raw.orders.price",
+          "to": "sales.stg_orders.price"
+        },
+        {
+          "from": "sales.stg_orders.quantity",
+          "to": "sales.fct_orders.revenue"
+        },
+        {
+          "from": "raw.orders.quantity",
+          "to": "sales.stg_orders.quantity"
+        }
+      ]
+    },
+    "dbt_nodes": [
+      {
+        "from": "fct_orders",
+        "to": "daily_revenue"
+      },
+      {
+        "from": "stg_orders",
+        "to": "fct_orders"
+      },
+      {
+        "from": "fct_orders",
+        "to": "revenue_by_category"
+      },
+      {
+        "from": "orders",
+        "to": "stg_orders"
+      }
+    ]
+  },
+  "dev_stg_orders_columns": {
+    "sqlmesh": [
+      "order_id",
+      "customer",
+      "product",
+      "category",
+      "quantity",
+      "price",
+      "ts",
+      "customer_key"
+    ],
+    "dbt": [
+      "order_id",
+      "customer",
+      "product",
+      "category",
+      "quantity",
+      "price",
+      "ts",
+      "customer_key"
+    ]
+  },
+  "results": {
+    "sqlmesh": {
+      "revenue_by_category": [
+        {
+          "category": "books",
+          "total_orders": 32,
+          "total_quantity": 64,
+          "total_revenue": 2008.27
+        },
+        {
+          "category": "clothing",
+          "total_orders": 35,
+          "total_quantity": 63,
+          "total_revenue": 3776.49
+        },
+        {
+          "category": "electronics",
+          "total_orders": 30,
+          "total_quantity": 54,
+          "total_revenue": 9618.24
+        },
+        {
+          "category": "home",
+          "total_orders": 32,
+          "total_quantity": 62,
+          "total_revenue": 3608.87
+        },
+        {
+          "category": "sports",
+          "total_orders": 34,
+          "total_quantity": 76,
+          "total_revenue": 6873.93
+        },
+        {
+          "category": "toys",
+          "total_orders": 37,
+          "total_quantity": 74,
+          "total_revenue": 2451.82
+        }
+      ],
+      "daily_revenue": [
+        {
+          "order_date": "2026-01-05",
+          "total_orders": 9,
+          "revenue": 1458.15
+        },
+        {
+          "order_date": "2026-01-06",
+          "total_orders": 15,
+          "revenue": 2118.59
+        },
+        {
+          "order_date": "2026-01-07",
+          "total_orders": 15,
+          "revenue": 1586.48
+        },
+        {
+          "order_date": "2026-01-08",
+          "total_orders": 14,
+          "revenue": 2157.67
+        },
+        {
+          "order_date": "2026-01-09",
+          "total_orders": 15,
+          "revenue": 1426.64
+        },
+        {
+          "order_date": "2026-01-10",
+          "total_orders": 16,
+          "revenue": 1806.35
+        },
+        {
+          "order_date": "2026-01-11",
+          "total_orders": 14,
+          "revenue": 1450.0
+        },
+        {
+          "order_date": "2026-01-12",
+          "total_orders": 15,
+          "revenue": 1993.63
+        },
+        {
+          "order_date": "2026-01-13",
+          "total_orders": 14,
+          "revenue": 2205.77
+        },
+        {
+          "order_date": "2026-01-14",
+          "total_orders": 15,
+          "revenue": 2556.17
+        },
+        {
+          "order_date": "2026-01-15",
+          "total_orders": 16,
+          "revenue": 3841.85
+        },
+        {
+          "order_date": "2026-01-16",
+          "total_orders": 14,
+          "revenue": 1727.69
+        },
+        {
+          "order_date": "2026-01-17",
+          "total_orders": 15,
+          "revenue": 2219.24
+        },
+        {
+          "order_date": "2026-01-18",
+          "total_orders": 13,
+          "revenue": 1789.39
+        }
+      ]
+    },
+    "dbt": {
+      "revenue_by_category": [
+        {
+          "category": "books",
+          "total_orders": 32,
+          "total_quantity": 64,
+          "total_revenue": 2008.27
+        },
+        {
+          "category": "clothing",
+          "total_orders": 35,
+          "total_quantity": 63,
+          "total_revenue": 3776.49
+        },
+        {
+          "category": "electronics",
+          "total_orders": 30,
+          "total_quantity": 54,
+          "total_revenue": 9618.24
+        },
+        {
+          "category": "home",
+          "total_orders": 32,
+          "total_quantity": 62,
+          "total_revenue": 3608.87
+        },
+        {
+          "category": "sports",
+          "total_orders": 34,
+          "total_quantity": 76,
+          "total_revenue": 6873.93
+        },
+        {
+          "category": "toys",
+          "total_orders": 37,
+          "total_quantity": 74,
+          "total_revenue": 2451.82
+        }
+      ],
+      "daily_revenue": [
+        {
+          "order_date": "2026-01-05",
+          "total_orders": 9,
+          "revenue": 1458.15
+        },
+        {
+          "order_date": "2026-01-06",
+          "total_orders": 15,
+          "revenue": 2118.59
+        },
+        {
+          "order_date": "2026-01-07",
+          "total_orders": 15,
+          "revenue": 1586.48
+        },
+        {
+          "order_date": "2026-01-08",
+          "total_orders": 14,
+          "revenue": 2157.67
+        },
+        {
+          "order_date": "2026-01-09",
+          "total_orders": 15,
+          "revenue": 1426.64
+        },
+        {
+          "order_date": "2026-01-10",
+          "total_orders": 16,
+          "revenue": 1806.35
+        },
+        {
+          "order_date": "2026-01-11",
+          "total_orders": 14,
+          "revenue": 1450.0
+        },
+        {
+          "order_date": "2026-01-12",
+          "total_orders": 15,
+          "revenue": 1993.63
+        },
+        {
+          "order_date": "2026-01-13",
+          "total_orders": 14,
+          "revenue": 2205.77
+        },
+        {
+          "order_date": "2026-01-14",
+          "total_orders": 15,
+          "revenue": 2556.17
+        },
+        {
+          "order_date": "2026-01-15",
+          "total_orders": 16,
+          "revenue": 3841.85
+        },
+        {
+          "order_date": "2026-01-16",
+          "total_orders": 14,
+          "revenue": 1727.69
+        },
+        {
+          "order_date": "2026-01-17",
+          "total_orders": 15,
+          "revenue": 2219.24
+        },
+        {
+          "order_date": "2026-01-18",
+          "total_orders": 13,
+          "revenue": 1789.39
+        }
+      ]
+    },
+    "awk_revenue_by_category": [
+      {
+        "category": "books",
+        "total_orders": 32,
+        "total_quantity": 64,
+        "total_revenue": 2008.27
+      },
+      {
+        "category": "clothing",
+        "total_orders": 35,
+        "total_quantity": 63,
+        "total_revenue": 3776.49
+      },
+      {
+        "category": "electronics",
+        "total_orders": 30,
+        "total_quantity": 54,
+        "total_revenue": 9618.24
+      },
+      {
+        "category": "home",
+        "total_orders": 32,
+        "total_quantity": 62,
+        "total_revenue": 3608.87
+      },
+      {
+        "category": "sports",
+        "total_orders": 34,
+        "total_quantity": 76,
+        "total_revenue": 6873.93
+      },
+      {
+        "category": "toys",
+        "total_orders": 37,
+        "total_quantity": 74,
+        "total_revenue": 2451.82
+      }
+    ]
+  },
+  "checks": {
+    "results_identical": true,
+    "revenue_by_category_matches_awk": true
+  }
+}

@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 470" width="1000" height="470">
+  <defs>
+    <filter id="wobble"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="3" seed="7"/><feDisplacementMap in="SourceGraphic" scale="3"/></filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#333"/></marker>
+    <style>@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&amp;display=swap'); text { font-family: 'Caveat', cursive; fill: #222; } .t { font-size: 24px; font-weight: 700; } .s { font-size: 18px; }</style>
+  </defs>
+  <rect width="1000" height="470" fill="#ffffff"/>
+  <g filter="url(#wobble)" stroke="#333" stroke-width="2">
+    <rect x="30" y="190" width="160" height="90" rx="12" fill="#fff3bf"/>
+    <rect x="270" y="50" width="250" height="150" rx="12" fill="#c3fae8"/>
+    <rect x="270" y="270" width="250" height="150" rx="12" fill="#ffe8cc"/>
+    <rect x="600" y="160" width="170" height="150" rx="12" fill="#e5dbff"/>
+    <rect x="830" y="190" width="150" height="90" rx="12" fill="#d0ebff"/>
+    <path d="M190 225 L268 130" fill="none" marker-end="url(#arrow)"/>
+    <path d="M190 245 L268 340" fill="none" marker-end="url(#arrow)"/>
+    <path d="M520 125 L598 205" fill="none" marker-end="url(#arrow)"/>
+    <path d="M520 345 L598 265" fill="none" marker-end="url(#arrow)"/>
+    <path d="M770 235 L828 235" fill="none" marker-end="url(#arrow)"/>
+  </g>
+  <text x="110" y="228" text-anchor="middle" class="t">orders.csv</text>
+  <text x="110" y="254" text-anchor="middle" class="s">200 rows, seed</text>
+  <text x="395" y="82" text-anchor="middle" class="t">SQLMesh 0.236</text>
+  <text x="395" y="110" text-anchor="middle" class="s">plan / run / audit / restate</text>
+  <text x="395" y="134" text-anchor="middle" class="s">virtual dev env, change categories</text>
+  <text x="395" y="158" text-anchor="middle" class="s">column lineage (sqlglot)</text>
+  <text x="395" y="182" text-anchor="middle" class="s">own DuckDB file + state</text>
+  <text x="395" y="302" text-anchor="middle" class="t">dbt-core 1.12 + dbt-duckdb</text>
+  <text x="395" y="330" text-anchor="middle" class="s">build / test / seed</text>
+  <text x="395" y="354" text-anchor="middle" class="s">state:modified+, --defer, incremental</text>
+  <text x="395" y="378" text-anchor="middle" class="s">node lineage (manifest.json)</text>
+  <text x="395" y="402" text-anchor="middle" class="s">own DuckDB file, sales + sales_dev</text>
+  <text x="685" y="195" text-anchor="middle" class="t">bench/compare.py</text>
+  <text x="685" y="225" text-anchor="middle" class="s">timings, models rebuilt</text>
+  <text x="685" y="250" text-anchor="middle" class="s">awk check of the CSV</text>
+  <text x="685" y="280" text-anchor="middle" class="t">comparison.json</text>
+  <text x="905" y="228" text-anchor="middle" class="t">UI (i38-ui)</text>
+  <text x="905" y="254" text-anchor="middle" class="s">/api/comparison</text>
+</svg>
