@@ -1,0 +1,117 @@
+sqlmesh-vs-dbt/dbt/dbt_project.yml
+  s_9121753c4a3d76::t_47aba7c0d86654 1-25
+sqlmesh-vs-dbt/bench/workspace.py
+  s_9121753c4a3d76::t_4f955dc1d76e1e 1-2,5-54,63
+  s_9121753c4a3d76::t_109c3bb10ac4eb 3-4
+  s_9121753c4a3d76::t_c36ffc8595921c 55-62,64-78
+sqlmesh-vs-dbt/app/index.html
+  s_9121753c4a3d76::t_bcfed77c717c15 1-174,176-212
+  s_9121753c4a3d76::t_23b5e4f4d80d1c 175
+sqlmesh-vs-dbt/dbt/models/schema.yml
+  s_9121753c4a3d76::t_0de83f4b998776 1-35
+sqlmesh-vs-dbt/dbt/tests/generic/non_negative.sql
+  s_9121753c4a3d76::t_0e371ac22f344b 1-5
+sqlmesh-vs-dbt/comparison.json
+  s_9121753c4a3d76::t_931aa579d9bd20 142
+  s_9121753c4a3d76::t_5ae4977dfa76a7 28-56,106-108,121,127,139,141,144,147,149-162,176-181,206-209,244,246-253,275-295,321-324,355-378
+  s_9121753c4a3d76::t_a94508ec2dd91d 1-16,18-27,57-59,61-78,80-88,90-101,103-105,109-110,112-120,122-126,128,130-138,145-146,163-166,168-175,182-184,186-201,203-205,210-211,213-231,233-243,254,256-267,269-274,296-298,300-316,318-320,325-326,328-344,346-354,379-381,383-828
+  s_9121753c4a3d76::t_8fddcaee3872ad 17,60,79,89,102,111,129,140,143,148,167,185,202,212,232,245,255,268,299,317,327,345,382
+sqlmesh-vs-dbt/scripts/setup.sh
+  s_9121753c4a3d76::t_89f781c1298546 1-23
+sqlmesh-vs-dbt/bench/awk_revenue_by_category.sh
+  s_9121753c4a3d76::t_4ec300b0c6f29f 1-10
+sqlmesh-vs-dbt/dbt/models/stg_orders.sql
+  s_9121753c4a3d76::t_7b0f31f2f555bf 1-9
+sqlmesh-vs-dbt/sqlmesh/models/revenue_by_category.sql
+  s_9121753c4a3d76::t_72e0d1872ef5ef 1-18
+sqlmesh-vs-dbt/bench/sqlmesh_bench.py
+  s_9121753c4a3d76::t_d087bdb642389a 59
+  s_9121753c4a3d76::t_298a582fd86182 27-32,34-38
+  s_9121753c4a3d76::t_310040f378f888 161-162
+  s_9121753c4a3d76::t_a94508ec2dd91d 113
+  s_9121753c4a3d76::t_4e2f215efa2c98 138,141,143
+  s_9121753c4a3d76::t_92da00b7810256 58
+  s_9121753c4a3d76::t_5ba8f236778e50 33,154
+  s_9121753c4a3d76::t_69df568e3f4d13 163,169-170
+  s_9121753c4a3d76::t_107a193ef90b4d 49-55
+  s_9121753c4a3d76::t_362b4148511951 1-26,39-48,56-57,60-112,114-137,139-140,142,144-153,155-160,164-168,171-177
+sqlmesh-vs-dbt/sqlmesh/config.yaml
+  s_9121753c4a3d76::t_ae11326e41d3e8 1-11
+sqlmesh-vs-dbt/sqlmesh/models/stg_orders.sql
+  s_9121753c4a3d76::t_83c4064b351f63 1-19
+sqlmesh-vs-dbt/.gitignore
+  s_9121753c4a3d76::t_fa5d6f1b3c7fd8 1-10
+sqlmesh-vs-dbt/README.md
+  s_9121753c4a3d76::t_916fed0248a075 55,57-65
+  s_9121753c4a3d76::t_1736bd63d65ee6 1-54,56,66-133
+sqlmesh-vs-dbt/architecture.svg
+  s_9121753c4a3d76::t_7c23d6c6f525e0 1-25,27-30,32-38
+  s_9121753c4a3d76::t_23258d6fe22cdb 26,31
+sqlmesh-vs-dbt/sqlmesh/models/fct_orders.sql
+  s_9121753c4a3d76::t_e41e68addb5c93 1-26
+sqlmesh-vs-dbt/scripts/ui.sh
+  s_9121753c4a3d76::t_0977c869170bba 1-10
+sqlmesh-vs-dbt/sqlmesh/models/daily_revenue.sql
+  s_9121753c4a3d76::t_9b85f09f2a706a 1-17
+sqlmesh-vs-dbt/dbt/models/fct_orders.sql
+  s_9121753c4a3d76::t_c851560b3d4ade 1-16
+sqlmesh-vs-dbt/app/server.py
+  s_9121753c4a3d76::t_0c5ebf6ca4976e 1-38
+sqlmesh-vs-dbt/scripts/ports.env
+  s_9121753c4a3d76::t_2056bc93e74c6f 1
+sqlmesh-vs-dbt/sqlmesh/audits/assert_non_negative.sql
+  s_9121753c4a3d76::t_ca9fa0eb5c6b76 1-7
+sqlmesh-vs-dbt/podman-compose.yml
+  s_9121753c4a3d76::t_4803083727c738 1-21
+sqlmesh-vs-dbt/bench/assertions.py
+  s_9121753c4a3d76::t_c934fa840ed1fb 1-41
+sqlmesh-vs-dbt/dbt/models/daily_revenue.sql
+  s_9121753c4a3d76::t_ca4b81228d9e96 1-6
+sqlmesh-vs-dbt/scripts/start-all.sh
+  s_9121753c4a3d76::t_bf047ce3dd209f 1-19
+sqlmesh-vs-dbt/sqlmesh/models/raw_orders.sql
+  s_9121753c4a3d76::t_fbeded87c8d80e 1-16
+sqlmesh-vs-dbt/bench/dbt_bench.py
+  s_9121753c4a3d76::t_2c22d0330c93b6 54,84,86-92
+  s_9121753c4a3d76::t_4cb49867a19d24 73
+  s_9121753c4a3d76::t_5ba8f236778e50 93
+  s_9121753c4a3d76::t_190f96a4376f42 49-53,55-56
+  s_9121753c4a3d76::t_e6444a3672fe61 1-48,57-72,74-83,85,94-120
+sqlmesh-vs-dbt/bench/compare.py
+  s_9121753c4a3d76::t_94075dda1b0730 1-11,13-15,17-44,46-96
+  s_9121753c4a3d76::t_5ba8f236778e50 12,16,45
+sqlmesh-vs-dbt/scripts/test-all.sh
+  s_9121753c4a3d76::t_6e914b0d1d1c09 1-27
+sqlmesh-vs-dbt/bench/run.sh
+  s_9121753c4a3d76::t_e7b5eb86cec9cd 1-10
+sqlmesh-vs-dbt/dbt/models/revenue_by_category.sql
+  s_9121753c4a3d76::t_9daa0b13cdedc6 1-7
+sqlmesh-vs-dbt/scripts/status.sh
+  s_9121753c4a3d76::t_b089274e5fe720 1-18
+sqlmesh-vs-dbt/scripts/common.sh
+  s_9121753c4a3d76::t_3ac02518fabc07 1-96
+sqlmesh-vs-dbt/dbt/profiles.yml
+  s_9121753c4a3d76::t_6cf0f446205873 1-13
+sqlmesh-vs-dbt/requirements.txt
+  s_9121753c4a3d76::t_9855123a11d0b6 1-4
+sqlmesh-vs-dbt/scripts/stop-all.sh
+  s_9121753c4a3d76::t_9f1f42722c8bd1 1-14
+sqlmesh-vs-dbt/data/orders.csv
+  s_9121753c4a3d76::t_731235872cfbbf 1-201
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "48bca98f9e1a276da18be046ae50aac3f8df967f",
+  "prompts": {},
+  "sessions": {
+    "s_9121753c4a3d76": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "39b421dc-22e8-4dc0-93df-749df3c5cb41",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "diegopacheco <diego.pacheco.it@gmail.com>"
+    }
+  }
+}
