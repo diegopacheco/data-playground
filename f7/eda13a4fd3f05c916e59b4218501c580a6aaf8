@@ -1,0 +1,67 @@
+dagster-assets-iceberg/i36_pipeline/definitions.py
+  s_9121753c4a3d76::t_7483369938f671 4,56
+  s_9121753c4a3d76::t_7156a788baea57 1-3,5-55,57
+dagster-assets-iceberg/scripts/ui.sh
+  s_9121753c4a3d76::t_60533579d999fa 1-6
+dagster-assets-iceberg/ui/index.html
+  s_9121753c4a3d76::t_c41db09f9cfd86 1-73
+dagster-assets-iceberg/i36_pipeline/lake.py
+  s_9121753c4a3d76::t_a1b5c5e2e13de2 1-28
+dagster-assets-iceberg/scripts/ports.env
+  s_9121753c4a3d76::t_cfae568650a1d8 1-2
+dagster-assets-iceberg/scripts/stop-all.sh
+  s_9121753c4a3d76::t_4e1191bffb1c50 1-10
+dagster-assets-iceberg/scripts/status.sh
+  s_9121753c4a3d76::t_9571da56c79f29 1-13
+dagster-assets-iceberg/architecture.svg
+  s_9121753c4a3d76::t_f858956fcc0a6e 1-51
+dagster-assets-iceberg/README.md
+  s_9121753c4a3d76::t_4958d36995cc6d 1-117
+dagster-assets-iceberg/data/orders.csv
+  s_9121753c4a3d76::t_8f0aae484f30d6 1-201
+dagster-assets-iceberg/scripts/setup.sh
+  s_9121753c4a3d76::t_06b741f043da6f 1-14
+dagster-assets-iceberg/podman-compose.yml
+  s_9121753c4a3d76::t_7483369938f671 6
+  s_9121753c4a3d76::t_2506f37b851051 1-5,7-28
+dagster-assets-iceberg/scripts/common.sh
+  s_9121753c4a3d76::t_2426d41a48f688 1-83
+dagster-assets-iceberg/Containerfile
+  s_9121753c4a3d76::t_aaeb0c93392f58 1-8
+dagster-assets-iceberg/scripts/start-all.sh
+  s_9121753c4a3d76::t_9ebc73fdb2f5b2 1-21
+dagster-assets-iceberg/scripts/test-all.sh
+  s_9121753c4a3d76::t_78a967c1ffdff7 1-13,19-22,24-28
+  s_9121753c4a3d76::t_72792eb14b820b 23
+  s_9121753c4a3d76::t_c7d9c2cba33ffc 14-18
+dagster-assets-iceberg/.gitignore
+  s_9121753c4a3d76::t_0c47f13e36e591 1-5
+dagster-assets-iceberg/tests/test_revenue.py
+  s_9121753c4a3d76::t_60eee2e4a3074d 1-44
+dagster-assets-iceberg/requirements.txt
+  s_9121753c4a3d76::t_1fdb00e2c7d196 1-5
+dagster-assets-iceberg/i36_pipeline/latest_run.py
+  s_9121753c4a3d76::t_0ea4dcf5d37416 1-22
+dagster-assets-iceberg/i36_pipeline/revenue.py
+  s_9121753c4a3d76::t_92f8330b73c0d4 17,20,23,26-32,35,37-51
+  s_9121753c4a3d76::t_c155be06509eca 1-16,18-19,21-22,24-25,33-34,36
+  s_9121753c4a3d76::t_e182baba95c0d5 52-55
+dagster-assets-iceberg/ui/server.py
+  s_9121753c4a3d76::t_db0644c008d68d 1-61
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f7eda13a4fd3f05c916e59b4218501c580a6aaf8",
+  "prompts": {},
+  "sessions": {
+    "s_9121753c4a3d76": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "39b421dc-22e8-4dc0-93df-749df3c5cb41",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "diegopacheco <diego.pacheco.it@gmail.com>"
+    }
+  }
+}
