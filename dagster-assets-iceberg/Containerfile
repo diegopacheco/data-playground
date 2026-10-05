@@ -1,0 +1,8 @@
+FROM docker.io/library/python:3.14.7-slim
+WORKDIR /app
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PYTHONPATH=/app DAGSTER_HOME=/app/lake/dagster LAKE_DIR=/app/lake ORDERS_CSV=/app/data/orders.csv
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY i36_pipeline i36_pipeline
+COPY ui ui
+COPY tests tests

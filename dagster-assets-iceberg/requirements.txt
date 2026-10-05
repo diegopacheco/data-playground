@@ -1,0 +1,5 @@
+dagster==1.13.24
+dagster-webserver==1.13.24
+pyiceberg[sql-sqlite,pyarrow]==0.12.0
+pyarrow==25.0.1
+pytest==9.1.1

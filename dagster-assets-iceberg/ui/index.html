@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Iceberg Revenue</title>
+<style>
+:root{--bg:#f7f8fb;--card:#fff;--ink:#1d2433;--muted:#667085;--line:#e4e7ec;--bar:#3b82f6;--accent:#0f766e}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}
+main{max-width:980px;margin:0 auto;padding:28px 16px}
+h1{margin:0 0 4px;font-size:24px}
+.sub{color:var(--muted);margin:0 0 22px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:18px}
+h2{font-size:16px;margin:0 0 12px}
+table{width:100%;border-collapse:collapse}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left}
+th{color:var(--muted);font-weight:600;font-size:13px}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+.tables{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.t{border:1px solid var(--line);border-radius:10px;padding:12px}
+.t b{color:var(--accent)}
+.t small{display:block;color:var(--muted);word-break:break-all}
+svg text{font-size:12px;fill:var(--ink)}
+.err{color:#b42318}
+</style>
+</head>
+<body>
+<main>
+<h1>Revenue by category</h1>
+<p class="sub">Read back from the Apache Iceberg table <code>shop.revenue_by_category</code> materialized by Dagster. Snapshot <span id="snap">-</span></p>
+<section class="card"><h2>Revenue chart</h2><div id="chart"></div></section>
+<section class="card"><h2>Revenue table</h2><table><thead><tr><th>Category</th><th class="num">Orders</th><th class="num">Units</th><th class="num">Revenue</th></tr></thead><tbody id="rows"></tbody><tfoot id="total"></tfoot></table></section>
+<section class="card"><h2>Iceberg tables</h2><div class="tables" id="tables"></div></section>
+</main>
+<script>
+const money = v => v.toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2});
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
+
+function chart(rows) {
+  const w = 900, rowH = 34, left = 110, right = 90, h = rows.length * rowH + 10;
+  const max = Math.max(...rows.map(r => r.revenue));
+  const bars = rows.map((r, i) => {
+    const y = i * rowH + 5, bw = (w - left - right) * r.revenue / max;
+    return `<text x="${left - 10}" y="${y + 18}" text-anchor="end">${esc(r.category)}</text>
+      <rect x="${left}" y="${y}" width="${bw}" height="24" rx="4" fill="var(--bar)"></rect>
+      <text x="${left + bw + 8}" y="${y + 18}">${money(r.revenue)}</text>`;
+  }).join("");
+  return `<svg viewBox="0 0 ${w} ${h}" width="100%" role="img" aria-label="Revenue by category">${bars}</svg>`;
+}
+
+async function load() {
+  try {
+    const rev = await (await fetch("/api/revenue")).json();
+    if (!rev.rows) throw new Error(rev.error);
+    document.getElementById("snap").textContent = rev.snapshot_id;
+    document.getElementById("chart").innerHTML = chart(rev.rows);
+    document.getElementById("rows").innerHTML = rev.rows.map(r =>
+      `<tr><td>${esc(r.category)}</td><td class="num">${r.orders}</td><td class="num">${r.units}</td><td class="num">${money(r.revenue)}</td></tr>`).join("");
+    const sum = k => rev.rows.reduce((a, r) => a + r[k], 0);
+    document.getElementById("total").innerHTML =
+      `<tr><th>Total</th><th class="num">${sum("orders")}</th><th class="num">${sum("units")}</th><th class="num">${money(sum("revenue"))}</th></tr>`;
+    const tables = await (await fetch("/api/tables")).json();
+    document.getElementById("tables").innerHTML = tables.map(t =>
+      `<div class="t"><b>${esc(t.table)}</b><div>${t.rows} rows, ${t.snapshots} snapshots</div><small>snapshot ${esc(t.current_snapshot)}</small><small>${t.columns.map(esc).join(", ")}</small></div>`).join("");
+  } catch (e) {
+    document.getElementById("chart").innerHTML = `<p class="err">${esc(e.message || e)}</p>`;
+  }
+}
+load();
+</script>
+</body>
+</html>
