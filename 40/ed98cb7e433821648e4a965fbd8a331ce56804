@@ -1,0 +1,68 @@
+tigerbeetle-ledger-ingest/podman-compose.yml
+  s_9121753c4a3d76::t_2245b8aa5e0016 1-28
+tigerbeetle-ledger-ingest/scripts/status.sh
+  s_9121753c4a3d76::t_acd68121e036b0 1-18
+tigerbeetle-ledger-ingest/src/main/java/ledger/Chart.java
+  s_9121753c4a3d76::t_b86098d3006e81 25
+  s_9121753c4a3d76::t_7025f239522637 5
+  s_9121753c4a3d76::t_95993106af76ca 1-4,6-24,26-34
+tigerbeetle-ledger-ingest/pom.xml
+  s_9121753c4a3d76::t_f91ba986ab97c0 1-46
+tigerbeetle-ledger-ingest/src/main/java/ledger/Bench.java
+  s_9121753c4a3d76::t_c232d6de7c4807 1-70
+tigerbeetle-ledger-ingest/scripts/start-all.sh
+  s_9121753c4a3d76::t_abb809b028213a 1-33
+tigerbeetle-ledger-ingest/src/main/java/ledger/Ledger.java
+  s_9121753c4a3d76::t_1e7d884f89bcb7 1-165
+tigerbeetle-ledger-ingest/src/main/java/ledger/Orders.java
+  s_9121753c4a3d76::t_19ce27a7def9b0 1-40
+tigerbeetle-ledger-ingest/scripts/ui.sh
+  s_9121753c4a3d76::t_8de35c591b8b7f 1-6
+tigerbeetle-ledger-ingest/src/main/java/ledger/Settings.java
+  s_9121753c4a3d76::t_99177907bb77be 13
+  s_9121753c4a3d76::t_d19679ed6906c3 1-12,14-29
+tigerbeetle-ledger-ingest/architecture.svg
+  s_9121753c4a3d76::t_944935478a893b 1-51
+tigerbeetle-ledger-ingest/scripts/common.sh
+  s_9121753c4a3d76::t_ca7cd4b7e93893 1-92,94-161
+  s_9121753c4a3d76::t_0e45d41202329f 93
+tigerbeetle-ledger-ingest/scripts/test-all.sh
+  s_9121753c4a3d76::t_47a8825de2d0be 1-40,43-50
+  s_9121753c4a3d76::t_ac043091c778ac 41-42
+tigerbeetle-ledger-ingest/src/main/java/ledger/UiServer.java
+  s_9121753c4a3d76::t_3bc5c249dccd49 1-77
+tigerbeetle-ledger-ingest/README.md
+  s_9121753c4a3d76::t_e4d9a82e50e2ff 1-139
+tigerbeetle-ledger-ingest/scripts/stop-all.sh
+  s_9121753c4a3d76::t_a169cfe7dcf711 1-17
+tigerbeetle-ledger-ingest/src/main/java/ledger/Ingest.java
+  s_9121753c4a3d76::t_8418ecdfba6a72 1-41
+tigerbeetle-ledger-ingest/scripts/setup.sh
+  s_9121753c4a3d76::t_64438d3619ee85 1-15
+tigerbeetle-ledger-ingest/scripts/sql-console.sh
+  s_9121753c4a3d76::t_301a1914207b60 1-6
+tigerbeetle-ledger-ingest/scripts/ports.env
+  s_9121753c4a3d76::t_a5daf9972edc63 1-2
+tigerbeetle-ledger-ingest/src/main/resources/index.html
+  s_9121753c4a3d76::t_613dde886d20f6 1-113
+tigerbeetle-ledger-ingest/data/orders.csv
+  s_9121753c4a3d76::t_7483369938f671 1-201
+tigerbeetle-ledger-ingest/.gitignore
+  s_9121753c4a3d76::t_078ae04b8de647 1-2
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "40ed98cb7e433821648e4a965fbd8a331ce56804",
+  "prompts": {},
+  "sessions": {
+    "s_9121753c4a3d76": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "39b421dc-22e8-4dc0-93df-749df3c5cb41",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "diegopacheco <diego.pacheco.it@gmail.com>"
+    }
+  }
+}
