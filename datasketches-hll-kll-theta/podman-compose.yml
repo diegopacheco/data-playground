@@ -1,0 +1,27 @@
+name: r17-datasketches-hll-kll-theta
+
+services:
+  r17-app:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: r17-datasketches-hll-kll-theta:latest
+    container_name: r17-app
+    restart: unless-stopped
+    environment:
+      DATA_DIR: /data
+      RESULTS_DIR: /app/results
+      UI_PORT: "8080"
+    mem_limit: 1024m
+    cpus: 2
+    ports:
+      - "${ui:-28200}:8080"
+    volumes:
+      - ./data:/data:ro
+      - ./results:/app/results
+    networks:
+      - r17-net
+
+networks:
+  r17-net:
+    name: r17-net

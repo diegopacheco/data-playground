@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DataSketches HLL KLL Theta</title>
+<style>
+:root{--bg:#f7f8fa;--card:#fff;--ink:#1d2433;--muted:#667085;--line:#e4e7ec;--a:#2f6fed;--b:#f08c2e;--ok:#12805c;--bad:#c4320a;--soft:#eef3ff}
+*{box-sizing:border-box}
+body{margin:0;font:14px/1.5 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:var(--card);border-bottom:1px solid var(--line);padding:18px 28px}
+header h1{margin:0;font-size:20px}
+header p{margin:4px 0 0;color:var(--muted)}
+nav{display:flex;gap:4px;padding:0 28px;background:var(--card);border-bottom:1px solid var(--line);flex-wrap:wrap}
+nav button{border:0;background:none;padding:12px 14px;font:inherit;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent}
+nav button.on{color:var(--a);border-bottom-color:var(--a);font-weight:600}
+main{padding:22px 28px;max-width:1200px}
+section{display:none}
+section.on{display:block}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:18px}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.tile b{display:block;font-size:22px}
+.tile span{color:var(--muted);font-size:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin-bottom:18px}
+.card h2{margin:0 0 4px;font-size:16px}
+.card p.sub{margin:0 0 12px;color:var(--muted)}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+th,td{text-align:right;padding:7px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+#overview td:nth-child(2),#overview th:nth-child(2){text-align:left}
+svg{max-width:820px;display:block}
+th{color:var(--muted);font-weight:600;font-size:12px}
+.pill{display:inline-block;padding:1px 8px;border-radius:999px;font-size:12px;font-weight:600}
+.pass{background:#e3f6ee;color:var(--ok)}
+.fail{background:#fde8e1;color:var(--bad)}
+.legend{display:flex;gap:16px;color:var(--muted);font-size:12px;margin:6px 0}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+svg text{font-size:11px;fill:var(--muted)}
+.parts{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 12px}
+.parts label{border:1px solid var(--line);border-radius:8px;padding:6px 10px;cursor:pointer;background:var(--soft)}
+.go{background:var(--a);color:#fff;border:0;border-radius:8px;padding:8px 16px;font:inherit;cursor:pointer}
+.scroll{overflow-x:auto}
+</style>
+</head>
+<body>
+<header>
+<h1>Apache DataSketches: HLL, KLL, Theta, Frequent Items, Count-Min</h1>
+<p id="subtitle">loading results</p>
+</header>
+<nav id="tabs">
+<button data-tab="overview" class="on">Overview</button>
+<button data-tab="hll">HLL distinct users</button>
+<button data-tab="kll">KLL quantiles</button>
+<button data-tab="theta">Theta set operations</button>
+<button data-tab="freq">Heavy hitters</button>
+<button data-tab="merge">Merge partitions</button>
+</nav>
+<main>
+<section id="overview" class="on"></section>
+<section id="hll"></section>
+<section id="kll"></section>
+<section id="theta"></section>
+<section id="freq"></section>
+<section id="merge"></section>
+</main>
+<script>
+const $ = s => document.querySelector(s);
+const fmt = n => Math.round(n).toLocaleString("en-US");
+const pct = n => (n * 100).toFixed(2) + "%";
+const bytes = n => n >= 1048576 ? (n / 1048576).toFixed(1) + " MB" : n >= 1024 ? (n / 1024).toFixed(1) + " KB" : n + " B";
+const badge = ok => `<span class="pill ${ok ? "pass" : "fail"}">${ok ? "inside bound" : "outside bound"}</span>`;
+const tile = (v, l) => `<div class="tile"><b>${v}</b><span>${l}</span></div>`;
+const card = (t, s, body) => `<div class="card"><h2>${t}</h2><p class="sub">${s}</p>${body}</div>`;
+const table = (head, rows) => `<div class="scroll"><table><tr>${head.map(h => `<th>${h}</th>`).join("")}</tr>${rows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join("")}</tr>`).join("")}</table></div>`;
+
+document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => {
+  document.querySelectorAll("#tabs button").forEach(x => x.classList.toggle("on", x === b));
+  document.querySelectorAll("section").forEach(s => s.classList.toggle("on", s.id === b.dataset.tab));
+});
+
+function bars(points, opts) {
+  const w = 720, h = 240, l = 56, r = 16, t = 14, bt = 34;
+  const max = Math.max(...points.flatMap(p => [p.a, p.b])) * 1.1;
+  const bw = (w - l - r) / points.length;
+  const y = v => t + (h - t - bt) * (1 - v / max);
+  let s = `<svg viewBox="0 0 ${w} ${h}" width="100%" role="img">`;
+  for (let i = 0; i <= 4; i++) {
+    const v = max * i / 4;
+    s += `<line x1="${l}" x2="${w - r}" y1="${y(v)}" y2="${y(v)}" stroke="#eef0f3"/><text x="${l - 6}" y="${y(v) + 4}" text-anchor="end">${opts.tick(v)}</text>`;
+  }
+  points.forEach((p, i) => {
+    const x = l + i * bw + bw * 0.2, bwid = bw * 0.28;
+    s += `<rect x="${x}" y="${y(p.a)}" width="${bwid}" height="${y(0) - y(p.a)}" rx="3" fill="var(--a)"><title>${opts.aName} ${opts.tick(p.a)}</title></rect>`;
+    s += `<rect x="${x + bwid + 3}" y="${y(p.b)}" width="${bwid}" height="${y(0) - y(p.b)}" rx="3" fill="var(--b)"><title>${opts.bName} ${opts.tick(p.b)}</title></rect>`;
+    s += `<text x="${l + i * bw + bw / 2}" y="${h - 14}" text-anchor="middle">${p.label}</text>`;
+  });
+  s += `</svg>`;
+  return `<div class="legend"><span><i style="background:var(--a)"></i>${opts.aName}</span><span><i style="background:var(--b)"></i>${opts.bName}</span></div>` + s;
+}
+
+function ranges(rows) {
+  const w = 720, l = 150, r = 50, rowH = 38, h = rows.length * rowH + 30;
+  const max = Math.max(...rows.map(x => Math.max(x.upper, x.exact))) * 1.05;
+  const x = v => l + (w - l - r) * v / max;
+  let s = `<svg viewBox="0 0 ${w} ${h}" width="100%" role="img">`;
+  rows.forEach((d, i) => {
+    const cy = 16 + i * rowH;
+    s += `<text x="${l - 10}" y="${cy + 4}" text-anchor="end" style="fill:var(--ink)">${d.name}</text>`;
+    s += `<rect x="${x(d.lower)}" y="${cy - 7}" width="${Math.max(2, x(d.upper) - x(d.lower))}" height="14" rx="3" fill="#dce6fd"/>`;
+    s += `<circle cx="${x(d.estimate)}" cy="${cy}" r="5" fill="var(--a)"><title>estimate ${fmt(d.estimate)}</title></circle>`;
+    s += `<line x1="${x(d.exact)}" x2="${x(d.exact)}" y1="${cy - 11}" y2="${cy + 11}" stroke="var(--b)" stroke-width="3"><title>exact ${fmt(d.exact)}</title></line>`;
+  });
+  for (let i = 0; i <= 4; i++) s += `<text x="${x(max * i / 4)}" y="${h - 4}" text-anchor="middle">${fmt(max * i / 4)}</text>`;
+  return `<div class="legend"><span><i style="background:#dce6fd"></i>2 sigma bound</span><span><i style="background:var(--a)"></i>sketch estimate</span><span><i style="background:var(--b)"></i>exact answer</span></div>` + s + "</svg>";
+}
+
+function overview(r) {
+  const m = r.merged, e = r.exact, f = m.frequent;
+  const hllOk = m.hll.lower <= e.distinct_users && e.distinct_users <= m.hll.upper;
+  const sketchBytes = m.hll.bytes + m.kll.bytes + m.theta.web.bytes + m.theta.mobile.bytes + f.bytes + f.cm_bytes;
+  const exactBytes = e.users_bytes + e.latency_bytes + e.sets_bytes + e.items_bytes;
+  const rows = [
+    ["HLL", "distinct users", fmt(e.distinct_users), fmt(m.hll.estimate), pct((m.hll.estimate - e.distinct_users) / e.distinct_users), badge(hllOk), bytes(m.hll.bytes), bytes(e.users_bytes)],
+    ["KLL", "p99 latency ms", e.quantiles["0.99"].toFixed(2), m.kll.quantiles["0.99"].toFixed(2), "rank " + pct(Math.abs(0.99 - m.kll.ranks["0.99"].lower)), badge(Math.abs(0.99 - m.kll.ranks["0.99"].lower) <= m.kll.rank_error), bytes(m.kll.bytes), bytes(e.latency_bytes)],
+    ["Theta", "web and mobile users", fmt(e.sets.intersection), fmt(m.theta.intersection.estimate), pct((m.theta.intersection.estimate - e.sets.intersection) / e.sets.intersection), badge(m.theta.intersection.lower <= e.sets.intersection && e.sets.intersection <= m.theta.intersection.upper), bytes(m.theta.web.bytes + m.theta.mobile.bytes), bytes(e.sets_bytes)],
+    ["Frequent Items", "count of top item " + f.items[0].item, fmt(f.items[0].exact), fmt(f.items[0].estimate), pct((f.items[0].estimate - f.items[0].exact) / f.items[0].exact), badge(f.items[0].lower <= f.items[0].exact && f.items[0].exact <= f.items[0].upper), bytes(f.bytes), bytes(e.items_bytes)],
+    ["Count-Min", "count of top item " + f.items[0].item, fmt(f.items[0].exact), fmt(f.items[0].cm_estimate), pct((f.items[0].cm_estimate - f.items[0].exact) / f.items[0].exact), badge(f.items[0].cm_estimate >= f.items[0].exact && f.items[0].cm_estimate - f.items[0].exact <= f.cm_relative_error * f.total), bytes(f.cm_bytes), bytes(e.items_bytes)],
+  ];
+  $("#overview").innerHTML = `<div class="tiles">${tile(fmt(e.rows), "events in 8 partitions")}${tile(fmt(e.distinct_users), "exact distinct users")}${tile(bytes(sketchBytes), "all merged sketches")}${tile(bytes(exactBytes), "exact state (packed numpy arrays)")}${tile((exactBytes / sketchBytes).toFixed(0) + "x", "smaller than exact")}${tile((r.build_ms / 1000).toFixed(1) + " s", "sketch build time, 10M rows")}</div>` +
+    card("Every sketch against the exact answer", "Sketches were built per partition, serialized, then merged. Exact answers come from the raw rows.", table(["Sketch", "Question", "Exact", "Sketch", "Error", "Bound check", "Sketch size", "Exact size"], rows)) +
+    card("Configuration", "Library versions and sketch parameters used for this run.", table(["Setting", "Value"], [["datasketches (Python)", r.datasketches], ["numpy", r.numpy], ["HLL", "lg_k=" + r.config.hll_lg_k + ", " + r.config.hll_type], ["KLL", "k=" + r.config.kll_k + " (floats)"], ["Theta", "lg_k=" + r.config.theta_lg_k], ["Frequent Items", "lg_max_k=" + r.config.freq_lg_max_k], ["Count-Min", r.config.cm_hashes + " hashes x " + r.config.cm_buckets + " buckets"], ["Bounds", r.num_std + " standard deviations"], ["Generated", r.generated_at]]));
+}
+
+function hll(r) {
+  const e = r.exact.distinct_users, m = r.merged.hll;
+  const sweep = r.hll_sweep.map(s => ({label: "lg_k " + s.lg_k, a: Math.abs(s.error), b: s.bound}));
+  const parts = r.partitions.map(p => ["partition " + p.partition, fmt(p.rows), fmt(p.exact_distinct), fmt(p.hll_estimate), fmt(p.hll_lower) + " .. " + fmt(p.hll_upper), badge(p.hll_lower <= p.exact_distinct && p.exact_distinct <= p.hll_upper)]);
+  parts.push(["<b>merged union</b>", fmt(r.exact.rows), fmt(e), fmt(m.estimate), fmt(m.lower) + " .. " + fmt(m.upper), badge(m.lower <= e && e <= m.upper)]);
+  $("#hll").innerHTML = `<div class="tiles">${tile(fmt(e), "exact distinct users")}${tile(fmt(m.estimate), "merged HLL estimate")}${tile(pct((m.estimate - e) / e), "relative error")}${tile(bytes(m.bytes), "HLL_4 sketch vs " + bytes(r.exact.users_bytes) + " exact")}</div>` +
+    card("Error vs configured bound per lg_k", "Absolute relative error of a sketch with each lg_k over all distinct users, next to the library's 2 sigma relative error bound. Bigger lg_k means more bytes and a tighter bound.", bars(sweep, {aName: "measured |error|", bName: "2 sigma bound", x: "lg_k", tick: v => pct(v)}) +
+      table(["lg_k", "Estimate", "Lower", "Upper", "Error", "Bound", "Bytes"], r.hll_sweep.map(s => [s.lg_k, fmt(s.estimate), fmt(s.lower), fmt(s.upper), pct(s.error), pct(s.bound), bytes(s.bytes)]))) +
+    card("Per partition and merged", "Each partition has its own HLL. The union of the 8 serialized sketches estimates the global distinct count, far below the sum of partition counts because users repeat across partitions.", table(["Scope", "Rows", "Exact distinct", "HLL estimate", "2 sigma range", "Check"], parts));
+}
+
+function kll(r) {
+  const m = r.merged.kll, e = r.exact;
+  const rows = Object.keys(m.quantiles).map(q => {
+    const rk = m.ranks[q], miss = +q >= rk.lower && +q <= rk.upper ? 0 : Math.min(Math.abs(q - rk.lower), Math.abs(q - rk.upper));
+    return ["p" + Math.round(q * 100), e.quantiles[q].toFixed(3), m.quantiles[q].toFixed(3), pct(rk.lower), pct(miss), pct(m.rank_error), badge(miss <= m.rank_error)];
+  });
+  const sweep = r.kll_sweep.map(s => ({label: "k " + s.k, a: s.worst_rank_error, b: s.bound}));
+  $("#kll").innerHTML = `<div class="tiles">${tile(fmt(m.n), "latencies seen by merged KLL")}${tile(fmt(m.retained), "values retained")}${tile(bytes(m.bytes), "KLL sketch vs " + bytes(e.latency_bytes) + " exact")}${tile(pct(m.rank_error), "normalized rank error, k=" + m.k)}</div>` +
+    card("p50 / p95 / p99 latency", "KLL guarantees rank error, not value error. The true rank of each returned value is computed against all 10M sorted latencies.", table(["Quantile", "Exact value", "KLL value", "True rank of KLL value", "Rank error", "Bound", "Check"], rows)) +
+    card("Rank error vs k", "Worst rank error over p50, p95 and p99 for a sketch with each k, next to the 99% confidence normalized rank error.", bars(sweep, {aName: "worst measured rank error", bName: "rank error bound", x: "k", tick: v => pct(v)}) +
+      table(["k", "Retained", "Bytes", "Worst rank error", "Bound"], r.kll_sweep.map(s => [s.k, fmt(s.retained), bytes(s.bytes), pct(s.worst_rank_error), pct(s.bound)])));
+}
+
+function theta(r) {
+  const t = r.merged.theta, e = r.exact.sets;
+  const names = {web: "web users", mobile: "mobile users", union: "web OR mobile", intersection: "web AND mobile", web_not_mobile: "web NOT mobile"};
+  const rows = Object.keys(names).map(k => ({name: names[k], exact: e[k], ...t[k]}));
+  $("#theta").innerHTML = `<div class="tiles">${tile(fmt(e.union), "exact users on any platform")}${tile(fmt(e.intersection), "exact users on both")}${tile(bytes(t.web.bytes + t.mobile.bytes), "two Theta sketches vs " + bytes(r.exact.sets_bytes) + " exact sets")}</div>` +
+    card("Set operations on distinct users", "Theta sketches for web and mobile users are built per partition, merged, then combined with union, intersection and A-not-B. The exact line must fall inside the band.", ranges(rows) +
+      table(["Operation", "Exact", "Estimate", "Lower", "Upper", "Error", "Retained", "Check"], rows.map(d => [d.name, fmt(d.exact), fmt(d.estimate), fmt(d.lower), fmt(d.upper), pct((d.estimate - d.exact) / d.exact), fmt(d.retained), badge(d.lower <= d.exact && d.exact <= d.upper)]))) +
+    card("Intersection accuracy vs lg_k", "Intersections are harder: the error is relative to the larger input sets, so small overlaps need bigger sketches.", table(["lg_k", "Estimate", "Exact", "Error", "Lower", "Upper", "Bytes (web + mobile)"], r.theta_sweep.map(s => [s.lg_k, fmt(s.estimate), fmt(e.intersection), pct(s.error), fmt(s.lower), fmt(s.upper), bytes(s.bytes)])));
+}
+
+function freq(r) {
+  const f = r.merged.frequent;
+  const slack = f.cm_relative_error * f.total;
+  $("#freq").innerHTML = `<div class="tiles">${tile(fmt(f.reported), "items reported with no false negatives")}${tile(fmt(f.max_error), "max error (epsilon x N)")}${tile(bytes(f.bytes), "Frequent Items sketch")}${tile(bytes(f.cm_bytes), "Count-Min sketch")}${tile(bytes(r.exact.items_bytes), "exact counts for " + fmt(r.exact.distinct_items) + " items")}</div>` +
+    card("Top 10 items by count", `Frequent Items gives lower and upper bounds per item. Count-Min never undercounts and overcounts by at most ${fmt(slack)} (relative error x N) with 99% confidence.`, table(["Item", "Exact", "Frequent Items", "Lower", "Upper", "FI check", "Count-Min", "CM over by", "CM check"], f.items.map(i => [i.item, fmt(i.exact), fmt(i.estimate), fmt(i.lower), fmt(i.upper), badge(i.lower <= i.exact && i.exact <= i.upper), fmt(i.cm_estimate), fmt(i.cm_estimate - i.exact), badge(i.cm_estimate >= i.exact && i.cm_estimate - i.exact <= slack)])));
+}
+
+function mergeTab(r) {
+  const boxes = r.partitions.map(p => `<label><input type="checkbox" value="${p.partition}" ${p.partition % 3 === 1 ? "checked" : ""}> partition ${p.partition} (${bytes(p.bytes)})</label>`).join("");
+  $("#merge").innerHTML = card("Merge any subset of stored partition sketches", "Pick partitions. The API deserializes their stored sketches and merges them live; the exact answer is recomputed from the raw rows of the same partitions. Bounds are 2 sigma (about 95% confidence), so roughly 1 check in 20 can land just outside.", `<div class="parts">${boxes}</div><button class="go" id="run">Merge sketches</button><div id="mergeOut" style="margin-top:14px"></div>`);
+  $("#run").onclick = runMerge;
+  runMerge();
+}
+
+async function runMerge() {
+  const parts = [...document.querySelectorAll("#merge input:checked")].map(i => i.value).join(",");
+  if (!parts) { $("#mergeOut").textContent = "select at least one partition"; return; }
+  $("#mergeOut").textContent = "merging";
+  const [m, e] = await Promise.all([fetch("/api/merge?partitions=" + parts).then(x => x.json()), fetch("/api/exact?partitions=" + parts).then(x => x.json())]);
+  const inside = (s, v) => badge(s.lower <= v && v <= s.upper);
+  const rows = [
+    ["distinct users (HLL)", fmt(e.distinct_users), fmt(m.hll.estimate), pct((m.hll.estimate - e.distinct_users) / e.distinct_users), inside(m.hll, e.distinct_users)],
+    ["rows (KLL n)", fmt(e.rows), fmt(m.kll.n), pct((m.kll.n - e.rows) / e.rows), `<span class="pill ${m.kll.n === e.rows ? "pass" : "fail"}">${m.kll.n === e.rows ? "exact match" : "mismatch"}</span>`],
+    ["p50 latency (KLL)", e.quantiles["0.5"].toFixed(3), m.kll.quantiles["0.5"].toFixed(3), pct((m.kll.quantiles["0.5"] - e.quantiles["0.5"]) / e.quantiles["0.5"]), ""],
+    ["p95 latency (KLL)", e.quantiles["0.95"].toFixed(3), m.kll.quantiles["0.95"].toFixed(3), pct((m.kll.quantiles["0.95"] - e.quantiles["0.95"]) / e.quantiles["0.95"]), ""],
+    ["p99 latency (KLL)", e.quantiles["0.99"].toFixed(3), m.kll.quantiles["0.99"].toFixed(3), pct((m.kll.quantiles["0.99"] - e.quantiles["0.99"]) / e.quantiles["0.99"]), ""],
+  ].concat(["union", "intersection", "web_not_mobile"].map(k => ["users " + k.replaceAll("_", " ") + " (Theta)", fmt(e.sets[k]), fmt(m.theta[k].estimate), pct((m.theta[k].estimate - e.sets[k]) / e.sets[k]), inside(m.theta[k], e.sets[k])]));
+  $("#mergeOut").innerHTML = `<div class="tiles">${tile(m.partitions.join(", "), "partitions merged")}${tile(m.merge_ms + " ms", "deserialize and merge")}${tile(bytes(m.input_bytes), "sketch bytes read")}${tile(fmt(e.rows), "raw rows the sketches replace")}</div>` + table(["Question", "Exact from rows", "Merged sketch", "Error", "Check"], rows);
+}
+
+fetch("/api/results").then(x => x.json()).then(r => {
+  $("#subtitle").textContent = `${fmt(r.exact.rows)} events, ${r.partitions.length} partitions, datasketches ${r.datasketches}, bounds at ${r.num_std} sigma, generated ${r.generated_at}`;
+  overview(r); hll(r); kll(r); theta(r); freq(r); mergeTab(r);
+});
+</script>
+</body>
+</html>
