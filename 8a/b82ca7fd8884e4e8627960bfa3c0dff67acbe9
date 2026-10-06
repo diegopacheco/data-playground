@@ -1,0 +1,76 @@
+scylladb-vs-cassandra-bench/src/main/java/bench/Bench.java
+  s_9121753c4a3d76::t_e39d257ddfb223 52-53,56
+  s_9121753c4a3d76::t_23c1af4e69035e 82
+  s_9121753c4a3d76::t_377b3a9aaf6a36 12-13
+  s_9121753c4a3d76::t_524db08334a9bb 1-11,14-51,54-55,57-81,83-90
+scylladb-vs-cassandra-bench/scripts/stop-all.sh
+  s_9121753c4a3d76::t_be7c45cf126ee3 1-17
+scylladb-vs-cassandra-bench/src/main/java/bench/Database.java
+  s_9121753c4a3d76::t_3da264a7dffad7 51
+  s_9121753c4a3d76::t_5f8d1b13aafd2a 1-50,52-85
+scylladb-vs-cassandra-bench/scripts/start-all.sh
+  s_9121753c4a3d76::t_e631db9600c001 1-32
+scylladb-vs-cassandra-bench/src/main/java/bench/Aggregate.java
+  s_9121753c4a3d76::t_e42c5e05c19aeb 1-19
+scylladb-vs-cassandra-bench/src/main/java/bench/Stats.java
+  s_9121753c4a3d76::t_bc4ae982c27c8e 1-31
+scylladb-vs-cassandra-bench/src/main/java/bench/Runner.java
+  s_9121753c4a3d76::t_1769d99f6e2425 1-34
+scylladb-vs-cassandra-bench/scripts/status.sh
+  s_9121753c4a3d76::t_7bd0b6095d121a 1-18
+scylladb-vs-cassandra-bench/scripts/ui.sh
+  s_9121753c4a3d76::t_9aa180a08fc40d 1-6
+scylladb-vs-cassandra-bench/README.md
+  s_9121753c4a3d76::t_e8edeec18298f9 1-150
+scylladb-vs-cassandra-bench/scripts/setup.sh
+  s_9121753c4a3d76::t_d95371a2bf9c66 1-15
+scylladb-vs-cassandra-bench/scripts/ports.env
+  s_9121753c4a3d76::t_cc44fb3632544b 1-3
+scylladb-vs-cassandra-bench/src/main/java/bench/UiServer.java
+  s_9121753c4a3d76::t_54161cfe998d99 1-42
+scylladb-vs-cassandra-bench/.gitignore
+  s_9121753c4a3d76::t_e82a09463e47bb 1-3
+scylladb-vs-cassandra-bench/architecture.svg
+  s_9121753c4a3d76::t_1833c5bc5b32d4 50
+  s_9121753c4a3d76::t_4d66482109ce61 1-49,51-55
+scylladb-vs-cassandra-bench/scripts/common.sh
+  s_9121753c4a3d76::t_8fb8d95f58fa97 1-166
+scylladb-vs-cassandra-bench/podman-compose.yml
+  s_9121753c4a3d76::t_41178bdbabfd72 1-37
+scylladb-vs-cassandra-bench/src/main/java/bench/Dataset.java
+  s_9121753c4a3d76::t_6f3c3c8b317188 1-38
+scylladb-vs-cassandra-bench/scripts/sql-console.sh
+  s_9121753c4a3d76::t_9df6ccd96686f5 1-12
+scylladb-vs-cassandra-bench/src/main/java/bench/Settings.java
+  s_9121753c4a3d76::t_01860631e3f4a4 13
+  s_9121753c4a3d76::t_c709104911742a 1-12,14-27
+scylladb-vs-cassandra-bench/pom.xml
+  s_9121753c4a3d76::t_e38feddb7d41e3 1-20,26-56
+  s_9121753c4a3d76::t_412389e62aa73d 21-25
+scylladb-vs-cassandra-bench/results.json
+  s_9121753c4a3d76::t_57b2ec09639fbd 1
+scylladb-vs-cassandra-bench/src/main/java/bench/Order.java
+  s_9121753c4a3d76::t_b216b6475ded81 1-15
+scylladb-vs-cassandra-bench/data/orders.csv
+  s_9121753c4a3d76::t_5d014882f58971 1-201
+scylladb-vs-cassandra-bench/src/main/resources/index.html
+  s_9121753c4a3d76::t_11af5acf98fcd9 1-194
+scylladb-vs-cassandra-bench/scripts/test-all.sh
+  s_9121753c4a3d76::t_60a79d439b557f 1-72
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8ab82ca7fd8884e4e8627960bfa3c0dff67acbe9",
+  "prompts": {},
+  "sessions": {
+    "s_9121753c4a3d76": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "39b421dc-22e8-4dc0-93df-749df3c5cb41",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "diegopacheco <diego.pacheco.it@gmail.com>"
+    }
+  }
+}
