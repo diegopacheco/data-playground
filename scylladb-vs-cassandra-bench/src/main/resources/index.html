@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ScyllaDB vs Cassandra</title>
+<style>
+:root {
+  color-scheme: light;
+  --page: #f4f4f1;
+  --surface: #fcfcfb;
+  --border: #e3e2dc;
+  --grid: #ecebe6;
+  --text-primary: #0b0b0b;
+  --text-secondary: #52514e;
+  --text-muted: #85847e;
+  --scylla: #2a78d6;
+  --cassandra: #eb6834;
+  --good: #008300;
+  --critical: #e34948;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page); color: var(--text-primary); font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+main { max-width: 1180px; margin: 0 auto; padding: 24px 16px 48px; }
+h1 { font-size: 22px; margin: 0 0 4px; }
+h2 { font-size: 16px; margin: 0 0 12px; }
+h3 { font-size: 13px; margin: 0 0 8px; color: var(--text-secondary); font-weight: 600; }
+.sub { color: var(--text-secondary); margin: 0 0 16px; }
+.warn { background: #fff7e6; border: 1px solid #f0d9a8; border-radius: 8px; padding: 10px 14px; margin-bottom: 16px; color: var(--text-secondary); }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+.grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.tile { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
+.tile .k { color: var(--text-muted); font-size: 12px; }
+.tile .v { font-size: 20px; font-weight: 600; }
+.legend { display: flex; gap: 16px; margin-bottom: 12px; color: var(--text-secondary); font-size: 13px; }
+.legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; background: var(--c); vertical-align: -1px; }
+svg { display: block; width: 100%; height: auto; overflow: visible; }
+svg text { fill: var(--text-secondary); font-size: 11px; }
+svg .val { fill: var(--text-primary); font-size: 11px; font-weight: 600; }
+svg .axis { stroke: var(--border); }
+svg .gridline { stroke: var(--grid); }
+svg rect.bar:hover { opacity: .8; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th, td { text-align: right; padding: 6px 8px; border-bottom: 1px solid var(--grid); }
+th:first-child, td:first-child { text-align: left; }
+th { color: var(--text-muted); font-weight: 600; }
+.scroll { overflow-x: auto; }
+.badge { display: inline-block; padding: 2px 10px; border-radius: 999px; font-weight: 600; font-size: 12px; color: #fff; }
+.ok { background: var(--good); }
+.bad { background: var(--critical); }
+#tip { position: fixed; pointer-events: none; background: var(--text-primary); color: #fff; padding: 6px 9px; border-radius: 6px; font-size: 12px; display: none; white-space: nowrap; }
+#error { color: var(--critical); }
+</style>
+</head>
+<body>
+<main>
+  <h1>ScyllaDB vs Cassandra</h1>
+  <p class="sub" id="meta">loading results...</p>
+  <div class="warn">Single-node laptop bench in podman with constrained resources. ScyllaDB runs with <code>--smp 1 --memory 1G --overprovisioned 1</code>, Cassandra with a 512M heap. Numbers show relative behavior on this machine, not production capacity.</div>
+  <p id="error"></p>
+  <div class="tiles" id="tiles"></div>
+  <div class="legend"><span style="--c: var(--scylla)">ScyllaDB</span><span style="--c: var(--cassandra)">Cassandra</span></div>
+  <div class="card">
+    <h2>Throughput (ops/s, higher is better)</h2>
+    <div class="grid3" id="throughput"></div>
+  </div>
+  <div class="card">
+    <h2>Latency percentiles (ms, lower is better)</h2>
+    <div class="grid3" id="latency"></div>
+  </div>
+  <div class="card">
+    <h2>Raw numbers</h2>
+    <div class="scroll"><table id="raw"></table></div>
+  </div>
+  <div class="card">
+    <h2>Per-category aggregates <span id="match"></span></h2>
+    <div class="scroll"><table id="aggs"></table></div>
+  </div>
+</main>
+<div id="tip"></div>
+<script>
+const COLORS = { scylladb: "var(--scylla)", cassandra: "var(--cassandra)" };
+const LABELS = { scylladb: "ScyllaDB", cassandra: "Cassandra" };
+const OPS = { insert: "Insert", point_read: "Point read", aggregate: "Category aggregate" };
+const NS = "http://www.w3.org/2000/svg";
+const tip = document.getElementById("tip");
+
+function el(tag, attrs, text) {
+  const n = document.createElementNS(NS, tag);
+  for (const k in attrs) n.setAttribute(k, attrs[k]);
+  if (text !== undefined) n.textContent = text;
+  return n;
+}
+
+function fmt(v) {
+  if (v >= 1000) return Math.round(v).toLocaleString("en-US");
+  if (v >= 100) return v.toFixed(0);
+  if (v >= 10) return v.toFixed(1);
+  return v.toFixed(2);
+}
+
+function niceMax(v) {
+  const p = Math.pow(10, Math.floor(Math.log10(v)));
+  const n = v / p;
+  const step = n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10;
+  return step * p;
+}
+
+function hover(node, text) {
+  node.addEventListener("mousemove", e => { tip.textContent = text; tip.style.display = "block"; tip.style.left = (e.clientX + 12) + "px"; tip.style.top = (e.clientY + 12) + "px"; });
+  node.addEventListener("mouseleave", () => { tip.style.display = "none"; });
+}
+
+function barChart(title, groups, series, unit) {
+  const W = 360, H = 220, L = 44, R = 8, T = 18, B = 28;
+  const max = niceMax(Math.max(...groups.flatMap(g => series.map(s => g.values[s]))) * 1.08);
+  const svg = el("svg", { viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": title });
+  const ih = H - T - B, iw = W - L - R;
+  for (let i = 0; i <= 4; i++) {
+    const y = T + ih - ih * i / 4;
+    svg.appendChild(el("line", { x1: L, x2: W - R, y1: y, y2: y, class: i ? "gridline" : "axis" }));
+    svg.appendChild(el("text", { x: L - 6, y: y + 4, "text-anchor": "end" }, fmt(max * i / 4)));
+  }
+  const gw = iw / groups.length, bw = Math.min(34, (gw - 16) / series.length - 2);
+  groups.forEach((g, gi) => {
+    const gx = L + gi * gw + (gw - series.length * (bw + 2)) / 2;
+    series.forEach((s, si) => {
+      const v = g.values[s], h = Math.max(1, ih * v / max), x = gx + si * (bw + 2), y = T + ih - h;
+      const r = Math.min(4, h);
+      const d = `M${x},${T + ih} V${y + r} Q${x},${y} ${x + r},${y} H${x + bw - r} Q${x + bw},${y} ${x + bw},${y + r} V${T + ih} Z`;
+      const bar = el("path", { d, fill: COLORS[s], class: "bar" });
+      hover(bar, `${LABELS[s]} ${g.label}: ${fmt(v)} ${unit}`);
+      svg.appendChild(bar);
+      svg.appendChild(el("text", { x: x + bw / 2, y: y - 4, "text-anchor": "middle", class: "val" }, fmt(v)));
+    });
+    svg.appendChild(el("text", { x: L + gi * gw + gw / 2, y: H - 8, "text-anchor": "middle" }, g.label));
+  });
+  const box = document.createElement("div");
+  const h3 = document.createElement("h3");
+  h3.textContent = title;
+  box.append(h3, svg);
+  return box;
+}
+
+function tile(k, v) {
+  const d = document.createElement("div");
+  d.className = "tile";
+  d.innerHTML = `<div class="k"></div><div class="v"></div>`;
+  d.querySelector(".k").textContent = k;
+  d.querySelector(".v").textContent = v;
+  return d;
+}
+
+function table(node, head, rows) {
+  node.innerHTML = "";
+  const tr = document.createElement("tr");
+  head.forEach(h => { const th = document.createElement("th"); th.textContent = h; tr.appendChild(th); });
+  node.appendChild(tr);
+  rows.forEach(r => {
+    const row = document.createElement("tr");
+    r.forEach(c => { const td = document.createElement("td"); td.textContent = c; row.appendChild(td); });
+    node.appendChild(row);
+  });
+}
+
+function render(data) {
+  const s = data.setup, dbs = data.databases, names = dbs.map(d => d.name);
+  document.getElementById("meta").textContent = `${dbs.map(d => LABELS[d.name] + " " + d.version).join(" vs ")} · generated ${data.generated_at}`;
+  const tiles = document.getElementById("tiles");
+  [["Rows inserted", s.rows.toLocaleString("en-US")], ["Point reads", s.reads.toLocaleString("en-US")], ["Aggregate queries", s.aggregate_ops], ["Concurrency", `${s.concurrency} (agg ${s.aggregate_concurrency})`], ["Driver", s.driver.split(":").pop()], ["Java", s.java]].forEach(([k, v]) => tiles.appendChild(tile(k, v)));
+  const op = (db, name) => db.operations.find(o => o.operation === name);
+  const byName = Object.fromEntries(dbs.map(d => [d.name, d]));
+  const tp = document.getElementById("throughput"), lat = document.getElementById("latency");
+  Object.keys(OPS).forEach(o => {
+    const values = Object.fromEntries(names.map(n => [n, op(byName[n], o).throughput]));
+    tp.appendChild(barChart(OPS[o], [{ label: "ops/s", values }], names, "ops/s"));
+    const groups = ["p50_ms", "p95_ms", "p99_ms"].map(p => ({ label: p.replace("_ms", ""), values: Object.fromEntries(names.map(n => [n, op(byName[n], o)[p]])) }));
+    lat.appendChild(barChart(OPS[o], groups, names, "ms"));
+  });
+  table(document.getElementById("raw"), ["Database", "Operation", "Ops", "Errors", "Seconds", "Ops/s", "p50 ms", "p95 ms", "p99 ms", "max ms"],
+    dbs.flatMap(d => d.operations.map(o => [LABELS[d.name], OPS[o.operation], o.ops, o.errors, o.seconds.toFixed(2), fmt(o.throughput), o.p50_ms.toFixed(3), o.p95_ms.toFixed(3), o.p99_ms.toFixed(3), o.max_ms.toFixed(3)])));
+  const m = document.getElementById("match");
+  m.className = "badge " + (data.aggregates_match ? "ok" : "bad");
+  m.textContent = data.aggregates_match ? "identical on both databases" : "MISMATCH";
+  const a = byName.scylladb.aggregates, b = byName.cassandra.aggregates;
+  table(document.getElementById("aggs"), ["Category", "Orders", "Quantity", "Sum price", "Min price", "Max price", "Same on both"],
+    a.map((r, i) => [r.category, r.orders.toLocaleString("en-US"), r.quantity.toLocaleString("en-US"), r.price_sum.toFixed(2), r.min_price.toFixed(2), r.max_price.toFixed(2), JSON.stringify(r) === JSON.stringify(b[i]) ? "yes" : "no"]));
+}
+
+fetch("/api/results").then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(new Error(e.error)))).then(render).catch(e => { document.getElementById("error").textContent = e.message; });
+</script>
+</body>
+</html>
