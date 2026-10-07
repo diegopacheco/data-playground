@@ -1,0 +1,101 @@
+schema-registry-avro-protobuf/app/flow.py
+  s_3b53f3faf7302c::t_6228266ee282bf 1-136
+schema-registry-avro-protobuf/printscreens/architecture.svg
+  s_3b53f3faf7302c::t_c92c677a369ade 1-14,16-21,23-42,45-46,48,50-51
+  s_3b53f3faf7302c::t_072b7ce965338a 15,22,43-44,47,49
+schema-registry-avro-protobuf/scripts/setup.sh
+  s_3b53f3faf7302c::t_784ca30600cda7 1-21
+schema-registry-avro-protobuf/scripts/status.sh
+  s_3b53f3faf7302c::t_449a6d8c15ebd9 1-21
+schema-registry-avro-protobuf/Containerfile
+  s_3b53f3faf7302c::t_182fa72f27a62c 1-10
+schema-registry-avro-protobuf/schemas/proto/remove_field.proto
+  s_3b53f3faf7302c::t_bdd937e287371e 1-8
+schema-registry-avro-protobuf/app/server.py
+  s_3b53f3faf7302c::t_cf35f5c97e2dd0 1-119
+schema-registry-avro-protobuf/tests/test_registry.py
+  s_3b53f3faf7302c::t_8cff2d96b7d1f8 1-34,36-288
+  s_3b53f3faf7302c::t_f94749679482e1 35
+schema-registry-avro-protobuf/schemas/avro/remove_required_field.avsc
+  s_3b53f3faf7302c::t_c37cfba70005b4 1-6
+schema-registry-avro-protobuf/schemas/avro/add_required_field.avsc
+  s_3b53f3faf7302c::t_b71c7cf3b8285e 1-8
+schema-registry-avro-protobuf/schemas/proto/widen_int32_to_int64.proto
+  s_3b53f3faf7302c::t_e6cdb15f9b14cf 1-9
+schema-registry-avro-protobuf/podman-compose.yml
+  s_3b53f3faf7302c::t_103e5680fdea43 1-71
+schema-registry-avro-protobuf/scripts/ui.sh
+  s_3b53f3faf7302c::t_b52df3090e25df 1-8
+schema-registry-avro-protobuf/app/registry.py
+  s_3b53f3faf7302c::t_88bc511d35cc68 1-25,27-88
+  s_3b53f3faf7302c::t_f94749679482e1 26
+schema-registry-avro-protobuf/requirements.txt
+  s_3b53f3faf7302c::t_eed6975c96ebdb 1-4
+schema-registry-avro-protobuf/app/matrix.py
+  s_3b53f3faf7302c::t_61fe5e4e251bca 5,10-11,29-30,32,39-42
+  s_3b53f3faf7302c::t_472f148647d0c3 1-4,6-9,12-28,31,33-38,43-66
+schema-registry-avro-protobuf/app/serdes.py
+  s_3b53f3faf7302c::t_05e936300c4be4 1-78
+schema-registry-avro-protobuf/schemas/proto/add_field.proto
+  s_3b53f3faf7302c::t_2066b0a3a8b74a 1-10
+schema-registry-avro-protobuf/scripts/ports.env
+  s_3b53f3faf7302c::t_f213397f5c6154 1-3
+schema-registry-avro-protobuf/scripts/common.sh
+  s_3b53f3faf7302c::t_4f929736162994 1-108
+schema-registry-avro-protobuf/data/orders.json
+  s_3b53f3faf7302c::t_a685efb9ed89f9 1-16
+schema-registry-avro-protobuf/.gitignore
+  s_3b53f3faf7302c::t_3fcd61e32d17d5 1-2
+schema-registry-avro-protobuf/schemas/avro/promote_int_to_long.avsc
+  s_3b53f3faf7302c::t_4a66b423625cae 1-7
+schema-registry-avro-protobuf/schemas/avro/change_field_type.avsc
+  s_3b53f3faf7302c::t_00fd34a819f626 1-7
+schema-registry-avro-protobuf/schemas/proto/rename_field.proto
+  s_3b53f3faf7302c::t_6a81db0dc37ef8 1-9
+schema-registry-avro-protobuf/schemas/avro/remove_optional_field.avsc
+  s_3b53f3faf7302c::t_88e513ada0f134 1-6
+schema-registry-avro-protobuf/.containerignore
+  s_3b53f3faf7302c::t_28a84b75b5ea58 1-3
+schema-registry-avro-protobuf/scripts/stop-all.sh
+  s_3b53f3faf7302c::t_70b5ee3fe92ae7 1-19
+schema-registry-avro-protobuf/schemas/proto/remove_field_reserved.proto
+  s_3b53f3faf7302c::t_bbd92ab79f9e13 1-10
+schema-registry-avro-protobuf/schemas/proto/v1.proto
+  s_3b53f3faf7302c::t_ec1e70e6a257c0 1-9
+schema-registry-avro-protobuf/schemas/avro/add_optional_field.avsc
+  s_3b53f3faf7302c::t_431e1c83163cf7 1-8
+schema-registry-avro-protobuf/schemas/proto/change_field_number.proto
+  s_3b53f3faf7302c::t_4d5a1420044112 1-9
+schema-registry-avro-protobuf/schemas/proto/change_field_type.proto
+  s_3b53f3faf7302c::t_8898f63ec5fd67 1-9
+schema-registry-avro-protobuf/app/index.html
+  s_3b53f3faf7302c::t_545976c6799901 1-163,166-169
+  s_3b53f3faf7302c::t_06f80018eebeb9 164-165
+schema-registry-avro-protobuf/scripts/test-all.sh
+  s_3b53f3faf7302c::t_d665060027e1d6 1-16
+schema-registry-avro-protobuf/README.md
+  s_3b53f3faf7302c::t_89073498b26f13 1-30,32-196
+  s_3b53f3faf7302c::t_72053006b2dbaa 31
+schema-registry-avro-protobuf/scripts/start-all.sh
+  s_3b53f3faf7302c::t_ebc7f7d22524e2 1-34
+schema-registry-avro-protobuf/schemas/changes.json
+  s_3b53f3faf7302c::t_20c3411c910148 1-30
+schema-registry-avro-protobuf/schemas/avro/v1.avsc
+  s_3b53f3faf7302c::t_09e526d90c0a91 1-7
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b0e44dbf0c72beaa3b7ad054354dda9c581562de",
+  "prompts": {},
+  "sessions": {
+    "s_3b53f3faf7302c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7b7528e4-a24f-44b8-a1f0-3181aa699c71",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "diegopacheco <diego.pacheco.it@gmail.com>"
+    }
+  }
+}
