@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pulsar Tiered Storage</title>
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--ink:#1d2433;--muted:#667085;--line:#e4e7ec;--bk:#2f6fed;--bkbg:#e8f0ff;--s3:#d9480f;--s3bg:#fff1e8;--ok:#1a7f37;--okbg:#e6f6ea;--bad:#b42318;--badbg:#fdecea;--brk:#7048e8;--brkbg:#f1edff}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:var(--card);border-bottom:1px solid var(--line);padding:14px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+header h1{font-size:19px;margin:0}
+header .sub{color:var(--muted);font-size:13px}
+.pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;background:var(--line);color:var(--ink);margin-right:6px}
+.pill.bk{background:var(--bkbg);color:var(--bk)}.pill.s3{background:var(--s3bg);color:var(--s3)}.pill.ok{background:var(--okbg);color:var(--ok)}.pill.bad{background:var(--badbg);color:var(--bad)}.pill.brk{background:var(--brkbg);color:var(--brk)}
+nav{display:flex;gap:4px;padding:0 24px;background:var(--card);border-bottom:1px solid var(--line)}
+nav button{border:0;background:none;padding:12px 14px;font-size:14px;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent}
+nav button.on{color:var(--ink);border-bottom-color:var(--bk);font-weight:600}
+main{padding:20px 24px;max-width:1280px;margin:0 auto}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:16px}
+.card h2{font-size:15px;margin:0 0 10px}
+.row{display:flex;gap:16px;flex-wrap:wrap}.row>.card{flex:1;min-width:300px}
+.actions button{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:8px 14px;font-size:14px;cursor:pointer;margin-right:8px}
+.actions button.primary{background:var(--bk);color:#fff;border-color:var(--bk)}
+.actions button.warm{background:var(--s3);color:#fff;border-color:var(--s3)}
+.actions button:disabled{opacity:.5;cursor:wait}
+#msg{color:var(--muted);font-size:13px;margin-top:10px;min-height:18px}
+.lane{display:flex;gap:10px;flex-wrap:wrap}
+.ledger{border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-width:150px;flex:1;max-width:220px}
+.ledger .id{font-weight:700;font-size:15px}.ledger .meta{color:var(--muted);font-size:12px;margin:4px 0 8px}
+.ledger.s3only{border-color:var(--s3);background:var(--s3bg)}.ledger.both{border-color:var(--brk);background:var(--brkbg)}.ledger.bkonly{border-color:var(--bk);background:var(--bkbg)}
+.legend span{margin-right:14px;font-size:12px;color:var(--muted)}
+.sw{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:middle}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font-weight:600}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+code,pre{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+pre{background:#f2f4f7;border-radius:8px;padding:10px;overflow:auto;margin:6px 0 0}
+.big{font-size:26px;font-weight:700}
+.muted{color:var(--muted);font-size:12px}
+.role{border-top:4px solid var(--line)}.role.brk{border-top-color:var(--brk)}.role.bk{border-top-color:var(--bk)}.role.s3{border-top-color:var(--s3)}
+.role ul{margin:6px 0 0 18px;padding:0;font-size:13px}
+.hide{display:none}
+a.link{color:var(--bk);cursor:pointer;text-decoration:underline}
+</style>
+</head>
+<body>
+<header>
+  <div><h1>Apache Pulsar tiered storage</h1><div class="sub">brokers serve, bookies store, closed ledgers move to MinIO (S3) and are read back from there</div></div>
+  <div id="head"></div>
+</header>
+<nav><button data-tab="tier" class="on">Tiered storage</button><button data-tab="roles">Compute vs storage</button></nav>
+<main>
+<section id="tier">
+  <div class="card actions">
+    <button id="reset">Reset topic</button>
+    <button id="publish" class="primary">Publish readings.csv</button>
+    <button id="offload" class="warm">Offload closed ledgers to MinIO</button>
+    <button id="read">Read back from earliest</button>
+    <div id="msg"></div>
+  </div>
+  <div class="card">
+    <h2>Topic ledgers <span class="muted" id="topicname"></span></h2>
+    <div class="legend"><span><i class="sw" style="background:var(--bk)"></i>BookKeeper only</span><span><i class="sw" style="background:var(--brk)"></i>offloaded, still on bookie (deletion lag)</span><span><i class="sw" style="background:var(--s3)"></i>MinIO only, deleted from bookie</span></div>
+    <div class="lane" id="lane" style="margin-top:12px"></div>
+    <div class="muted" id="offstatus" style="margin-top:10px"></div>
+  </div>
+  <div class="row">
+    <div class="card"><h2>Read back vs readings.csv</h2><div id="readres" class="muted">press "Read back from earliest"</div></div>
+    <div class="card"><h2>Objects in s3://pulsar-offload</h2><div id="objects"></div><div id="peek"></div></div>
+  </div>
+</section>
+<section id="roles" class="hide">
+  <div class="row">
+    <div class="card role brk"><h2>Broker (compute, stateless)</h2><div id="brokers"></div></div>
+    <div class="card role bk"><h2>Bookie (storage, BookKeeper)</h2><div id="bookies"></div></div>
+    <div class="card role s3"><h2>MinIO (tiered storage)</h2><div id="tierinfo"></div></div>
+  </div>
+  <div class="card"><h2>Broker runtime config that drives ledgers, retention and offload</h2><pre id="policies"></pre></div>
+</section>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const fmt = n => n == null ? "-" : Number(n).toLocaleString();
+const kb = n => n == null ? "-" : (n / 1024).toFixed(1) + " KB";
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+async function get(path, method = "GET") {
+  const r = await fetch("/api/" + path, {method});
+  const j = await r.json();
+  if (!r.ok) throw new Error(j.error || r.status);
+  return j;
+}
+function say(t) { $("msg").textContent = t; }
+function kind(l) { return l.offloaded ? (l.inBookie ? "both" : "s3only") : "bkonly"; }
+async function loadTopic() {
+  const t = await get("topic");
+  $("topicname").textContent = t.exists ? t.topic + " , " + fmt(t.entriesAddedCounter) + " entries, lastConfirmed " + t.lastConfirmedEntry : "(topic does not exist yet)";
+  $("lane").innerHTML = t.ledgers.map(l => `<div class="ledger ${kind(l)}"><div class="id">ledger ${l.ledgerId}</div>
+    <div class="meta">${fmt(l.entries)} entries , ${kb(l.size)} , ${l.open ? "open" : "closed"}</div>
+    <span class="pill ${l.inBookie ? "bk" : "bad"}">bookie ${l.inBookie ? "yes" : "no"}</span><span class="pill ${l.offloaded ? "s3" : ""}">MinIO ${l.offloaded ? "yes" : "no"}</span></div>`).join("") || '<span class="muted">no ledgers</span>';
+  $("objects").innerHTML = t.objects.length ? `<table><tr><th>key</th><th>ledger</th><th class="num">size</th><th></th></tr>${t.objects.map(o => `<tr><td><code>${esc(o.key)}</code></td><td>${o.ledgerId}</td><td class="num">${kb(o.size)}</td><td>${o.kind === "data" ? `<a class="link" data-key="${esc(o.key)}">peek</a>` : "index"}</td></tr>`).join("")}</table>` : '<span class="muted">no offloaded objects for this topic yet</span>';
+  document.querySelectorAll("a.link").forEach(a => a.onclick = () => peek(a.dataset.key));
+  const o = await get("offload");
+  $("offstatus").textContent = "offload status: " + o.status + (o.lastError ? " , " + o.lastError : "") + (o.firstUnoffloadedMessage && o.firstUnoffloadedMessage.ledgerId >= 0 ? " , first unoffloaded message " + JSON.stringify(o.firstUnoffloadedMessage) : "");
+  return t;
+}
+async function peek(key) {
+  const p = await get("object?key=" + encodeURIComponent(key));
+  $("peek").innerHTML = `<p class="muted">${esc(p.key)}: ${fmt(p.bytes)} bytes, ${p.csvLinesInside} readings.csv lines found inside the raw S3 object</p><pre>${p.firstLines.map(esc).join("\n")}\n...\n${p.lastLines.map(esc).join("\n")}</pre>`;
+}
+async function readBack() {
+  const r = await get("read");
+  const sensors = Object.keys(r.expected.bySensor);
+  $("readres").innerHTML = `<div><span class="big">${fmt(r.read.messages)}</span> messages in ${r.ms} ms <span class="pill ${r.matches ? "ok" : "bad"}">${r.matches ? "identical to readings.csv, in order" : "DIFFERENT from readings.csv"}</span></div>
+  <table style="margin-top:10px"><tr><th>ledger</th><th class="num">messages</th><th>served from</th></tr>${r.ledgers.map(l => `<tr><td>${l.ledgerId}</td><td class="num">${fmt(l.messages)}</td><td><span class="pill ${l.servedFrom.startsWith("tiered") ? "s3" : "bk"}">${l.servedFrom}</span></td></tr>`).join("")}</table>
+  <table style="margin-top:10px"><tr><th>sensor</th><th class="num">read count</th><th class="num">csv count</th><th class="num">read sum</th><th class="num">csv sum</th></tr>${sensors.map(s => { const a = r.read.bySensor[s] || {}, b = r.expected.bySensor[s]; return `<tr><td>${s}</td><td class="num">${fmt(a.count)}</td><td class="num">${fmt(b.count)}</td><td class="num">${fmt(a.valueMilliSum)}</td><td class="num">${fmt(b.valueMilliSum)}</td></tr>`; }).join("")}</table>
+  <pre>${r.first.map(esc).join("\n")}\n...\n${r.last.map(esc).join("\n")}</pre>`;
+}
+async function loadRoles() {
+  const c = await get("cluster");
+  $("head").innerHTML = `<span class="pill brk">${c.brokers.length} broker</span><span class="pill bk">${c.bookies.length} bookie</span><span class="pill s3">bucket ${c.bucket}</span><span class="pill">cluster ${c.cluster}</span>`;
+  $("brokers").innerHTML = `<div class="big">${c.brokers.map(esc).join(", ")}</div><ul><li>speaks the Pulsar protocol to producers and readers</li><li>owns the topic: <code>${esc(c.topicOwner ? c.topicOwner.brokerUrl : "not loaded")}</code></li><li>writes entries to bookies and triggers offload to MinIO</li><li>keeps no message data on local disk (no volume mounted), so it can restart or move</li></ul>`;
+  const info = c.bookieInfo || {};
+  $("bookies").innerHTML = `<div class="big">${c.bookies.map(b => esc(b.bookieId)).join(", ")}</div><ul><li>stores ledgers (journal + RocksDB entry log) on volume r7-bookie-data</li><li>ledgers held now, all topics including system topics: <code>${c.bookieLedgers.join(", ") || "none"}</code></li><li>disk free ${fmt(Math.round((info.freeSpace || 0) / 1048576))} MB of ${fmt(Math.round((info.totalSpace || 0) / 1048576))} MB</li></ul>`;
+  $("tierinfo").innerHTML = `<div class="big">s3://${esc(c.bucket)}</div><ul><li>endpoint <code>${esc(c.s3Endpoint)}</code>, driver aws-s3 (jclouds offloader)</li><li>receives closed ledgers as a data block object plus an index object</li><li>serves reads for offloaded ledgers after the bookie deletes them</li></ul>`;
+  $("policies").textContent = JSON.stringify(c.brokerConfig, null, 2);
+}
+async function act(btn, path, text) {
+  document.querySelectorAll(".actions button").forEach(b => b.disabled = true);
+  say(text + " ...");
+  try { const r = await get(path, "POST"); say(text + " done: " + JSON.stringify(r).slice(0, 220)); }
+  catch (e) { say(text + " failed: " + e.message); }
+  document.querySelectorAll(".actions button").forEach(b => b.disabled = false);
+  await refresh();
+}
+async function refresh() {
+  try { await loadTopic(); await loadRoles(); } catch (e) { say("refresh failed: " + e.message); }
+}
+$("reset").onclick = () => act(this, "reset", "reset");
+$("publish").onclick = () => act(this, "publish", "publish");
+$("offload").onclick = () => act(this, "offload", "offload");
+$("read").onclick = async () => { say("reading ..."); try { await readBack(); say("read done"); } catch (e) { say("read failed: " + e.message); } await refresh(); };
+document.querySelectorAll("nav button").forEach(b => b.onclick = () => {
+  document.querySelectorAll("nav button").forEach(x => x.classList.toggle("on", x === b));
+  document.querySelectorAll("main section").forEach(s => s.classList.toggle("hide", s.id !== b.dataset.tab));
+});
+refresh();
+setInterval(refresh, 4000);
+</script>
+</body>
+</html>

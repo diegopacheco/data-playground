@@ -1,0 +1,172 @@
+name: r7-pulsar-tiered-storage
+
+services:
+  r7-zookeeper:
+    image: docker.io/apachepulsar/pulsar:4.2.4
+    container_name: r7-zookeeper
+    command: ["bash", "-c", "bin/apply-config-from-env.py conf/zookeeper.conf && exec bin/pulsar zookeeper"]
+    restart: unless-stopped
+    environment:
+      PULSAR_MEM: "-Xms64m -Xmx128m -XX:MaxDirectMemorySize=64m"
+      PULSAR_GC: "-XX:+UseSerialGC"
+    mem_limit: 256m
+    volumes:
+      - r7-zk-data:/pulsar/data
+    networks:
+      - r7-net
+
+  r7-pulsar-init:
+    image: docker.io/apachepulsar/pulsar:4.2.4
+    container_name: r7-pulsar-init
+    command:
+      - bin/pulsar
+      - initialize-cluster-metadata
+      - --cluster
+      - r7-cluster
+      - --metadata-store
+      - zk:r7-zookeeper:2181
+      - --configuration-metadata-store
+      - zk:r7-zookeeper:2181
+      - --web-service-url
+      - http://r7-broker:8080
+      - --broker-service-url
+      - pulsar://r7-broker:6650
+    environment:
+      PULSAR_MEM: "-Xms64m -Xmx192m"
+    mem_limit: 384m
+    networks:
+      - r7-net
+    depends_on:
+      - r7-zookeeper
+
+  r7-minio:
+    image: docker.io/pgsty/minio:RELEASE.2026-08-04T00-00-00Z
+    container_name: r7-minio
+    command: ["server", "/data", "--console-address", ":9001"]
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: pulsar
+      MINIO_ROOT_PASSWORD: pulsar-secret
+    mem_limit: 384m
+    ports:
+      - "${minio:-27203}:9000"
+      - "${console:-27204}:9001"
+    volumes:
+      - r7-minio-data:/data
+    networks:
+      - r7-net
+
+  r7-minio-init:
+    image: docker.io/pgsty/mc:RELEASE.2026-09-16T00-00-00Z
+    container_name: r7-minio-init
+    entrypoint: ["sh", "-c", "until mc alias set local http://r7-minio:9000 pulsar pulsar-secret >/dev/null; do sleep 1; done; mc mb -p local/pulsar-offload && mc anonymous set download local/pulsar-offload"]
+    mem_limit: 128m
+    networks:
+      - r7-net
+    depends_on:
+      - r7-minio
+
+  r7-bookie:
+    image: docker.io/apachepulsar/pulsar:4.2.4
+    container_name: r7-bookie
+    command: ["bash", "-c", "bin/apply-config-from-env.py conf/bookkeeper.conf && exec bin/pulsar bookie"]
+    restart: unless-stopped
+    environment:
+      metadataServiceUri: metadata-store:zk:r7-zookeeper:2181
+      zkServers: r7-zookeeper:2181
+      advertisedAddress: r7-bookie
+      httpServerEnabled: "true"
+      diskUsageThreshold: "0.99"
+      diskUsageWarnThreshold: "0.98"
+      dbStorage_writeCacheMaxSizeMb: "32"
+      dbStorage_readAheadCacheMaxSizeMb: "32"
+      dbStorage_rocksDB_blockCacheSize: "16777216"
+      BOOKIE_MEM: "-Xms128m -Xmx256m -XX:MaxDirectMemorySize=192m"
+      PULSAR_MEM: "-Xms128m -Xmx256m -XX:MaxDirectMemorySize=192m"
+      PULSAR_GC: "-XX:+UseSerialGC"
+    mem_limit: 640m
+    ports:
+      - "${bookie:-27202}:8000"
+    volumes:
+      - r7-bookie-data:/pulsar/data
+    networks:
+      - r7-net
+
+  r7-broker:
+    build:
+      context: .
+      dockerfile: Containerfile.pulsar
+    image: r7-pulsar-offloaders:4.2.4
+    container_name: r7-broker
+    command: ["bash", "-c", "bin/apply-config-from-env.py conf/broker.conf && exec bin/pulsar broker"]
+    restart: unless-stopped
+    environment:
+      PULSAR_PREFIX_clusterName: r7-cluster
+      PULSAR_PREFIX_metadataStoreUrl: zk:r7-zookeeper:2181
+      PULSAR_PREFIX_configurationMetadataStoreUrl: zk:r7-zookeeper:2181
+      PULSAR_PREFIX_advertisedAddress: r7-broker
+      PULSAR_PREFIX_managedLedgerDefaultEnsembleSize: "1"
+      PULSAR_PREFIX_managedLedgerDefaultWriteQuorum: "1"
+      PULSAR_PREFIX_managedLedgerDefaultAckQuorum: "1"
+      PULSAR_PREFIX_managedLedgerMaxEntriesPerLedger: "120"
+      PULSAR_PREFIX_managedLedgerMinLedgerRolloverTimeMinutes: "0"
+      PULSAR_PREFIX_managedLedgerCacheSizeMB: "0"
+      PULSAR_PREFIX_managedLedgerOffloadDeletionLagMs: "0"
+      PULSAR_PREFIX_retentionCheckIntervalInSeconds: "5"
+      PULSAR_PREFIX_defaultRetentionTimeInMinutes: "-1"
+      PULSAR_PREFIX_defaultRetentionSizeInMB: "-1"
+      PULSAR_PREFIX_brokerDeleteInactiveTopicsEnabled: "false"
+      PULSAR_PREFIX_offloadersDirectory: ./offloaders
+      PULSAR_PREFIX_managedLedgerOffloadDriver: aws-s3
+      PULSAR_PREFIX_s3ManagedLedgerOffloadBucket: pulsar-offload
+      PULSAR_PREFIX_s3ManagedLedgerOffloadRegion: us-east-1
+      PULSAR_PREFIX_s3ManagedLedgerOffloadServiceEndpoint: http://r7-minio:9000
+      AWS_ACCESS_KEY_ID: pulsar
+      AWS_SECRET_ACCESS_KEY: pulsar-secret
+      PULSAR_MEM: "-Xms256m -Xmx384m -XX:MaxDirectMemorySize=256m"
+      PULSAR_GC: "-XX:+UseSerialGC"
+    mem_limit: 1024m
+    ports:
+      - "${broker:-27201}:8080"
+    networks:
+      - r7-net
+    depends_on:
+      - r7-bookie
+      - r7-minio
+
+  r7-app:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: r7-pulsar-tiered-storage:latest
+    container_name: r7-app
+    restart: unless-stopped
+    environment:
+      ADMIN_URL: http://r7-broker:8080
+      PULSAR_URL: pulsar://r7-broker:6650
+      BOOKIE_URL: http://r7-bookie:8000
+      S3_URL: http://r7-minio:9000
+      BUCKET: pulsar-offload
+      CLUSTER: r7-cluster
+      UI_PORT: "8080"
+    mem_limit: 256m
+    ports:
+      - "${ui:-27200}:8080"
+    volumes:
+      - ./data:/app/data:ro
+    networks:
+      - r7-net
+    depends_on:
+      - r7-broker
+
+networks:
+  r7-net:
+    name: r7-net
+
+volumes:
+  r7-zk-data:
+    name: r7-zk-data
+  r7-bookie-data:
+    name: r7-bookie-data
+  r7-minio-data:
+    name: r7-minio-data

@@ -1,0 +1,5 @@
+FROM docker.io/apachepulsar/pulsar:4.2.4
+USER root
+ADD https://archive.apache.org/dist/pulsar/pulsar-4.2.4/apache-pulsar-offloaders-4.2.4-bin.tar.gz /tmp/offloaders.tgz
+RUN tar -xzf /tmp/offloaders.tgz -C /tmp && mkdir -p /pulsar/offloaders && mv /tmp/apache-pulsar-offloaders-4.2.4/offloaders/tiered-storage-jcloud-4.2.4.nar /pulsar/offloaders/ && rm -rf /tmp/offloaders.tgz /tmp/apache-pulsar-offloaders-4.2.4 && chown -R 10000:0 /pulsar/offloaders
+USER 10000

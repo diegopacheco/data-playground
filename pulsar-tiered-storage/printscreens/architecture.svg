@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="560" viewBox="0 0 1100 560">
+<defs>
+<style>@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&amp;display=swap');text{font-family:Caveat,'Comic Sans MS',cursive;fill:#1e1e1e}.t{font-size:26px;font-weight:700}.s{font-size:19px}.a{font-size:18px;fill:#444}</style>
+<filter id="w"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="3" seed="3"/><feDisplacementMap in="SourceGraphic" scale="3"/></filter>
+<marker id="h" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#1e1e1e"/></marker>
+</defs>
+<rect width="1100" height="560" fill="#ffffff"/>
+<g filter="url(#w)" stroke="#1e1e1e" stroke-width="2">
+<rect x="30" y="200" width="190" height="130" rx="14" fill="#fff3bf"/>
+<rect x="300" y="60" width="240" height="150" rx="14" fill="#e5dbff"/>
+<rect x="300" y="330" width="240" height="170" rx="14" fill="#d0ebff"/>
+<rect x="640" y="60" width="200" height="110" rx="14" fill="#e9ecef"/>
+<rect x="640" y="330" width="420" height="170" rx="14" fill="#ffe8cc"/>
+<rect x="890" y="60" width="170" height="110" rx="14" fill="#d3f9d8"/>
+</g>
+<g fill="none" stroke="#1e1e1e" stroke-width="2.2" filter="url(#w)">
+<path d="M220 245 C255 200 265 160 298 140" marker-end="url(#h)"/>
+<path d="M298 170 C260 200 250 250 222 285" marker-end="url(#h)" stroke-dasharray="7 6"/>
+<path d="M400 212 L400 328" marker-end="url(#h)"/>
+<path d="M470 328 L470 212" marker-end="url(#h)" stroke-dasharray="7 6"/>
+<path d="M530 212 C560 300 590 350 636 365" marker-end="url(#h)"/>
+<path d="M800 328 C790 240 650 215 544 190" marker-end="url(#h)" stroke-dasharray="7 6"/>
+<path d="M542 110 L638 110" marker-end="url(#h)"/>
+<path d="M890 115 L842 115" marker-end="url(#h)"/>
+</g>
+<text x="52" y="240" class="t">r7-app</text>
+<text x="45" y="268" class="s">Python 3.14 + UI/REST</text>
+<text x="45" y="292" class="s">pulsar-client 3.13</text>
+<text x="45" y="316" class="s">publishes readings.csv</text>
+<text x="320" y="95" class="t">r7-broker (compute)</text>
+<text x="318" y="125" class="s">Pulsar 4.2.4, no volume</text>
+<text x="318" y="150" class="s">owns topic, serves reads</text>
+<text x="318" y="175" class="s">120 entries per ledger</text>
+<text x="318" y="198" class="s">jclouds aws-s3 offloader</text>
+<text x="320" y="365" class="t">r7-bookie (storage)</text>
+<text x="318" y="395" class="s">BookKeeper 4.17 in Pulsar</text>
+<text x="318" y="420" class="s">journal + entry log</text>
+<text x="318" y="445" class="s">volume r7-bookie-data</text>
+<text x="318" y="470" class="s">drops ledgers once offloaded</text>
+<text x="318" y="492" class="s">HTTP ledger list :8000</text>
+<text x="660" y="100" class="t">r7-zookeeper</text>
+<text x="658" y="130" class="s">cluster + ledger metadata</text>
+<text x="658" y="155" class="s">offload state per ledger</text>
+<text x="660" y="365" class="t">r7-minio  s3://pulsar-offload</text>
+<text x="658" y="398" class="s">uuid-ledger-N  : data block (entries of ledger N)</text>
+<text x="658" y="424" class="s">uuid-ledger-N-index : entry offsets</text>
+<text x="658" y="450" class="s">anonymous list/get for the UI and the tests</text>
+<text x="658" y="478" class="s">serves reads of offloaded ledgers</text>
+<text x="905" y="100" class="t">r7-pulsar-init</text>
+<text x="903" y="128" class="s">r7-minio-init</text>
+<text x="903" y="153" class="s">one-shot setup</text>
+<text x="120" y="185" class="a">produce / read</text>
+<text x="170" y="350" class="a">messages back</text>
+<text x="330" y="270" class="a">write entries</text>
+<text x="478" y="300" class="a">read open ledger</text>
+<text x="565" y="262" class="a">offload closed ledgers</text>
+<text x="812" y="290" class="a">read offloaded ledgers</text>
+<text x="550" y="100" class="a">metadata</text>
+<text x="30" y="40" class="t">Pulsar tiered storage: brokers compute, bookies store, MinIO keeps closed ledgers</text>
+</svg>
