@@ -1,0 +1,67 @@
+pulsar-tiered-storage/.gitignore
+  s_3b53f3faf7302c::t_3953d485389b4b 1-3
+pulsar-tiered-storage/Containerfile.pulsar
+  s_3b53f3faf7302c::t_e11743459fd6b5 1-5
+pulsar-tiered-storage/printscreens/architecture.svg
+  s_3b53f3faf7302c::t_7d6915645d6913 21-22,52,56-57
+  s_3b53f3faf7302c::t_06e04d87984370 1-20,23-51,53-55,58-60
+pulsar-tiered-storage/scripts/start-all.sh
+  s_3b53f3faf7302c::t_6fc2c1009fedf0 1-53
+pulsar-tiered-storage/podman-compose.yml
+  s_3b53f3faf7302c::t_b05a09b4dbb62b 52-53,89
+  s_3b53f3faf7302c::t_68ce03f3bc23f0 1-51,54-88,90-172
+pulsar-tiered-storage/README.md
+  s_3b53f3faf7302c::t_75c06b34b35973 1-152
+pulsar-tiered-storage/app/index.html
+  s_3b53f3faf7302c::t_6059bac18eb78f 105,125
+  s_3b53f3faf7302c::t_2da56597c3a444 1-79,81-104,106-124,126,128-152
+  s_3b53f3faf7302c::t_f137f6fd7e4cc2 80,127
+pulsar-tiered-storage/app/server.py
+  s_3b53f3faf7302c::t_6059bac18eb78f 27
+  s_3b53f3faf7302c::t_21eab8b336fe2d 28-30
+  s_3b53f3faf7302c::t_d868169ba5a09a 1-26,31-134,136-137,139-194,196-261
+  s_3b53f3faf7302c::t_bf04f5d790d647 195
+  s_3b53f3faf7302c::t_fa0c543e777955 135,138
+pulsar-tiered-storage/Containerfile
+  s_3b53f3faf7302c::t_d9cc23d6cfd3a6 1-7
+pulsar-tiered-storage/scripts/ports.env
+  s_3b53f3faf7302c::t_3387ef4e989b44 3-5
+  s_3b53f3faf7302c::t_06309f7b698d2f 1-2
+pulsar-tiered-storage/scripts/common.sh
+  s_3b53f3faf7302c::t_fdd5cc9bbf35ef 81
+  s_3b53f3faf7302c::t_b0034b650d4432 1-80,82-127
+pulsar-tiered-storage/app/gen.py
+  s_3b53f3faf7302c::t_c7cd7450493b0a 1-23
+pulsar-tiered-storage/scripts/stop-all.sh
+  s_3b53f3faf7302c::t_ffa377237776b2 1-15
+pulsar-tiered-storage/scripts/ui.sh
+  s_3b53f3faf7302c::t_d878c43d480412 1-8
+pulsar-tiered-storage/requirements.txt
+  s_3b53f3faf7302c::t_97c9f29e154e57 1
+pulsar-tiered-storage/scripts/test-all.sh
+  s_3b53f3faf7302c::t_23b6491d40ece1 1-18
+pulsar-tiered-storage/tests/test_tiered_storage.py
+  s_3b53f3faf7302c::t_c3f4c020551425 1-156
+pulsar-tiered-storage/.containerignore
+  s_3b53f3faf7302c::t_6da642fc18ae85 1-5
+pulsar-tiered-storage/scripts/status.sh
+  s_3b53f3faf7302c::t_4143b7c60c1633 1-16
+pulsar-tiered-storage/scripts/setup.sh
+  s_3b53f3faf7302c::t_28848713fa9f71 1-37
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5ddb104be718d87b85ae1e579844e138bc19bf84",
+  "prompts": {},
+  "sessions": {
+    "s_3b53f3faf7302c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7b7528e4-a24f-44b8-a1f0-3181aa699c71",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "diegopacheco <diego.pacheco.it@gmail.com>"
+    }
+  }
+}
