@@ -1,0 +1,76 @@
+dbt-spark-iceberg/dbt/dbt_project.yml
+  s_9121753c4a3d76::t_246fb9da6b2fb4 1-33
+dbt-spark-iceberg/podman-compose.yml
+  s_9121753c4a3d76::t_d7ab90278bfd8c 17
+  s_9121753c4a3d76::t_4a2759dc4d66aa 1-9,11,29-44
+  s_9121753c4a3d76::t_414dead8cf3159 10,12-16,18-28
+dbt-spark-iceberg/scripts/ports.env
+  s_9121753c4a3d76::t_67f2a3ee939e4a 1-3
+dbt-spark-iceberg/dbt/models/fct_orders.sql
+  s_9121753c4a3d76::t_18c3aabd75c891 1-16
+dbt-spark-iceberg/scripts/start-all.sh
+  s_9121753c4a3d76::t_dbeccbaf65cf09 1-47
+dbt-spark-iceberg/data/orders.csv
+  s_9121753c4a3d76::t_978e2f56120d70 1-201
+dbt-spark-iceberg/dbt/models/stg_orders.sql
+  s_9121753c4a3d76::t_277462115f5158 1-11
+dbt-spark-iceberg/dbt/profiles.yml
+  s_9121753c4a3d76::t_51f68577278a06 1-12
+dbt-spark-iceberg/dbt/tests/revenue_matches_fct.sql
+  s_9121753c4a3d76::t_c5fd7a30dbc3ca 1-9
+dbt-spark-iceberg/scripts/sql-console.sh
+  s_9121753c4a3d76::t_3dfb5e68f6e200 1-7
+dbt-spark-iceberg/dbt/.user.yml
+  s_9121753c4a3d76::t_ceaa9bce8fcd06 1
+dbt-spark-iceberg/scripts/ui.sh
+  s_9121753c4a3d76::t_782e9ac4e52cba 1-10
+dbt-spark-iceberg/dbt/models/schema.yml
+  s_9121753c4a3d76::t_d4201a94193a97 1-24
+dbt-spark-iceberg/app/server.py
+  s_9121753c4a3d76::t_5084a8e79888f2 1-80
+dbt-spark-iceberg/dbt/models/revenue_by_category.sql
+  s_9121753c4a3d76::t_5c90ead035c045 1-7
+dbt-spark-iceberg/scripts/common.sh
+  s_9121753c4a3d76::t_703d530d7254a1 1-156
+dbt-spark-iceberg/printscreens/architecture.svg
+  s_9121753c4a3d76::t_4cb49867a19d24 10,15,21
+  s_9121753c4a3d76::t_44153f82b5366a 1-9,11-14,16-20,22-34,36,38
+  s_9121753c4a3d76::t_84426f6b28516b 35,37
+dbt-spark-iceberg/README.md
+  s_9121753c4a3d76::t_24b5d6a9123069 1-131
+dbt-spark-iceberg/scripts/test-all.sh
+  s_9121753c4a3d76::t_80ba3dd0d16e7a 1-42
+dbt-spark-iceberg/dbt/macros/reset_schema.sql
+  s_9121753c4a3d76::t_2d8d37b6d4b26b 1,9
+  s_9121753c4a3d76::t_7d44e506e4da32 2-8
+dbt-spark-iceberg/scripts/setup.sh
+  s_9121753c4a3d76::t_1d63bbb79139fe 1-28
+dbt-spark-iceberg/scripts/stop-all.sh
+  s_9121753c4a3d76::t_0469b4603d14d4 1-15
+dbt-spark-iceberg/dbt/tests/fct_orders_matches_seed.sql
+  s_9121753c4a3d76::t_49c5581a071ac1 1-12
+dbt-spark-iceberg/requirements.txt
+  s_9121753c4a3d76::t_adbdc950f8c819 1-2
+dbt-spark-iceberg/app/index.html
+  s_9121753c4a3d76::t_e0643a022ffd78 1-106
+dbt-spark-iceberg/scripts/status.sh
+  s_9121753c4a3d76::t_30ced09cff873b 1-18
+dbt-spark-iceberg/.gitignore
+  s_9121753c4a3d76::t_4ce2923841a0ff 1-7
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f1edda5ba2b836e344788b1a7836e3af9f223868",
+  "prompts": {},
+  "sessions": {
+    "s_9121753c4a3d76": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "39b421dc-22e8-4dc0-93df-749df3c5cb41",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "diegopacheco <diego.pacheco.it@gmail.com>"
+    }
+  }
+}
