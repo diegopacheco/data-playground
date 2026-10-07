@@ -1,0 +1,10 @@
+syntax = "proto3";
+package poc;
+
+message Order {
+  int64 id = 1;
+  double amount = 2;
+  string currency = 3;
+  int32 quantity = 4;
+  string status = 5;
+}

@@ -1,0 +1,8 @@
+syntax = "proto3";
+package poc;
+
+message Order {
+  int64 id = 1;
+  double amount = 2;
+  int32 quantity = 4;
+}

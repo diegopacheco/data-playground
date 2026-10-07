@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Schema Registry Evolution</title>
+<style>
+:root{--bg:#f7f8fa;--card:#fff;--ink:#1d2330;--muted:#687083;--line:#e3e6ec;--ok:#1f8a4c;--okbg:#e5f6ec;--bad:#c23a3a;--badbg:#fbe9e9;--accent:#3867d6;--soft:#eef2fb;--warn:#a86b00;--warnbg:#fff4de}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+header{background:var(--card);border-bottom:1px solid var(--line);padding:14px 24px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+h1{font-size:18px;margin:0}
+.sub{color:var(--muted);font-size:13px}
+.tiles{display:flex;gap:10px;margin-left:auto;flex-wrap:wrap}
+.tile{background:var(--soft);border-radius:8px;padding:6px 12px;font-size:12px;color:var(--muted)}
+.tile b{display:block;color:var(--ink);font-size:14px}
+nav{display:flex;gap:4px;padding:0 24px;background:var(--card);border-bottom:1px solid var(--line)}
+nav button{border:0;background:none;padding:12px 14px;font:inherit;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent}
+nav button.on{color:var(--accent);border-color:var(--accent);font-weight:600}
+main{padding:20px 24px;max-width:1400px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:18px}
+h2{font-size:16px;margin:0 0 4px}
+h3{font-size:14px;margin:14px 0 6px}
+table{border-collapse:collapse;width:100%}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;color:var(--muted);font-weight:600}
+.pill{display:inline-block;border-radius:999px;padding:2px 10px;font-size:12px;font-weight:600}
+.yes{background:var(--okbg);color:var(--ok)}
+.no{background:var(--badbg);color:var(--bad)}
+.def{background:var(--warnbg);color:var(--warn)}
+.cause{color:var(--bad);font-size:11px;margin-top:3px;max-width:260px}
+code,pre{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+pre{background:#f3f5f9;border:1px solid var(--line);border-radius:8px;padding:10px;overflow:auto;margin:6px 0;max-height:260px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px}
+.steps{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
+.step{border:1px solid var(--line);border-radius:8px;padding:8px 12px;min-width:200px}
+.step.ok{border-color:#b9e3c8;background:var(--okbg)}
+.step.bad{border-color:#f0c4c4;background:var(--badbg)}
+.kv{font-size:12px}
+.kv span{display:inline-block;margin-right:8px}
+.kv .added{color:var(--warn);font-weight:600}
+.kv .unk{color:var(--muted);font-style:italic}
+.muted{color:var(--muted)}
+button.run{background:var(--accent);color:#fff;border:0;border-radius:6px;padding:8px 14px;font:inherit;cursor:pointer}
+select,textarea{font:inherit;border:1px solid var(--line);border-radius:6px;padding:6px}
+textarea{width:100%;height:170px;font-family:ui-monospace,Menlo,monospace;font-size:12px}
+.hide{display:none}
+.legend{font-size:12px;color:var(--muted);margin:6px 0 10px}
+</style>
+</head>
+<body>
+<header>
+  <div><h1>Schema Registry: Avro and Protobuf evolution</h1><div class="sub" id="sub">loading</div></div>
+  <div class="tiles" id="tiles"></div>
+  <button class="run" id="rerun">Run again</button>
+</header>
+<nav id="tabs">
+  <button data-tab="compat" class="on">Compatibility</button>
+  <button data-tab="flow">Producers and consumers</button>
+  <button data-tab="registry">Registry</button>
+</nav>
+<main>
+  <section id="compat"></section>
+  <section id="flow" class="hide"></section>
+  <section id="registry" class="hide"></section>
+</main>
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const pill = ok => `<span class="pill ${ok ? "yes" : "no"}">${ok ? "accepted" : "rejected"}</span>`;
+const readPill = ok => `<span class="pill ${ok ? "yes" : "no"}">${ok ? "reads" : "fails"}</span>`;
+const get = p => fetch(p).then(r => r.json());
+
+document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => {
+  document.querySelectorAll("#tabs button").forEach(x => x.classList.toggle("on", x === b));
+  ["compat", "flow", "registry"].forEach(id => $("#" + id).classList.toggle("hide", id !== b.dataset.tab));
+  if (b.dataset.tab === "registry") loadRegistry();
+});
+
+$("#rerun").onclick = async () => {
+  $("#rerun").disabled = true; $("#rerun").textContent = "Running";
+  await fetch("/api/run", {method: "POST"});
+  $("#rerun").disabled = false; $("#rerun").textContent = "Run again";
+  load();
+};
+
+function matrixCard(fmt, m, modes) {
+  const d = m[fmt];
+  const rows = d.changes.map(c => `<tr><td><b>${esc(c.title)}</b><div class="muted"><code>${esc(c.file)}</code></div></td>
+    ${modes.map(mode => { const r = c.results[mode]; return `<td>${pill(r.accepted)}${r.causes.map(x => `<div class="cause">${esc(x)}</div>`).join("")}</td>`; }).join("")}
+    <td>${readPill(c.new_reads_old)}</td><td>${readPill(c.old_reads_new)}</td></tr>`).join("");
+  return `<div class="card"><h2>${fmt === "avro" ? "Avro" : "Protobuf"} changes against <code>${esc(d.base_file)}</code></h2>
+    <div class="legend">Each cell is a dry run (<code>?dryRun=true</code>) of the change against an Apicurio artifact holding the base schema with that COMPATIBILITY rule. The last two columns are real reads: data written with one schema decoded with the other, ${fmt === "avro" ? "with fastavro schema resolution" : "with the protobuf runtime, every field sharing a name must keep its value"}.</div>
+    <table><thead><tr><th>Change</th>${modes.map(x => `<th>${x}</th>`).join("")}<th>new schema reads old data</th><th>old schema reads new data</th></tr></thead><tbody>${rows}</tbody></table>
+    <h3>Base schema</h3><pre>${esc(d.base)}</pre></div>`;
+}
+
+function tryCard(modes) {
+  return `<div class="card"><h2>Try a change</h2><div class="legend">Paste a schema and check it against the base schema under a mode. Nothing is registered.</div>
+    <div style="display:flex;gap:8px;margin-bottom:8px"><select id="tfmt"><option value="avro">avro</option><option value="protobuf">protobuf</option></select>
+    <select id="tmode">${modes.map(m => `<option>${m}</option>`).join("")}</select><button class="run" id="tcheck">Check</button><span id="tout"></span></div>
+    <textarea id="tschema"></textarea></div>`;
+}
+
+let MATRIX = null;
+function renderCompat(m) {
+  MATRIX = m;
+  $("#compat").innerHTML = matrixCard("avro", m, m.modes) + matrixCard("protobuf", m, m.modes) + tryCard(m.modes);
+  const fill = () => $("#tschema").value = MATRIX[$("#tfmt").value].base;
+  $("#tfmt").onchange = fill; fill();
+  $("#tcheck").onclick = async () => {
+    const r = await fetch("/api/check", {method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({format: $("#tfmt").value, mode: $("#tmode").value, schema: $("#tschema").value})}).then(x => x.json());
+    $("#tout").innerHTML = r.error ? `<span class="cause">${esc(r.error)}</span>` : pill(r.accepted) + r.causes.map(x => ` <span class="cause">${esc(x)}</span>`).join("");
+  };
+}
+
+function recordView(reader, other) {
+  if (!reader.ok) return `<span class="pill no">error</span> <span class="cause">${esc(reader.error)}</span>`;
+  const keys = Object.keys(reader.record);
+  return `<div class="kv">${keys.map(k => `<span class="${other && !(k in other) ? "added" : ""}">${esc(k)}=${esc(JSON.stringify(reader.record[k]))}</span>`).join("")}
+    ${reader.unknown_fields.length ? `<span class="unk">unknown tags ${reader.unknown_fields.join(",")} kept</span>` : ""}</div>`;
+}
+
+function flowCard(fmt, f) {
+  const steps = f.attempts.map(a => `<div class="step ${a.accepted ? "ok" : "bad"}"><b>producer ${a.version}</b> <code>${esc(a.file)}</code><br>
+    ${a.accepted ? `registered as version ${a.registry_version}, globalId ${a.global_id}` : "registration rejected, producer blocked"}
+    ${a.causes.map(c => `<div class="cause">${esc(c)}</div>`).join("")}</div>`).join("");
+  const byVersion = {v1: f.produced.filter(p => p.producer === "v1").length, v2: f.produced.filter(p => p.producer === "v2").length};
+  const rows = f.messages.map(m => {
+    const r1 = m.readers["consumer v1"], r2 = m.readers["consumer v2"];
+    const writerRec = m.writer === "v1" ? r1.record : r2.record;
+    return `<tr><td>${m.offset}</td><td>${esc(m.key)}</td><td><span class="pill ${m.writer === "v1" ? "def" : "yes"}">${m.writer}</span> <span class="muted">id ${m.global_id}, ${m.bytes} B</span></td>
+      <td>${recordView(r1, m.writer === "v1" ? null : writerRec)}</td><td>${recordView(r2, m.writer === "v2" ? null : writerRec)}</td></tr>`;
+  }).join("");
+  return `<div class="card"><h2>${fmt === "avro" ? "Avro" : "Protobuf"} on topic <code>${esc(f.topic)}</code>, artifact <code>${esc(f.artifact)}</code>, rule ${f.mode}</h2>
+    <div class="steps">${steps}</div>
+    <div class="legend">Producer v1 sent ${byVersion.v1} and producer v2 sent ${byVersion.v2} orders interleaved on one partition (offsets ${f.start_offset} to ${f.end_offset - 1}). Every value is framed as magic byte 0 + 4 byte globalId + payload. Each consumer decodes every message with its own schema; fields a consumer got from its own schema default are highlighted${fmt === "protobuf" ? ", and tags it does not know are kept as unknown fields" : ", and the writer schema is fetched from the registry by globalId"}.</div>
+    <table><thead><tr><th>Offset</th><th>Key</th><th>Written by</th><th>consumer v1 sees</th><th>consumer v2 sees</th></tr></thead><tbody>${rows}</tbody></table>
+    <div class="grid">${["v1", "v2", "v3"].map(v => `<div><h3>${v}</h3><pre>${esc(f.schemas[v])}</pre></div>`).join("")}</div></div>`;
+}
+
+async function loadRegistry() {
+  const r = await get("/api/registry");
+  $("#registry").innerHTML = Object.entries(r).map(([group, items]) => `<div class="card"><h2>Group <code>${esc(group)}</code></h2>
+    <table><thead><tr><th>Artifact</th><th>Type</th><th>COMPATIBILITY</th><th>Versions (globalId)</th></tr></thead><tbody>
+    ${items.map(a => `<tr><td><code>${esc(a.artifact)}</code></td><td>${a.type}</td><td>${a.rule}</td><td>${a.versions.map(v => `v${v.version} (${v.global_id})`).join(", ")}</td></tr>`).join("")}</tbody></table>
+    ${group === "r10-flow" ? items.map(a => `<h3>${esc(a.artifact)}</h3><div class="grid">${a.versions.map(v => `<div><div class="muted">version ${v.version}, globalId ${v.global_id}, contentId ${v.content_id}</div><pre>${esc(v.content)}</pre></div>`).join("")}</div>`).join("") : ""}
+    </div>`).join("");
+}
+
+async function load() {
+  const s = await get("/api/status");
+  $("#sub").textContent = `Apicurio Registry ${s.registry.version}, Kafka ${s.kafka.up ? "up with " + s.kafka.brokers + " broker" : "down"}, last run ${s.ran_at || "never"}`;
+  const v = s.verdicts;
+  $("#tiles").innerHTML = ["avro", "protobuf"].map(f => ["BACKWARD", "FORWARD", "FULL", "NONE"].map(m => v[f + "." + m] ?
+    `<div class="tile">${f} ${m}<b>${v[f + "." + m].accepted} ok / ${v[f + "." + m].rejected} rejected</b></div>` : "").join("")).join("");
+  if (!s.ran_at) return;
+  renderCompat(await get("/api/matrix"));
+  const f = await get("/api/flow");
+  $("#flow").innerHTML = flowCard("avro", f.avro) + flowCard("protobuf", f.protobuf);
+  if (!$("#registry").classList.contains("hide")) loadRegistry();
+}
+const initial = document.querySelector(`#tabs button[data-tab="${location.hash.slice(1)}"]`);
+if (initial) initial.click();
+load();
+</script>
+</body>
+</html>

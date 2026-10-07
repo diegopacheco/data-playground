@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 560" width="1100" height="560">
+  <defs>
+    <style>@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&amp;display=swap');
+      text{font-family:'Caveat','Comic Sans MS',cursive;fill:#2b2b2b}
+      .t{font-size:24px;font-weight:700}.s{font-size:18px}.l{font-size:17px;fill:#444}</style>
+    <filter id="w"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="7"/><feDisplacementMap in="SourceGraphic" scale="3"/></filter>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#333"/></marker>
+    <marker id="r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#c23a3a"/></marker>
+  </defs>
+  <rect width="1100" height="560" fill="#fffdf8"/>
+  <g filter="url(#w)" stroke="#333" stroke-width="2">
+    <rect x="30" y="40" width="220" height="80" rx="12" fill="#d8f0dc"/>
+    <rect x="30" y="140" width="220" height="80" rx="12" fill="#d8f0dc"/>
+    <rect x="30" y="240" width="220" height="80" rx="12" fill="#f9d7d7"/>
+    <rect x="420" y="40" width="300" height="170" rx="14" fill="#dbe7fb"/>
+    <rect x="420" y="300" width="270" height="130" rx="14" fill="#fff0c9"/>
+    <rect x="850" y="140" width="220" height="80" rx="12" fill="#e9dcf7"/>
+    <rect x="850" y="300" width="220" height="80" rx="12" fill="#e9dcf7"/>
+    <rect x="30" y="400" width="300" height="120" rx="12" fill="#f1f1f1"/>
+    <rect x="740" y="440" width="330" height="90" rx="12" fill="#fde2cf"/>
+  </g>
+  <text x="50" y="72" class="t">producer v1</text><text x="50" y="100" class="s">v1 schema + globalId frame</text>
+  <text x="50" y="172" class="t">producer v2</text><text x="50" y="200" class="s">+ status (default NEW / tag 5)</text>
+  <text x="50" y="272" class="t">producer v3</text><text x="50" y="300" class="s">amount double -&gt; string</text>
+  <text x="440" y="74" class="t">r10-registry</text><text x="440" y="100" class="s">Apicurio Registry 3.3.3</text>
+  <text x="440" y="128" class="s">COMPATIBILITY rule per artifact</text><text x="440" y="154" class="s">BACKWARD / FORWARD / FULL / NONE</text>
+  <text x="440" y="182" class="s">dry run checks, versions, globalIds</text>
+  <text x="440" y="334" class="t">r10-kafka</text><text x="440" y="360" class="s">apache/kafka-native 4.3.1 (KRaft)</text>
+  <text x="440" y="386" class="s">orders-avro, orders-protobuf</text><text x="440" y="412" class="s">magic 0 + 4 byte globalId + payload</text>
+  <text x="870" y="172" class="t">consumer v1</text><text x="870" y="200" class="s">reads v1 and v2 data</text>
+  <text x="870" y="332" class="t">consumer v2</text><text x="870" y="360" class="s">reads v1 and v2 data</text>
+  <text x="50" y="432" class="t">r10-app (Python 3.14)</text><text x="50" y="460" class="s">compatibility matrix via dry runs</text>
+  <text x="50" y="486" class="s">producers + consumers, REST API, UI</text><text x="50" y="510" class="s">http://localhost:27500</text>
+  <text x="760" y="472" class="t">tests</text><text x="760" y="498" class="s">fastavro + protoc oracles, direct</text><text x="760" y="520" class="s">registry and Kafka reads</text>
+  <g fill="none" stroke-width="2" filter="url(#w)">
+    <path d="M250,80 C330,80 350,90 418,100" stroke="#333" marker-end="url(#a)"/>
+    <path d="M250,180 C330,180 350,150 418,140" stroke="#333" marker-end="url(#a)"/>
+    <path d="M250,280 C330,280 360,220 418,190" stroke="#c23a3a" stroke-dasharray="6 5" marker-end="url(#r)"/>
+    <path d="M250,95 C330,200 350,300 418,330" stroke="#333" marker-end="url(#a)"/>
+    <path d="M250,195 C320,260 360,330 418,350" stroke="#333" marker-end="url(#a)"/>
+    <path d="M692,350 C760,330 790,200 848,185" stroke="#333" marker-end="url(#a)"/>
+    <path d="M692,370 C770,360 800,345 848,340" stroke="#333" marker-end="url(#a)"/>
+    <path d="M848,165 C800,140 780,120 722,120" stroke="#333" stroke-dasharray="4 4" marker-end="url(#a)"/>
+    <path d="M740,470 C715,460 700,445 692,425" stroke="#777" stroke-dasharray="4 4" marker-end="url(#a)"/>
+  </g>
+  <text x="300" y="60" class="l">register v1, v2</text>
+  <text x="40" y="346" class="l" style="fill:#c23a3a">rejected by the rule: no v3, no messages</text>
+  <text x="290" y="300" class="l">produce</text>
+  <text x="740" y="104" class="l">fetch writer schema by globalId</text>
+  <text x="720" y="290" class="l">consume</text>
+</svg>

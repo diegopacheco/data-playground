@@ -1,0 +1,16 @@
+{
+  "v1": [
+    {"id": 1001, "amount": 19.9, "currency": "USD", "quantity": 1, "note": "gift wrap"},
+    {"id": 1002, "amount": 250.0, "currency": "EUR", "quantity": 3, "note": ""},
+    {"id": 1003, "amount": 7.25, "currency": "BRL", "quantity": 12, "note": "leave at door"},
+    {"id": 1004, "amount": 1200.5, "currency": "USD", "quantity": 2, "note": ""},
+    {"id": 1005, "amount": 64.0, "currency": "GBP", "quantity": 5, "note": "fragile"}
+  ],
+  "v2": [
+    {"id": 2001, "amount": 88.8, "currency": "USD", "quantity": 4, "note": "", "status": "PAID"},
+    {"id": 2002, "amount": 15.0, "currency": "EUR", "quantity": 1, "note": "express", "status": "SHIPPED"},
+    {"id": 2003, "amount": 399.99, "currency": "BRL", "quantity": 7, "note": "", "status": "PAID"},
+    {"id": 2004, "amount": 5.5, "currency": "JPY", "quantity": 30, "note": "bulk", "status": "CANCELLED"},
+    {"id": 2005, "amount": 72.1, "currency": "USD", "quantity": 2, "note": "", "status": "DELIVERED"}
+  ]
+}

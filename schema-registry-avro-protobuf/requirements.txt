@@ -1,0 +1,4 @@
+confluent-kafka==2.15.1
+fastavro==1.12.2
+protobuf==7.36.2
+grpcio-tools==1.84.0

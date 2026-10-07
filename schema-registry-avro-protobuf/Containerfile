@@ -1,0 +1,10 @@
+FROM docker.io/library/python:3.14.7-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+ENV PYTHONUNBUFFERED=1 PYTHONPATH=/app/app SCHEMAS_DIR=/app/schemas DATA_DIR=/app/data
+COPY schemas schemas
+COPY data data
+COPY app app
+COPY tests tests
+CMD ["python", "app/server.py"]

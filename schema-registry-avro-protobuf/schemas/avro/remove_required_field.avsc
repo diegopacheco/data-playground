@@ -1,0 +1,6 @@
+{"type": "record", "name": "Order", "namespace": "poc", "fields": [
+  {"name": "id", "type": "long"},
+  {"name": "amount", "type": "double"},
+  {"name": "quantity", "type": "int"},
+  {"name": "note", "type": "string", "default": ""}
+]}

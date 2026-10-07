@@ -1,0 +1,30 @@
+{
+  "modes": ["BACKWARD", "FORWARD", "FULL", "NONE"],
+  "avro": {
+    "base": "avro/v1.avsc",
+    "changes": [
+      {"id": "add_optional_field", "title": "Add field status with default \"NEW\"", "file": "avro/add_optional_field.avsc"},
+      {"id": "add_required_field", "title": "Add field customer without default", "file": "avro/add_required_field.avsc"},
+      {"id": "remove_optional_field", "title": "Remove field note that has a default", "file": "avro/remove_optional_field.avsc"},
+      {"id": "remove_required_field", "title": "Remove field currency that has no default", "file": "avro/remove_required_field.avsc"},
+      {"id": "promote_int_to_long", "title": "Promote quantity from int to long", "file": "avro/promote_int_to_long.avsc"},
+      {"id": "change_field_type", "title": "Change amount from double to string", "file": "avro/change_field_type.avsc"}
+    ]
+  },
+  "protobuf": {
+    "base": "proto/v1.proto",
+    "changes": [
+      {"id": "add_field", "title": "Add field string status = 5", "file": "proto/add_field.proto"},
+      {"id": "remove_field", "title": "Remove field currency = 3", "file": "proto/remove_field.proto"},
+      {"id": "remove_field_reserved", "title": "Remove field currency = 3 and reserve 3 and \"currency\"", "file": "proto/remove_field_reserved.proto"},
+      {"id": "rename_field", "title": "Rename currency to currency_code, same tag 3", "file": "proto/rename_field.proto"},
+      {"id": "change_field_number", "title": "Move currency from tag 3 to tag 6", "file": "proto/change_field_number.proto"},
+      {"id": "change_field_type", "title": "Change amount from double to string", "file": "proto/change_field_type.proto"},
+      {"id": "widen_int32_to_int64", "title": "Widen quantity from int32 to int64", "file": "proto/widen_int32_to_int64.proto"}
+    ]
+  },
+  "flow": {
+    "avro": {"mode": "FULL", "topic": "orders-avro", "v1": "avro/v1.avsc", "v2": "avro/add_optional_field.avsc", "v3": "avro/change_field_type.avsc"},
+    "protobuf": {"mode": "BACKWARD", "topic": "orders-protobuf", "v1": "proto/v1.proto", "v2": "proto/add_field.proto", "v3": "proto/change_field_type.proto"}
+  }
+}
