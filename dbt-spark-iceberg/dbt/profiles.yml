@@ -1,0 +1,12 @@
+shop:
+  target: thrift
+  outputs:
+    thrift:
+      type: spark
+      method: thrift
+      host: "{{ env_var('THRIFT_HOST', 'localhost') }}"
+      port: "{{ env_var('THRIFT_PORT', '23900') | int }}"
+      schema: analytics
+      threads: 1
+      connect_retries: 5
+      connect_timeout: 10

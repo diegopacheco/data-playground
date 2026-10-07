@@ -1,0 +1,33 @@
+name: shop
+version: "1.0.0"
+config-version: 2
+profile: shop
+
+model-paths: ["models"]
+macro-paths: ["macros"]
+test-paths: ["tests"]
+seed-paths: ["../data"]
+target-path: "target"
+log-path: "logs"
+clean-targets: ["target", "logs"]
+
+vars:
+  cutoff: "9999-12-31 00:00:00"
+
+seeds:
+  shop:
+    +file_format: iceberg
+    orders:
+      +column_types:
+        order_id: bigint
+        customer: string
+        product: string
+        category: string
+        quantity: int
+        price: decimal(10,2)
+        ts: timestamp
+
+models:
+  shop:
+    +file_format: iceberg
+    +materialized: table
