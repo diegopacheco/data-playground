@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="380" viewBox="0 0 960 380">
+  <defs>
+    <filter id="wobble" filterUnits="userSpaceOnUse" x="0" y="0" width="960" height="380">
+      <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="3" seed="3" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="3"/>
+    </filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#374151"/>
+    </marker>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700');
+      text { font-family: 'Caveat', 'Comic Sans MS', cursive; fill: #1f2937; }
+      .title { font-size: 24px; font-weight: 700; }
+      .note { font-size: 18px; }
+      .box { stroke: #374151; stroke-width: 2.2; filter: url(#wobble); }
+      .flow { stroke: #374151; stroke-width: 2.4; fill: none; marker-end: url(#arrow); filter: url(#wobble); }
+      .read { stroke: #6b7280; stroke-width: 2; stroke-dasharray: 7 6; fill: none; marker-end: url(#arrow); filter: url(#wobble); }
+    </style>
+  </defs>
+  <rect width="960" height="380" fill="#ffffff"/>
+
+  <rect class="box" x="30" y="60" width="140" height="90" rx="14" fill="#fde2e4"/>
+  <text class="title" x="100" y="98" text-anchor="middle">orders.csv</text>
+  <text class="note" x="100" y="126" text-anchor="middle">200 rows</text>
+
+  <rect class="box" x="220" y="60" width="180" height="90" rx="14" fill="#e2ece9"/>
+  <text class="title" x="310" y="98" text-anchor="middle">MySQL 26.7.0</text>
+  <text class="note" x="310" y="126" text-anchor="middle">sales.orders, binlog ROW</text>
+
+  <rect class="box" x="450" y="60" width="200" height="90" rx="14" fill="#fff1c1"/>
+  <text class="title" x="550" y="98" text-anchor="middle">Debezium 3.6.3</text>
+  <text class="note" x="550" y="126" text-anchor="middle">Connect, MySQL connector</text>
+
+  <rect class="box" x="700" y="60" width="220" height="90" rx="14" fill="#ffe8cc"/>
+  <text class="title" x="810" y="98" text-anchor="middle">Kafka 4.3.1</text>
+  <text class="note" x="810" y="126" text-anchor="middle">topic i19.sales.orders</text>
+
+  <rect class="box" x="680" y="230" width="250" height="110" rx="14" fill="#dbe7ff"/>
+  <text class="title" x="805" y="266" text-anchor="middle">Java 25 CdcConsumer</text>
+  <text class="note" x="805" y="294" text-anchor="middle">r/c/u upsert, d delete</text>
+  <text class="note" x="805" y="318" text-anchor="middle">recompute touched categories</text>
+
+  <rect class="box" x="370" y="235" width="250" height="100" rx="14" fill="#e9dcf7"/>
+  <text class="title" x="495" y="271" text-anchor="middle">Cassandra 5.0.9</text>
+  <text class="note" x="495" y="298" text-anchor="middle">sales.orders</text>
+  <text class="note" x="495" y="320" text-anchor="middle">sales.revenue_by_category</text>
+
+  <rect class="box" x="40" y="235" width="250" height="100" rx="14" fill="#d8f3dc"/>
+  <text class="title" x="165" y="271" text-anchor="middle">UI + JSON API</text>
+  <text class="note" x="165" y="298" text-anchor="middle">/api/compare, /api/events</text>
+  <text class="note" x="165" y="320" text-anchor="middle">MySQL vs Cassandra</text>
+
+  <path class="flow" d="M170,105 L216,105"/>
+  <path class="flow" d="M400,105 L446,105"/>
+  <text class="note" x="423" y="92" text-anchor="middle">binlog</text>
+  <path class="flow" d="M650,105 L696,105"/>
+  <path class="flow" d="M810,150 L808,226"/>
+  <text class="note" x="822" y="195">poll + commit</text>
+  <path class="flow" d="M680,285 L624,285"/>
+  <path class="read" d="M370,285 L294,285"/>
+  <path class="read" d="M290,150 L200,231"/>
+  <text class="note" x="160" y="190">GROUP BY</text>
+</svg>

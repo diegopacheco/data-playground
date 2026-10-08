@@ -1,0 +1,22 @@
+{
+  "connector.class": "io.debezium.connector.mysql.MySqlConnector",
+  "tasks.max": "1",
+  "database.hostname": "i19-mysql",
+  "database.port": "3306",
+  "database.user": "debezium",
+  "database.password": "debezium",
+  "database.server.id": "21901",
+  "topic.prefix": "i19",
+  "database.include.list": "sales",
+  "table.include.list": "sales.orders",
+  "snapshot.mode": "initial",
+  "include.schema.changes": "false",
+  "tombstones.on.delete": "false",
+  "decimal.handling.mode": "string",
+  "schema.history.internal.kafka.bootstrap.servers": "i19-kafka:29092",
+  "schema.history.internal.kafka.topic": "i19.schema-history",
+  "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+  "key.converter.schemas.enable": "false",
+  "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+  "value.converter.schemas.enable": "false"
+}

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MySQL to Cassandra CDC</title>
+<style>
+  :root { --bg: #f6f7fb; --card: #ffffff; --ink: #1f2937; --muted: #6b7280; --line: #e5e7eb; --mysql: #2f6fb3; --cass: #7a4fc2; --ok: #15803d; --bad: #b91c1c; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--ink); }
+  header { padding: 20px 28px; background: var(--card); border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+  h1 { margin: 0; font-size: 20px; }
+  .sub { color: var(--muted); font-size: 13px; margin-top: 4px; }
+  main { padding: 20px 28px; display: grid; gap: 20px; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); }
+  @media (max-width: 960px) { main { grid-template-columns: 1fr; } }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; }
+  h2 { margin: 0 0 12px; font-size: 15px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; font-variant-numeric: tabular-nums; }
+  th, td { padding: 7px 8px; border-bottom: 1px solid var(--line); text-align: right; }
+  th:first-child, td:first-child { text-align: left; }
+  th.m { color: var(--mysql); } th.c { color: var(--cass); }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+  .ok { background: #dcfce7; color: var(--ok); } .bad { background: #fee2e2; color: var(--bad); }
+  .stats { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+  .stat { border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; min-width: 110px; }
+  .stat b { display: block; font-size: 18px; }
+  .stat span { color: var(--muted); font-size: 12px; }
+  button { border: 1px solid var(--line); background: #fff; border-radius: 8px; padding: 8px 14px; font-size: 13px; cursor: pointer; }
+  button:hover { border-color: var(--mysql); color: var(--mysql); }
+  .actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  #result { color: var(--muted); font-size: 13px; }
+  .events { max-height: 520px; overflow: auto; font-size: 12.5px; }
+  .ev { display: grid; grid-template-columns: 28px 60px 1fr; gap: 8px; padding: 6px 0; border-bottom: 1px solid var(--line); align-items: start; }
+  .op { font-weight: 700; text-align: center; border-radius: 6px; padding: 1px 0; }
+  .op-r { background: #e0e7ff; color: #3730a3; } .op-c { background: #dcfce7; color: #166534; } .op-u { background: #fef3c7; color: #92400e; } .op-d { background: #fee2e2; color: #991b1b; }
+  .muted { color: var(--muted); }
+  svg text { font-size: 11px; fill: var(--ink); }
+  .legend { display: flex; gap: 14px; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+  .sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>MySQL &rarr; Debezium &rarr; Kafka &rarr; Java &rarr; Cassandra</h1>
+    <div class="sub">Per-category aggregates computed in MySQL (GROUP BY) next to the Cassandra table maintained from change events</div>
+  </div>
+  <div class="actions">
+    <button data-op="insert">INSERT in MySQL</button>
+    <button data-op="update">UPDATE in MySQL</button>
+    <button data-op="delete">DELETE in MySQL</button>
+    <span id="result"></span>
+  </div>
+</header>
+<main>
+  <section class="card">
+    <h2>Revenue by category: MySQL vs Cassandra</h2>
+    <div class="stats" id="stats"></div>
+    <table>
+      <thead>
+        <tr><th>category</th><th class="m">mysql orders</th><th class="c">cass orders</th><th class="m">mysql qty</th><th class="c">cass qty</th><th class="m">mysql revenue</th><th class="c">cass revenue</th><th>match</th></tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+    <h2 style="margin-top:18px">Revenue side by side</h2>
+    <div class="legend"><span><i class="sw" style="background:var(--mysql)"></i>MySQL</span><span><i class="sw" style="background:var(--cass)"></i>Cassandra</span></div>
+    <svg id="chart" width="100%" height="220" viewBox="0 0 640 220" preserveAspectRatio="none"></svg>
+  </section>
+  <section class="card">
+    <h2>Recent change events</h2>
+    <div class="stats" id="counts"></div>
+    <div class="events" id="events"></div>
+  </section>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const money = v => Number(v).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+function stat(value, label) {
+  return `<div class="stat"><b>${esc(value)}</b><span>${esc(label)}</span></div>`;
+}
+
+function renderCompare(d) {
+  $('stats').innerHTML = stat(d.mysqlRows, 'MySQL rows') + stat(d.cassandraRows, 'Cassandra rows') +
+    `<div class="stat"><b><span class="badge ${d.allMatch ? 'ok' : 'bad'}">${d.allMatch ? 'IN SYNC' : 'CATCHING UP'}</span></b><span>aggregates</span></div>`;
+  $('rows').innerHTML = d.categories.map(r => `<tr><td>${esc(r.category)}</td>
+    <td>${r.mysql.orders}</td><td>${r.cassandra.orders}</td>
+    <td>${r.mysql.quantity}</td><td>${r.cassandra.quantity}</td>
+    <td>${money(r.mysql.revenue)}</td><td>${money(r.cassandra.revenue)}</td>
+    <td><span class="badge ${r.match ? 'ok' : 'bad'}">${r.match ? 'equal' : 'diff'}</span></td></tr>`).join('');
+  renderChart(d.categories);
+}
+
+function renderChart(rows) {
+  const w = 640, h = 220, pad = 30, n = Math.max(rows.length, 1);
+  const max = Math.max(1, ...rows.flatMap(r => [Number(r.mysql.revenue), Number(r.cassandra.revenue)]));
+  const slot = (w - pad) / n, bw = Math.min(34, slot / 3);
+  let out = `<line x1="${pad}" y1="${h - pad}" x2="${w}" y2="${h - pad}" stroke="#d1d5db"/>`;
+  rows.forEach((r, i) => {
+    const x = pad + i * slot + slot / 2;
+    [[r.mysql.revenue, 'var(--mysql)', -bw - 2], [r.cassandra.revenue, 'var(--cass)', 2]].forEach(([v, color, dx]) => {
+      const bh = (h - pad - 14) * Number(v) / max;
+      out += `<rect x="${x + dx}" y="${h - pad - bh}" width="${bw}" height="${bh}" rx="3" fill="${color}"><title>${esc(r.category)} ${money(v)}</title></rect>`;
+    });
+    out += `<text x="${x}" y="${h - pad + 16}" text-anchor="middle">${esc(r.category)}</text>`;
+  });
+  $('chart').innerHTML = out;
+}
+
+function renderEvents(d) {
+  const names = { r: 'snapshot', c: 'create', u: 'update', d: 'delete' };
+  $('counts').innerHTML = ['r', 'c', 'u', 'd'].map(k => stat(d.counts[k] || 0, names[k])).join('');
+  $('events').innerHTML = d.recent.map(e => `<div class="ev"><span class="op op-${esc(e.op)}">${esc(e.op)}</span>
+    <span>#${e.orderId}</span><span>${esc(e.detail)}<br><span class="muted">lag ${Math.max(0, e.appliedMs - e.sourceMs)} ms</span></span></div>`).join('') ||
+    '<div class="muted">no events yet</div>';
+}
+
+async function refresh() {
+  try {
+    const [c, e] = await Promise.all([fetch('/api/compare').then(r => r.json()), fetch('/api/events').then(r => r.json())]);
+    if (c.categories) renderCompare(c);
+    if (e.recent) renderEvents(e);
+  } catch (err) {
+    $('result').textContent = 'refresh failed: ' + err;
+  }
+}
+
+document.querySelectorAll('button[data-op]').forEach(b => b.addEventListener('click', async () => {
+  const r = await fetch('/api/mysql/' + b.dataset.op, { method: 'POST' }).then(x => x.json());
+  $('result').textContent = r.result || r.error;
+  refresh();
+}));
+
+refresh();
+setInterval(refresh, 1500);
+</script>
+</body>
+</html>
