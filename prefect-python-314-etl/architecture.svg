@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 395" width="900" height="395">
+<defs>
+<style>@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&amp;display=swap'); text { font-family: 'Caveat', 'Comic Sans MS', cursive; fill: #2d2d2d; }</style>
+<filter id="wobble"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="3" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="3"/></filter>
+<marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2d2d2d"/></marker>
+</defs>
+<rect width="900" height="395" fill="#ffffff"/>
+<g filter="url(#wobble)" stroke="#2d2d2d" stroke-width="2">
+<rect x="20" y="15" width="180" height="55" rx="10" fill="#e9ecef"/>
+<rect x="320" y="10" width="240" height="65" rx="10" fill="#e9ecef"/>
+<rect x="190" y="110" width="470" height="170" rx="14" fill="#f3f0ff" stroke-dasharray="8 6"/>
+<rect x="20" y="165" width="130" height="80" rx="10" fill="#fff4c2"/>
+<rect x="210" y="165" width="130" height="80" rx="10" fill="#d8f3dc"/>
+<rect x="360" y="165" width="130" height="80" rx="10" fill="#d8f3dc"/>
+<rect x="510" y="165" width="130" height="80" rx="10" fill="#d8f3dc"/>
+<rect x="210" y="310" width="130" height="60" rx="10" fill="#fff4c2"/>
+<rect x="360" y="310" width="130" height="60" rx="10" fill="#fff4c2"/>
+<rect x="710" y="165" width="160" height="80" rx="10" fill="#cfe8ff"/>
+<rect x="710" y="310" width="160" height="60" rx="10" fill="#ffd6e0"/>
+<path d="M200,42 L318,42" fill="none" marker-end="url(#arrow)"/>
+<path d="M440,108 L440,77" fill="none" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+<path d="M150,205 L208,205" fill="none" marker-end="url(#arrow)"/>
+<path d="M340,205 L358,205" fill="none" marker-end="url(#arrow)"/>
+<path d="M490,205 L508,205" fill="none" marker-end="url(#arrow)"/>
+<path d="M640,205 L708,205" fill="none" marker-end="url(#arrow)"/>
+<path d="M275,245 L275,308" fill="none" stroke-dasharray="5 4" marker-end="url(#arrow)"/>
+<path d="M425,247 L425,308" fill="none" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+<path d="M790,245 L790,308" fill="none" marker-end="url(#arrow)"/>
+</g>
+<text x="110" y="40" font-size="20" text-anchor="middle" font-weight="700">prefect deployment run</text>
+<text x="110" y="60" font-size="16" text-anchor="middle">revenue-etl/hourly</text>
+<text x="440" y="38" font-size="21" text-anchor="middle" font-weight="700">Prefect server 3.8.6</text>
+<text x="440" y="60" font-size="16" text-anchor="middle">API + UI, cron schedule, states</text>
+<text x="450" y="97" font-size="15">polls runs, reports states</text>
+<text x="425" y="140" font-size="18" text-anchor="middle" font-weight="700">serve.py: revenue_etl.serve(cron) on Python 3.14</text>
+<text x="85" y="200" font-size="20" text-anchor="middle" font-weight="700">orders.csv</text>
+<text x="85" y="222" font-size="16" text-anchor="middle">200 rows</text>
+<text x="275" y="198" font-size="20" text-anchor="middle" font-weight="700">extract</text>
+<text x="275" y="220" font-size="16" text-anchor="middle">retries=2</text>
+<text x="275" y="238" font-size="15" text-anchor="middle">fails on attempt 1</text>
+<text x="425" y="198" font-size="20" text-anchor="middle" font-weight="700">transform</text>
+<text x="425" y="220" font-size="16" text-anchor="middle">clean + aggregate</text>
+<text x="425" y="238" font-size="15" text-anchor="middle">cache_policy=INPUTS</text>
+<text x="575" y="198" font-size="20" text-anchor="middle" font-weight="700">load</text>
+<text x="575" y="220" font-size="16" text-anchor="middle">upsert rows</text>
+<text x="275" y="338" font-size="18" text-anchor="middle" font-weight="700">marker file</text>
+<text x="275" y="358" font-size="15" text-anchor="middle">one per flow run</text>
+<text x="425" y="338" font-size="18" text-anchor="middle" font-weight="700">result cache</text>
+<text x="425" y="358" font-size="15" text-anchor="middle">key = hash(rows)</text>
+<text x="790" y="200" font-size="20" text-anchor="middle" font-weight="700">Postgres 18.6</text>
+<text x="790" y="222" font-size="16" text-anchor="middle">revenue_by_category</text>
+<text x="790" y="338" font-size="18" text-anchor="middle" font-weight="700">UI server</text>
+<text x="790" y="358" font-size="15" text-anchor="middle">Postgres + Prefect API</text>
+</svg>

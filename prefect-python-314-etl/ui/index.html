@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prefect Revenue ETL</title>
+<style>
+:root{--bg:#f7f8fb;--card:#fff;--ink:#1d2433;--muted:#667085;--line:#e4e7ec;--accent:#2e5bff;--ok:#12805c;--warn:#b54708;--cache:#6941c6}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{background:var(--card);border-bottom:1px solid var(--line);padding:18px 24px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+h1{font-size:20px;margin:0}
+header p{margin:2px 0 0;color:var(--muted);font-size:13px}
+a.btn{background:var(--accent);color:#fff;text-decoration:none;padding:8px 14px;border-radius:8px;font-weight:600;font-size:14px}
+main{max-width:1100px;margin:0 auto;padding:20px 16px;display:grid;gap:20px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px}
+.card h2{font-size:16px;margin:0 0 12px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+.kpi b{display:block;font-size:22px}
+.kpi span{color:var(--muted);font-size:13px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:8px;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font-weight:600}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+.wrap{overflow-x:auto}
+.pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:600;margin:2px 4px 2px 0;border:1px solid currentColor}
+.Completed{color:var(--ok)}.Cached{color:var(--cache)}.Failed,.Crashed{color:#b42318}.Running,.Retrying,.AwaitingRetry{color:var(--warn)}
+svg text{font-family:inherit}
+</style>
+</head>
+<body>
+<header>
+<div><h1>Prefect Revenue ETL</h1><p>orders.csv -> extract -> transform -> load -> Postgres revenue_by_category</p></div>
+<a class="btn" id="prefect" href="#" target="_blank" rel="noopener">Open Prefect UI</a>
+</header>
+<main>
+<section class="kpis" id="kpis"></section>
+<section class="card"><h2>Revenue by category</h2><div id="chart"></div></section>
+<section class="card"><h2>revenue_by_category (Postgres)</h2><div class="wrap"><table id="rev"></table></div></section>
+<section class="card"><h2>Recent flow runs (task state and attempts)</h2><div class="wrap"><table id="runs"></table></div></section>
+</main>
+<script>
+const money = v => Number(v).toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2});
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+
+function kpis(rows) {
+  const total = rows.reduce((a, r) => a + Number(r.revenue), 0);
+  const orders = rows.reduce((a, r) => a + r.orders, 0);
+  const units = rows.reduce((a, r) => a + r.units, 0);
+  document.getElementById("kpis").innerHTML = [["Total revenue", money(total)], ["Orders", orders], ["Units", units], ["Categories", rows.length]]
+    .map(([k, v]) => `<div class="kpi"><b>${v}</b><span>${k}</span></div>`).join("");
+}
+
+function chart(rows) {
+  const max = Math.max(1, ...rows.map(r => Number(r.revenue)));
+  const h = 30, w = 640, lw = 110;
+  const bars = rows.map((r, i) => {
+    const bw = (w - lw - 110) * Number(r.revenue) / max;
+    return `<text x="0" y="${i * h + 19}" font-size="13">${esc(r.category)}</text>
+<rect x="${lw}" y="${i * h + 5}" width="${bw}" height="20" rx="4" fill="#2e5bff"/>
+<text x="${lw + bw + 8}" y="${i * h + 19}" font-size="13" fill="#667085">${money(r.revenue)}</text>`;
+  }).join("");
+  document.getElementById("chart").innerHTML = `<svg viewBox="0 0 ${w} ${rows.length * h + 6}" width="100%" role="img" aria-label="revenue per category">${bars}</svg>`;
+}
+
+function revenue(rows) {
+  document.getElementById("rev").innerHTML = `<tr><th>category</th><th class="n">orders</th><th class="n">units</th><th class="n">revenue</th><th>loaded_at</th></tr>` +
+    rows.map(r => `<tr><td>${esc(r.category)}</td><td class="n">${r.orders}</td><td class="n">${r.units}</td><td class="n">${money(r.revenue)}</td><td>${esc(r.loaded_at.replace("T", " ").slice(0, 19))}</td></tr>`).join("");
+}
+
+function runs(list) {
+  document.getElementById("runs").innerHTML = `<tr><th>flow run</th><th>started</th><th>state</th><th>tasks (state x attempts)</th></tr>` +
+    list.map(f => `<tr><td>${esc(f.name)}</td><td>${esc((f.start_time || "").replace("T", " ").slice(0, 19))}</td><td><span class="pill ${esc(f.state)}">${esc(f.state)}</span></td><td>${
+      f.tasks.map(t => `<span class="pill ${esc(t.state)}">${esc(t.task)}: ${esc(t.state)} x${t.run_count}</span>`).join("")}</td></tr>`).join("");
+}
+
+async function load() {
+  const get = u => fetch(u).then(r => r.json());
+  const [cfg, rows, list] = await Promise.all([get("/api/config"), get("/api/revenue"), get("/api/runs")]);
+  document.getElementById("prefect").href = cfg.prefect_ui;
+  kpis(rows); chart(rows); revenue(rows); runs(list);
+}
+load();
+</script>
+</body>
+</html>
