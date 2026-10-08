@@ -1,0 +1,71 @@
+debezium-kafka-cassandra/scripts/common.sh
+  s_9121753c4a3d76::t_cb8486346f46b8 1-191
+debezium-kafka-cassandra/src/main/java/sales/ChangeLog.java
+  s_9121753c4a3d76::t_f50571b9f30790 1-34
+debezium-kafka-cassandra/src/main/java/sales/App.java
+  s_9121753c4a3d76::t_e345c7ff2533a1 1-111
+debezium-kafka-cassandra/pom.xml
+  s_9121753c4a3d76::t_9319dab61be42c 1-71
+debezium-kafka-cassandra/src/main/java/sales/CassandraStore.java
+  s_9121753c4a3d76::t_ecdfc837763e0e 1-86
+debezium-kafka-cassandra/src/main/java/sales/Totals.java
+  s_9121753c4a3d76::t_ed717235a65ad7 1-6
+debezium-kafka-cassandra/podman-compose.yml
+  s_9121753c4a3d76::t_eef1e3283a4841 1-77
+debezium-kafka-cassandra/README.md
+  s_9121753c4a3d76::t_8bae71594d9325 1-138
+debezium-kafka-cassandra/architecture.svg
+  s_9121753c4a3d76::t_a9f179bfb043de 32
+  s_9121753c4a3d76::t_630cdd9bb74a9a 1-31,33-63
+debezium-kafka-cassandra/.gitignore
+  s_9121753c4a3d76::t_5b2284c4b22823 1-2
+debezium-kafka-cassandra/scripts/status.sh
+  s_9121753c4a3d76::t_a973e45470b17d 1-24
+debezium-kafka-cassandra/src/main/java/sales/CdcConsumer.java
+  s_9121753c4a3d76::t_556068c6179882 1-89
+debezium-kafka-cassandra/scripts/sql-console.sh
+  s_9121753c4a3d76::t_e3851229cf70e7 1-15
+debezium-kafka-cassandra/mysql/init.sql
+  s_9121753c4a3d76::t_fda225c5e586df 1-17
+debezium-kafka-cassandra/src/main/java/sales/Settings.java
+  s_9121753c4a3d76::t_e07cf35301e8b8 1-20
+debezium-kafka-cassandra/scripts/test-all.sh
+  s_9121753c4a3d76::t_16829cd8bacf9f 1-86
+debezium-kafka-cassandra/scripts/setup.sh
+  s_9121753c4a3d76::t_417e2a07d679a9 1-16
+debezium-kafka-cassandra/scripts/ports.env
+  s_9121753c4a3d76::t_c64f6f32eef1a7 1-5
+debezium-kafka-cassandra/scripts/ui.sh
+  s_9121753c4a3d76::t_cf4a9f7be23eec 1-6
+debezium-kafka-cassandra/scripts/start-all.sh
+  s_9121753c4a3d76::t_cbc978a2d1fec8 1-39
+debezium-kafka-cassandra/src/main/java/sales/MySqlStore.java
+  s_9121753c4a3d76::t_abf5484dfa5a6e 15
+  s_9121753c4a3d76::t_124e4dff4ed675 1-14,16-36,38-50,57-58,60-65,69-87
+  s_9121753c4a3d76::t_56fbf173cde6e5 51-56,59,66-68
+  s_9121753c4a3d76::t_b06bacaa84b5c6 37
+debezium-kafka-cassandra/src/main/resources/index.html
+  s_9121753c4a3d76::t_ed991abfaaf297 1-139
+debezium-kafka-cassandra/connect/mysql-orders.json
+  s_9121753c4a3d76::t_a68d164b1962ed 1-22
+debezium-kafka-cassandra/scripts/stop-all.sh
+  s_9121753c4a3d76::t_9deea1ee15c25a 1-17
+debezium-kafka-cassandra/data/orders.csv
+  s_9121753c4a3d76::t_2e6ba992a22049 1-201
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4b2af1bf44d45145927fb36f1c0d8e9e6de7707a",
+  "prompts": {},
+  "sessions": {
+    "s_9121753c4a3d76": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "39b421dc-22e8-4dc0-93df-749df3c5cb41",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "diegopacheco <diego.pacheco.it@gmail.com>"
+    }
+  }
+}
