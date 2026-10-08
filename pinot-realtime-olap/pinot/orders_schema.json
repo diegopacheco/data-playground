@@ -1,0 +1,18 @@
+{
+  "schemaName": "orders",
+  "enableColumnBasedNullHandling": false,
+  "dimensionFieldSpecs": [
+    {"name": "order_id", "dataType": "INT"},
+    {"name": "customer", "dataType": "STRING"},
+    {"name": "product", "dataType": "STRING"},
+    {"name": "category", "dataType": "STRING"}
+  ],
+  "metricFieldSpecs": [
+    {"name": "quantity", "dataType": "INT"},
+    {"name": "price", "dataType": "DOUBLE"},
+    {"name": "revenue", "dataType": "DOUBLE"}
+  ],
+  "dateTimeFieldSpecs": [
+    {"name": "ts", "dataType": "TIMESTAMP", "format": "1:MILLISECONDS:TIMESTAMP", "granularity": "1:MILLISECONDS"}
+  ]
+}

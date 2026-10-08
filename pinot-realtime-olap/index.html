@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pinot Realtime Orders</title>
+<style>
+  :root { --bg: #f6f7fb; --card: #ffffff; --ink: #1d2433; --muted: #6b7385; --line: #e3e6ee; --accent: #c2410c; --accent2: #2563eb; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--ink); }
+  header { padding: 20px 28px; background: var(--card); border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+  h1 { margin: 0; font-size: 20px; }
+  header p { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+  header a { color: #fff; background: var(--accent); padding: 8px 14px; border-radius: 6px; text-decoration: none; font-size: 14px; }
+  main { padding: 24px 28px; display: grid; gap: 20px; grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 1400px; margin: 0 auto; }
+  .kpis { grid-column: 1 / -1; display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+  .kpi, section { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; }
+  .kpi span { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+  .kpi b { display: block; font-size: 24px; margin-top: 6px; }
+  section h2 { margin: 0 0 12px; font-size: 16px; }
+  section.wide { grid-column: 1 / -1; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--line); }
+  th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; }
+  td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; }
+  code { display: block; background: #f1f3f8; border-radius: 6px; padding: 8px 10px; font-size: 12px; color: #374151; white-space: pre-wrap; margin-top: 12px; }
+  .meta { color: var(--muted); font-size: 12px; margin-top: 6px; }
+  svg text { font-size: 11px; fill: var(--muted); }
+  .error { color: #b91c1c; }
+  @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Apache Pinot realtime orders</h1>
+    <p>Kafka topic <b>orders</b> consumed by the REALTIME table <b>orders</b>, queried through the Pinot broker. Refreshes every 5 seconds. <span id="updated"></span></p>
+  </div>
+  <a id="console" href="#" target="_blank" rel="noopener">Open Pinot console</a>
+</header>
+<main>
+  <div class="kpis" id="kpis"></div>
+  <section>
+    <h2>Revenue per category</h2>
+    <div id="categoryChart"></div>
+    <table id="categoryTable"></table>
+    <div class="meta" id="categoryMeta"></div>
+    <code id="categorySql"></code>
+  </section>
+  <section>
+    <h2>Top 5 customers by revenue</h2>
+    <table id="customerTable"></table>
+    <div class="meta" id="customerMeta"></div>
+    <code id="customerSql"></code>
+  </section>
+  <section class="wide">
+    <h2>Daily revenue</h2>
+    <div id="dailyChart"></div>
+    <div class="meta" id="dailyMeta"></div>
+    <code id="dailySql"></code>
+  </section>
+</main>
+<script>
+const money = v => "$" + v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const day = ms => new Date(ms).toISOString().slice(0, 10);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+async function get(path) {
+  const res = await fetch(path);
+  const body = await res.json();
+  if (!res.ok) throw new Error(body.error || res.statusText);
+  return body;
+}
+
+function meta(stats) {
+  return `docs scanned ${stats.numDocsScanned} of ${stats.totalDocs} · segments queried ${stats.numSegmentsQueried} · processed ${stats.numSegmentsProcessed} · ${stats.timeUsedMs} ms`;
+}
+
+function table(id, headers, rows) {
+  const head = headers.map(h => `<th class="${h[2] || ""}">${h[0]}</th>`).join("");
+  const body = rows.map(r => "<tr>" + headers.map(h => `<td class="${h[2] || ""}">${h[1](r)}</td>`).join("") + "</tr>").join("");
+  document.getElementById(id).innerHTML = `<thead><tr>${head}</tr></thead><tbody>${body}</tbody>`;
+}
+
+function hbars(id, rows) {
+  const max = Math.max(...rows.map(r => r.revenue), 1);
+  const h = 26, w = 400, left = 80, right = 70;
+  const bars = rows.map((r, i) => {
+    const len = (w - left - right) * r.revenue / max;
+    return `<text x="0" y="${i * h + 17}">${esc(r.category)}</text>
+      <rect x="${left}" y="${i * h + 5}" width="${len}" height="16" rx="3" fill="var(--accent)"></rect>
+      <text x="${left + len + 6}" y="${i * h + 17}">${money(r.revenue)}</text>`;
+  }).join("");
+  document.getElementById(id).innerHTML = `<svg viewBox="0 0 ${w} ${rows.length * h + 6}" width="100%">${bars}</svg>`;
+}
+
+function vbars(id, rows) {
+  const max = Math.max(...rows.map(r => r.revenue), 1);
+  const w = 1200, h = 240, pad = 30, step = (w - pad * 2) / Math.max(rows.length, 1);
+  const bars = rows.map((r, i) => {
+    const bh = (h - 60) * r.revenue / max, x = pad + i * step + step * 0.15;
+    return `<rect x="${x}" y="${h - 30 - bh}" width="${step * 0.7}" height="${bh}" rx="3" fill="var(--accent2)"></rect>
+      <text x="${x + step * 0.35}" y="${h - 36 - bh}" text-anchor="middle">${money(r.revenue)}</text>
+      <text x="${x + step * 0.35}" y="${h - 12}" text-anchor="middle">${day(r.day).slice(5)} (${r.orders})</text>`;
+  }).join("");
+  document.getElementById(id).innerHTML = `<svg viewBox="0 0 ${w} ${h}" width="100%">${bars}</svg>`;
+}
+
+async function refresh() {
+  try {
+    const [stats, cats, custs, daily] = await Promise.all(["/api/stats", "/api/categories", "/api/customers", "/api/daily"].map(get));
+    const s = stats.rows[0];
+    document.getElementById("kpis").innerHTML = [
+      ["Orders", s.orders], ["Quantity", s.quantity], ["Revenue", money(s.revenue)], ["Customers", s.customers],
+      ["First order", day(s.first_ts)], ["Last order", day(s.last_ts)]
+    ].map(k => `<div class="kpi"><span>${k[0]}</span><b>${k[1]}</b></div>`).join("");
+    hbars("categoryChart", cats.rows);
+    table("categoryTable", [["Category", r => esc(r.category)], ["Orders", r => r.orders, "n"], ["Quantity", r => r.quantity, "n"], ["Revenue", r => money(r.revenue), "n"]], cats.rows);
+    table("customerTable", [["#", (r) => custs.rows.indexOf(r) + 1], ["Customer", r => esc(r.customer)], ["Orders", r => r.orders, "n"], ["Quantity", r => r.quantity, "n"], ["Revenue", r => money(r.revenue), "n"]], custs.rows);
+    vbars("dailyChart", daily.rows);
+    [["category", cats], ["customer", custs], ["daily", daily]].forEach(([k, v]) => {
+      document.getElementById(k + "Meta").textContent = meta(v.stats);
+      document.getElementById(k + "Sql").textContent = v.sql;
+    });
+    document.getElementById("updated").textContent = "Updated " + new Date().toLocaleTimeString();
+  } catch (e) {
+    document.getElementById("updated").innerHTML = `<span class="error">${esc(e.message)}</span>`;
+  }
+}
+
+get("/api/config").then(c => document.getElementById("console").href = c.console);
+refresh();
+setInterval(refresh, 5000);
+</script>
+</body>
+</html>

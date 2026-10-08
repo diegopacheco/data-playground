@@ -1,0 +1,41 @@
+{
+  "tableName": "orders",
+  "tableType": "REALTIME",
+  "segmentsConfig": {
+    "timeColumnName": "ts",
+    "schemaName": "orders",
+    "replication": "1",
+    "retentionTimeUnit": "DAYS",
+    "retentionTimeValue": "3650"
+  },
+  "tenants": {},
+  "tableIndexConfig": {
+    "loadMode": "MMAP",
+    "invertedIndexColumns": ["category"],
+    "starTreeIndexConfigs": [
+      {
+        "dimensionsSplitOrder": ["category", "customer"],
+        "skipStarNodeCreationForDimensions": [],
+        "functionColumnPairs": ["COUNT__*", "SUM__quantity", "SUM__revenue"],
+        "maxLeafRecords": 10
+      }
+    ],
+    "streamConfigs": {
+      "streamType": "kafka",
+      "stream.kafka.topic.name": "orders",
+      "stream.kafka.broker.list": "i31-kafka:29092",
+      "stream.kafka.consumer.type": "lowlevel",
+      "stream.kafka.consumer.prop.auto.offset.reset": "smallest",
+      "stream.kafka.consumer.factory.class.name": "org.apache.pinot.plugin.stream.kafka30.KafkaConsumerFactory",
+      "stream.kafka.decoder.class.name": "org.apache.pinot.plugin.inputformat.json.JSONMessageDecoder",
+      "realtime.segment.flush.threshold.rows": "100",
+      "realtime.segment.flush.threshold.time": "1h"
+    }
+  },
+  "ingestionConfig": {
+    "transformConfigs": [
+      {"columnName": "revenue", "transformFunction": "times(quantity, price)"}
+    ]
+  },
+  "metadata": {}
+}
