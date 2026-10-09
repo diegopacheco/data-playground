@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 940 400" width="940" height="400">
+<defs>
+<style>@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700');text{font-family:Caveat,'Comic Sans MS',cursive;fill:#1d2330}.t{font-size:24px;font-weight:700}.s{font-size:18px}</style>
+<filter id="w"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="3" seed="4"/><feDisplacementMap in="SourceGraphic" scale="3"/></filter>
+<marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#1d2330"/></marker>
+</defs>
+<rect width="940" height="400" fill="#ffffff"/>
+<g filter="url(#w)" stroke="#1d2330" stroke-width="2">
+<rect x="30" y="60" width="180" height="110" rx="12" fill="#fff3c4"/>
+<rect x="290" y="40" width="260" height="150" rx="12" fill="#d7ecff"/>
+<rect x="640" y="40" width="270" height="150" rx="12" fill="#dff5e1"/>
+<rect x="290" y="250" width="260" height="120" rx="12" fill="#f3e1ff"/>
+<rect x="640" y="250" width="270" height="120" rx="12" fill="#ffe0d6"/>
+<path d="M210 115 L286 115" fill="none" marker-end="url(#a)"/>
+<path d="M550 115 L636 115" fill="none" marker-end="url(#a)"/>
+<path d="M775 190 L775 246" fill="none" marker-end="url(#a)" stroke-dasharray="6 5"/>
+<path d="M636 310 L554 310" fill="none" marker-end="url(#a)"/></g>
+<text x="120" y="105" text-anchor="middle" class="t">data/</text>
+<text x="120" y="132" text-anchor="middle" class="s">orders.csv</text>
+<text x="120" y="154" text-anchor="middle" class="s">updates.csv</text>
+<text x="420" y="75" text-anchor="middle" class="t">i5-pipeline</text>
+<text x="420" y="102" text-anchor="middle" class="s">Python 3.14 + deltalake</text>
+<text x="420" y="126" text-anchor="middle" class="s">write, append, merge</text>
+<text x="420" y="150" text-anchor="middle" class="s">time travel, optimize, vacuum</text>
+<text x="420" y="174" text-anchor="middle" class="s">no Spark, no JVM</text>
+<text x="775" y="75" text-anchor="middle" class="t">i5-minio (S3)</text>
+<text x="775" y="102" text-anchor="middle" class="s">s3://lake/orders</text>
+<text x="775" y="126" text-anchor="middle" class="s">_delta_log/*.json</text>
+<text x="775" y="150" text-anchor="middle" class="s">category=*/part-*.parquet</text>
+<text x="420" y="285" text-anchor="middle" class="t">browser</text>
+<text x="420" y="312" text-anchor="middle" class="s">index.html</text>
+<text x="420" y="336" text-anchor="middle" class="s">versions + revenue matrix</text>
+<text x="775" y="285" text-anchor="middle" class="t">i5-ui</text>
+<text x="775" y="312" text-anchor="middle" class="s">http.server + pyarrow</text>
+<text x="775" y="336" text-anchor="middle" class="s">/api/versions /api/revenue</text>
+<text x="787" y="224" class="s">reads each version</text>
+<text x="560" y="300" class="s">JSON</text>
+</svg>

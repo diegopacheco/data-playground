@@ -1,0 +1,12 @@
+order_id,customer,product,category,quantity,price,ts
+1003,Thomas Clark,Coffee Maker,home,1,64.90,2026-01-05T13:55:00Z
+1010,Carla Mendes,The Pragmatic Programmer,books,1,32.49,2026-01-06T00:47:00Z
+1025,Quinn Taylor,Dumbbell Set,sports,1,139.99,2026-01-07T01:34:00Z
+1050,Sofia Rossi,Soccer Ball,sports,1,19.50,2026-01-08T18:14:00Z
+1075,Grace Lee,Smartwatch,electronics,1,219.00,2026-01-10T10:23:00Z
+1120,Karen White,Denim Jeans,clothing,1,59.95,2026-01-13T10:33:00Z
+1160,Quinn Taylor,Coffee Maker,home,2,49.99,2026-01-16T03:17:00Z
+1190,Lucas Pereira,Plush Bear,toys,1,13.25,2026-01-18T04:19:00Z
+1201,Emma Brown,Mechanical Keyboard,electronics,1,129.90,2026-01-19T09:10:00Z
+1202,Noah Wilson,Yoga Mat,sports,2,24.75,2026-01-19T10:40:00Z
+1203,Maria Garcia,Clean Code,books,1,41.30,2026-01-19T12:05:00Z

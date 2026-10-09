@@ -1,0 +1,52 @@
+services:
+  i5-minio:
+    image: docker.io/pgsty/minio:RELEASE.2026-08-04T00-00-00Z
+    container_name: i5-minio
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: i5admin
+      MINIO_ROOT_PASSWORD: i5password
+    ports:
+      - "${minio:-20500}:9000"
+      - "${console:-20501}:9001"
+    volumes:
+      - i5-minio-data:/data
+    networks:
+      - i5-net
+
+  i5-pipeline:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: i5-delta-rs-python:latest
+    container_name: i5-pipeline
+    command: ["python", "app/pipeline.py"]
+    environment:
+      S3_ENDPOINT: http://i5-minio:9000
+    networks:
+      - i5-net
+
+  i5-ui:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: i5-delta-rs-python:latest
+    container_name: i5-ui
+    restart: unless-stopped
+    environment:
+      S3_ENDPOINT: http://i5-minio:9000
+      UI_PORT: "${ui:-20502}"
+    ports:
+      - "${ui:-20502}:${ui:-20502}"
+    networks:
+      - i5-net
+    depends_on:
+      - i5-minio
+
+networks:
+  i5-net:
+    name: i5-net
+
+volumes:
+  i5-minio-data:
+    name: i5-minio-data

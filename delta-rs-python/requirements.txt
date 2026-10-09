@@ -1,0 +1,2 @@
+deltalake[pyarrow]==1.6.6
+pyarrow==25.0.1

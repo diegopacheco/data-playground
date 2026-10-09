@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Delta Lake Versions</title>
+<style>
+:root{--bg:#f7f8fa;--card:#fff;--ink:#1d2330;--muted:#6b7385;--line:#e3e6ec;--accent:#2f6fde;--up:#1f8a4c;--down:#c2412d}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,-apple-system,Segoe UI,sans-serif}
+header{padding:20px 24px;border-bottom:1px solid var(--line);background:var(--card)}
+h1{margin:0;font-size:20px}
+header p{margin:4px 0 0;color:var(--muted)}
+main{display:grid;grid-template-columns:320px 1fr;gap:20px;padding:20px 24px}
+@media(max-width:860px){main{grid-template-columns:1fr;padding:16px}}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px}
+h2{margin:0 0 12px;font-size:15px}
+.version{border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:8px;cursor:pointer}
+.version:hover{border-color:var(--accent)}
+.version.active{border-color:var(--accent);background:#eef3fd}
+.version b{font-size:15px}
+.op{display:inline-block;margin-left:6px;padding:1px 8px;border-radius:10px;background:#eef0f4;font-size:12px}
+.meta{color:var(--muted);font-size:12px;margin-top:4px}
+table{width:100%;border-collapse:collapse}
+th,td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{color:var(--muted);font-weight:600;font-size:12px}
+.wrap{overflow-x:auto}
+.up{color:var(--up)}.down{color:var(--down)}
+.sel{background:#eef3fd}
+svg text{font:12px system-ui,sans-serif;fill:var(--ink)}
+.stack{display:grid;gap:20px}
+</style>
+</head>
+<body>
+<header>
+<h1>Delta Lake on MinIO with delta-rs</h1>
+<p>Every commit of s3://lake/orders, read back with time travel and aggregated per category</p>
+</header>
+<main>
+<section class="panel"><h2>Versions</h2><div id="versions"></div></section>
+<section class="stack">
+<div class="panel"><h2 id="chartTitle">Revenue per category</h2><div id="chart"></div></div>
+<div class="panel"><h2>Revenue per category per version</h2><div class="wrap" id="matrix"></div></div>
+</section>
+</main>
+<script>
+let data=[],selected=0;
+const money=v=>v.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function revenueOf(v,cat){const c=v.categories.find(x=>x.category===cat);return c?c.total_revenue:0}
+function renderVersions(){
+  document.getElementById("versions").innerHTML=data.map((v,i)=>`<div class="version ${i===selected?"active":""}" data-i="${i}">
+  <b>v${v.version}</b><span class="op">${esc(v.operation)}</span>
+  <div class="meta">${new Date(v.timestamp).toLocaleString()}</div>
+  <div class="meta">${v.rows} rows, ${v.files} files, revenue ${money(v.revenue)}</div></div>`).join("");
+  document.querySelectorAll(".version").forEach(el=>el.onclick=()=>{selected=+el.dataset.i;history.replaceState(null,"","#v"+data[selected].version);render()});
+}
+function renderChart(){
+  const v=data[selected],prev=data[selected-1];
+  document.getElementById("chartTitle").textContent=`Revenue per category at v${v.version} (${v.operation})`;
+  const max=Math.max(...data.flatMap(d=>d.categories.map(c=>c.total_revenue)));
+  const rowH=34,w=640,left=100,barW=380;
+  const bars=v.categories.map((c,i)=>{
+    const y=i*rowH+6,len=c.total_revenue/max*barW;
+    const diff=prev?c.total_revenue-revenueOf(prev,c.category):0;
+    const tag=Math.abs(diff)>0.004?`<tspan class="${diff>0?"up":"down"}" fill="${diff>0?"#1f8a4c":"#c2412d"}"> ${diff>0?"+":""}${money(diff)}</tspan>`:"";
+    return `<text x="0" y="${y+17}">${esc(c.category)}</text>
+    <rect x="${left}" y="${y}" width="${len}" height="22" rx="4" fill="#2f6fde" opacity=".85"/>
+    <text x="${left+len+8}" y="${y+16}">${money(c.total_revenue)}${tag}</text>`}).join("");
+  document.getElementById("chart").innerHTML=`<svg viewBox="0 0 ${w} ${v.categories.length*rowH+10}" width="100%">${bars}</svg>`;
+}
+function renderMatrix(){
+  const cats=[...new Set(data.flatMap(v=>v.categories.map(c=>c.category)))].sort();
+  const head=`<tr><th>category</th>${data.map((v,i)=>`<th class="${i===selected?"sel":""}">v${v.version} ${esc(v.operation)}</th>`).join("")}</tr>`;
+  const body=cats.map(cat=>`<tr><td>${esc(cat)}</td>${data.map((v,i)=>`<td class="${i===selected?"sel":""}">${money(revenueOf(v,cat))}</td>`).join("")}</tr>`).join("");
+  const total=`<tr><td><b>total</b></td>${data.map((v,i)=>`<td class="${i===selected?"sel":""}"><b>${money(v.revenue)}</b></td>`).join("")}</tr>`;
+  document.getElementById("matrix").innerHTML=`<table>${head}${body}${total}</table>`;
+}
+function render(){renderVersions();renderChart();renderMatrix()}
+fetch("/api/versions").then(r=>r.json()).then(d=>{data=d;const h=d.findIndex(v=>"#v"+v.version===location.hash);selected=h>=0?h:d.length-1;render()});
+</script>
+</body>
+</html>
