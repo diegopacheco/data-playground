@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>pgvector Catalog Search</title>
+<style>
+:root{--bg:#f7f8fa;--card:#fff;--ink:#1d2330;--muted:#667085;--line:#e4e7ec;--accent:#2f6fde;--accent2:#e8590c;--soft:#eef4ff}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{padding:22px 32px;background:var(--card);border-bottom:1px solid var(--line)}
+header h1{margin:0;font-size:22px}
+header p{margin:4px 0 0;color:var(--muted)}
+main{max-width:1180px;margin:0 auto;padding:22px 16px;display:grid;gap:18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px}
+.card h2{margin:0 0 12px;font-size:17px}
+form{display:flex;gap:8px;flex-wrap:wrap}
+input,select,button{font:inherit;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:#fff}
+input[type=text]{flex:1;min-width:220px}
+button{background:var(--accent);color:#fff;border-color:var(--accent);cursor:pointer}
+.chips{margin-top:10px;display:flex;gap:6px;flex-wrap:wrap}
+.chip{background:var(--soft);color:var(--accent);border:0;padding:5px 10px;border-radius:14px;font-size:13px}
+.meta{color:var(--muted);font-size:13px;margin:12px 0 6px}
+.hit{display:grid;grid-template-columns:34px 1fr 180px;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.rank{font-weight:700;color:var(--muted);text-align:center}
+.hit b{font-size:15px}
+.cat{display:inline-block;font-size:12px;padding:1px 8px;border-radius:10px;background:#f2f4f7;color:#344054;margin-left:6px}
+.desc{color:var(--muted);font-size:13px}
+.bar{height:8px;background:#f2f4f7;border-radius:4px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent)}
+.score{font-size:12px;color:var(--muted);margin-top:3px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.kpi{background:var(--bg);border-radius:10px;padding:10px 12px}
+.kpi span{display:block;font-size:12px;color:var(--muted)}
+.kpi b{font-size:20px}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font-weight:600}
+td.num{text-align:right;font-variant-numeric:tabular-nums}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:860px){.two{grid-template-columns:1fr}.hit{grid-template-columns:28px 1fr}.hit .sc{grid-column:2}}
+svg text{font:12px system-ui,sans-serif;fill:#475467}
+.err{color:#b42318}
+</style>
+</head>
+<body>
+<header>
+<h1>pgvector Catalog Search</h1>
+<p>Local bge-small-en-v1.5 embeddings in PostgreSQL 18 with pgvector HNSW (cosine), vector and hybrid search</p>
+</header>
+<main>
+<section class="card">
+<h2>Semantic search</h2>
+<form id="f">
+<input type="text" id="q" value="gear for running" placeholder="Describe what you are looking for">
+<select id="mode"><option value="vector">vector</option><option value="hybrid">hybrid (vector + full text, RRF)</option></select>
+<select id="category"><option value="">all categories</option></select>
+<select id="k"><option>3</option><option selected>5</option><option>10</option></select>
+<button>Search</button>
+</form>
+<div class="chips" id="chips"></div>
+<div class="meta" id="meta"></div>
+<div id="results"></div>
+</section>
+<section class="card">
+<h2>Pipeline</h2>
+<div class="grid" id="kpis"></div>
+<div class="two" style="margin-top:14px">
+<table id="steps"></table>
+<table id="samples"></table>
+</div>
+</section>
+<section class="card">
+<h2>Exact scan vs HNSW on the variants table (recall@10 and EXPLAIN ANALYZE execution time)</h2>
+<div class="two">
+<div id="chart"></div>
+<table id="bench"></table>
+</div>
+</section>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
+const CHIPS = ["gear for running", "something to read", "keep my feet dry", "cook a steak", "gift for a toddler", "learn distributed systems", "noise cancelling music"];
+
+async function search() {
+  const p = new URLSearchParams({q: $("q").value, mode: $("mode").value, category: $("category").value, k: $("k").value});
+  const r = await fetch("/api/search?" + p);
+  const d = await r.json();
+  if (!r.ok) { $("results").innerHTML = `<p class="err">${esc(d.error)}</p>`; $("meta").textContent = ""; return; }
+  $("meta").textContent = `${d.results.length} results, mode ${d.mode}${d.category ? ", category " + d.category : ""}, embed ${d.embed_ms} ms, query ${d.query_ms} ms`;
+  const max = Math.max(...d.results.map(h => h.score), 1e-9);
+  $("results").innerHTML = d.results.map((h, i) => {
+    const extra = d.mode === "hybrid" ? `rrf ${h.score} · cosine ${h.cosine ?? "-"} · ts_rank ${h.rank ?? "-"}` : `cosine similarity ${h.score}`;
+    return `<div class="hit"><div class="rank">${i + 1}</div><div><b>${esc(h.name)}</b><span class="cat">${esc(h.category)}</span><div class="desc">${esc(h.description)}</div></div>
+      <div class="sc"><div class="bar"><i style="width:${(h.score / max * 100).toFixed(1)}%"></i></div><div class="score">${extra}</div></div></div>`;
+  }).join("") || "<p>No results</p>";
+}
+
+function kpi(label, value) { return `<div class="kpi"><span>${esc(label)}</span><b>${esc(value)}</b></div>`; }
+
+function chart(modes) {
+  const hn = modes.filter(m => m.mode === "hnsw");
+  const exact = modes.find(m => m.mode === "exact scan");
+  const W = 520, H = 280, L = 50, R = 20, T = 20, B = 44;
+  const maxMs = Math.max(exact.avg_ms, ...hn.map(m => m.avg_ms)) * 1.1;
+  const minR = Math.min(0.7, ...hn.map(m => m.recall));
+  const x = v => L + Math.log10(v / 0.03) / Math.log10(maxMs / 0.03) * (W - L - R);
+  const y = v => T + (1 - (v - minR) / (1.02 - minR)) * (H - T - B);
+  const colors = ["#2f6fde", "#e8590c"];
+  const idx = [...new Set(hn.map(m => m.index))];
+  let s = `<svg viewBox="0 0 ${W} ${H}" width="100%">`;
+  [0.05, 0.1, 0.5, 1, 5].filter(t => t < maxMs).forEach(t => s += `<line x1="${x(t)}" x2="${x(t)}" y1="${T}" y2="${H - B}" stroke="#eef0f3"/><text x="${x(t)}" y="${H - B + 16}" text-anchor="middle">${t}</text>`);
+  [minR, (minR + 1) / 2, 1].forEach(t => s += `<line x1="${L}" x2="${W - R}" y1="${y(t)}" y2="${y(t)}" stroke="#eef0f3"/><text x="${L - 6}" y="${y(t) + 4}" text-anchor="end">${t.toFixed(2)}</text>`);
+  s += `<text x="${(L + W - R) / 2}" y="${H - 6}" text-anchor="middle">avg execution time ms (log scale)</text><text x="12" y="${T + 70}" transform="rotate(-90 12 ${T + 70})">recall@10</text>`;
+  idx.forEach((name, i) => {
+    const pts = hn.filter(m => m.index === name);
+    s += `<polyline fill="none" stroke="${colors[i]}" stroke-width="2" points="${pts.map(m => x(m.avg_ms) + "," + y(m.recall)).join(" ")}"/>`;
+    pts.forEach(m => s += `<circle cx="${x(m.avg_ms)}" cy="${y(m.recall)}" r="4" fill="${colors[i]}"><title>${esc(name)} ef_search=${m.ef_search}: recall ${m.recall}, ${m.avg_ms} ms</title></circle><text x="${x(m.avg_ms) + 6}" y="${y(m.recall) + (i ? 14 : -6)}" style="fill:${colors[i]}">${m.ef_search}</text>`);
+    s += `<rect x="${L + 10}" y="${H - B - 38 + i * 16}" width="10" height="10" fill="${colors[i]}"/><text x="${L + 26}" y="${H - B - 29 + i * 16}">${esc(name)}</text>`;
+  });
+  s += `<circle cx="${x(exact.avg_ms)}" cy="${y(1)}" r="5" fill="#101828"/><text x="${x(exact.avg_ms) - 8}" y="${y(1) + 18}" text-anchor="end">exact scan</text></svg>`;
+  $("chart").innerHTML = s;
+}
+
+async function pipeline() {
+  const d = await (await fetch("/api/pipeline")).json();
+  (d.categories || []).forEach(c => $("category").insertAdjacentHTML("beforeend", `<option>${esc(c)}</option>`));
+  if (!d.bench) { $("kpis").innerHTML = "<p>Pipeline has not run yet</p>"; return; }
+  $("kpis").innerHTML = kpi("model", d.model.split("/")[1]) + kpi("dimensions", d.dim) + kpi("products embedded", `${d.embedded_products} / ${d.products}`) +
+    kpi("chunks embedded", d.chunks) + kpi("variant rows", d.variants.toLocaleString()) + kpi("batch size", d.batch_size);
+  $("steps").innerHTML = "<tr><th>Pipeline step</th><th>seconds</th></tr>" + d.steps.map(s => `<tr><td>${esc(s.step)}</td><td class="num">${s.seconds}</td></tr>`).join("") +
+    d.bench.builds.map(b => `<tr><td>build ${esc(b.index)} (${esc(b.size)})</td><td class="num">${b.build_seconds}</td></tr>`).join("");
+  $("samples").innerHTML = "<tr><th>Query</th><th>Top 3 (cosine)</th></tr>" + d.samples.map(s => `<tr><td>${esc(s.query)}</td><td>${s.top.map(esc).join("<br>")}</td></tr>`).join("");
+  $("bench").innerHTML = "<tr><th>Mode</th><th>ef_search</th><th>recall@10</th><th>avg ms</th><th>p50 ms</th><th>plan</th></tr>" + d.bench.modes.map(m =>
+    `<tr><td>${esc(m.index || m.mode)}</td><td class="num">${m.ef_search ?? "-"}</td><td class="num">${m.recall.toFixed(3)}</td><td class="num">${m.avg_ms}</td><td class="num">${m.p50_ms}</td><td>${esc(m.plan.join(" > "))}</td></tr>`).join("");
+  chart(d.bench.modes);
+}
+
+$("f").addEventListener("submit", e => { e.preventDefault(); search(); });
+$("chips").innerHTML = CHIPS.map(c => `<button class="chip" type="button">${esc(c)}</button>`).join("");
+$("chips").addEventListener("click", e => { if (e.target.classList.contains("chip")) { $("q").value = e.target.textContent; search(); } });
+pipeline().then(() => {
+  const u = new URLSearchParams(location.search);
+  ["q", "mode", "category", "k"].forEach(key => { if (u.get(key)) $(key).value = u.get(key); });
+  search();
+});
+</script>
+</body>
+</html>
