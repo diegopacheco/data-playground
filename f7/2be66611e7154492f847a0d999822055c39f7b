@@ -1,0 +1,91 @@
+pg-lake-postgres-iceberg/Containerfile
+  s_3b53f3faf7302c::t_b74040fbdfeb20 1-7
+pg-lake-postgres-iceberg/pglake/entrypoint.sh
+  s_3b53f3faf7302c::t_2f575ef5e87cb7 24-27
+  s_3b53f3faf7302c::t_5cdea778488d3c 10
+  s_3b53f3faf7302c::t_7235e1ba6fdc5e 1-9,11-23,28-33
+pg-lake-postgres-iceberg/scripts/ui.sh
+  s_3b53f3faf7302c::t_fe590267303a38 1-8
+pg-lake-postgres-iceberg/app/s3.py
+  s_3b53f3faf7302c::t_db7d7cd29bc7dd 1-73
+pg-lake-postgres-iceberg/scripts/test-all.sh
+  s_3b53f3faf7302c::t_7fa8175a062bf3 1-18
+pg-lake-postgres-iceberg/podman-compose.yml
+  s_3b53f3faf7302c::t_4754e6c0542d65 1-76
+pg-lake-postgres-iceberg/app/index.html
+  s_3b53f3faf7302c::t_c87c461b04781a 202,204-206
+  s_3b53f3faf7302c::t_2279a39ab6bec4 217
+  s_3b53f3faf7302c::t_19b66937ef8eb8 169-170
+  s_3b53f3faf7302c::t_b39a4758ba93f5 225
+  s_3b53f3faf7302c::t_897808eeec80de 229-232
+  s_3b53f3faf7302c::t_29d62a34ce123b 192-193
+  s_3b53f3faf7302c::t_44423a9447de52 121-122,125-130
+  s_3b53f3faf7302c::t_a0de2dde1724aa 1-20,22-49,53-120,123-124,131-168,171-191,194-201,203,207-216,218-224,226-228,233-255
+  s_3b53f3faf7302c::t_fd59f3569ac5b0 21
+  s_3b53f3faf7302c::t_b95b82d71c3fe1 50-52
+pg-lake-postgres-iceberg/app/server.py
+  s_3b53f3faf7302c::t_2904d0ffd78e29 67,73,75,77
+  s_3b53f3faf7302c::t_7336d47e0e6894 4
+  s_3b53f3faf7302c::t_63c8b40545c8e1 14-15
+  s_3b53f3faf7302c::t_bc3f11fe9f1c4e 55
+  s_3b53f3faf7302c::t_3b626b99dd9b99 30-31,33,35,37-38,40,44-48
+  s_3b53f3faf7302c::t_8b1e26e7fccfa2 1-3,5-13,16-29,32,34,36,39,41-43,49-54,56-66,68-72,74,76,78-88
+pg-lake-postgres-iceberg/tests/test_lakehouse.py
+  s_3b53f3faf7302c::t_c30cdaedd94cd5 127-128,131-132
+  s_3b53f3faf7302c::t_445af40904c78f 1-126,129-130,133-146,154-164
+  s_3b53f3faf7302c::t_b178202e1334f5 147-153
+pg-lake-postgres-iceberg/app/lake.py
+  s_3b53f3faf7302c::t_46d0ab24c7c167 141
+  s_3b53f3faf7302c::t_a0cee84bfb7381 148
+  s_3b53f3faf7302c::t_22663b4a63272d 1-140,142-147,149-172,175-181
+  s_3b53f3faf7302c::t_1514f68fd30824 173-174
+pg-lake-postgres-iceberg/scripts/ports.env
+  s_3b53f3faf7302c::t_110f7d7ecf925a 1-4
+pg-lake-postgres-iceberg/scripts/status.sh
+  s_3b53f3faf7302c::t_b5c4543ba913b1 1-13
+pg-lake-postgres-iceberg/scripts/sql-console.sh
+  s_3b53f3faf7302c::t_10e2894b81100c 1-10
+pg-lake-postgres-iceberg/app/gen.py
+  s_3b53f3faf7302c::t_ab44f89cb9caa6 1-46
+pg-lake-postgres-iceberg/scripts/start-all.sh
+  s_3b53f3faf7302c::t_ebbf93bb2b0feb 1-38
+pg-lake-postgres-iceberg/scripts/setup.sh
+  s_3b53f3faf7302c::t_5f91dee005fb79 1-37
+pg-lake-postgres-iceberg/.gitignore
+  s_3b53f3faf7302c::t_adeb935cb96bf3 1-3
+pg-lake-postgres-iceberg/scripts/common.sh
+  s_3b53f3faf7302c::t_9fd0d630f29c21 1-106
+pg-lake-postgres-iceberg/scripts/stop-all.sh
+  s_3b53f3faf7302c::t_fd4f16b3f47bac 1-15
+pg-lake-postgres-iceberg/printscreens/architecture.svg
+  s_3b53f3faf7302c::t_4c19250472410f 1-13,15-16,19-29,31-41,49-67,74-78,83-84
+  s_3b53f3faf7302c::t_a7f74546151646 14,17-18,30,42-48,68-73,79-82
+pg-lake-postgres-iceberg/requirements.txt
+  s_3b53f3faf7302c::t_0a7854646bdd81 1
+pg-lake-postgres-iceberg/pglake/Containerfile
+  s_3b53f3faf7302c::t_1855348184b9df 10
+  s_3b53f3faf7302c::t_8aeaf595553f11 6
+  s_3b53f3faf7302c::t_bec1718e4b8cc4 1-5,7-9,11-22
+pg-lake-postgres-iceberg/README.md
+  s_3b53f3faf7302c::t_74ca80b6288f6f 1
+  s_3b53f3faf7302c::t_be8d5639587be6 24
+  s_3b53f3faf7302c::t_55d6f05cc6b5b3 2-23,25-35,38-90,92,95,110,123,127,144,146-168
+  s_3b53f3faf7302c::t_e1f1d6c841daae 36-37
+  s_3b53f3faf7302c::t_22f069685b6957 91,93-94,96-109,111-122,124-126,128-143,145
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f72be66611e7154492f847a0d999822055c39f7b",
+  "prompts": {},
+  "sessions": {
+    "s_3b53f3faf7302c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7b7528e4-a24f-44b8-a1f0-3181aa699c71",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "diegopacheco <diego.pacheco.it@gmail.com>"
+    }
+  }
+}
