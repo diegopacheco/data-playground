@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>pg_lake lakehouse</title>
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--ink:#1d2433;--muted:#667085;--line:#e4e7ec;--blue:#2f6fed;--blue-soft:#e8f0fe;--green:#12805c;--green-soft:#e3f6ee;--amber:#b54708;--amber-soft:#fef0dc;--violet:#6941c6;--violet-soft:#f1ecfd;--red:#b42318;--red-soft:#fdecea}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+header{background:var(--card);border-bottom:1px solid var(--line);padding:18px 28px}
+header h1{margin:0;font-size:20px}
+header p{margin:4px 0 0;color:var(--muted)}
+nav{display:flex;gap:4px;padding:0 28px;background:var(--card);border-bottom:1px solid var(--line)}
+nav button{border:0;background:none;padding:12px 16px;font:inherit;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent}
+nav button.on{color:var(--blue);border-bottom-color:var(--blue);font-weight:600}
+main{padding:22px 28px;max-width:1280px}
+section{display:none}
+section.on{display:block}
+.grid{display:grid;gap:16px}
+.grid>*{min-width:0}
+.g2{grid-template-columns:1fr 1fr}
+.g4{grid-template-columns:repeat(4,1fr)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+.card h2{margin:0 0 10px;font-size:15px}
+.stat{font-size:26px;font-weight:700}
+.label{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+.buttons{display:flex;flex-wrap:wrap;gap:8px}
+.buttons button{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:8px 14px;font:inherit;cursor:pointer}
+.buttons button.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+.buttons button:disabled{opacity:.5;cursor:wait}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:600;font-size:12px}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+.badge{display:inline-block;border-radius:999px;padding:1px 9px;font-size:12px;font-weight:600}
+.heap{background:var(--green-soft);color:var(--green)}
+.iceberg{background:var(--blue-soft);color:var(--blue)}
+.parquet{background:var(--amber-soft);color:var(--amber)}
+.meta{background:var(--violet-soft);color:var(--violet)}
+.bad{background:var(--red-soft);color:var(--red)}
+code,pre{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+pre{background:#f8f9fc;border:1px solid var(--line);border-radius:8px;padding:10px;overflow:auto;max-height:360px;margin:0}
+pre mark{background:#fff3c4;color:inherit}
+.log .item{border-left:3px solid var(--blue);padding:4px 10px;margin-bottom:10px}
+.log .item.err{border-left-color:var(--red)}
+.muted{color:var(--muted)}
+.bars .row{display:grid;grid-template-columns:90px 1fr 120px;gap:10px;align-items:center;margin:6px 0}
+.bars .bar{height:18px;background:var(--blue);border-radius:4px}
+.snaps{display:flex;gap:10px;align-items:stretch}
+.snap{flex:1;min-width:0;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#fbfcff}
+.snap code{word-break:break-all}
+.snap.current{border-color:var(--blue);box-shadow:0 0 0 2px var(--blue-soft)}
+.arrow{align-self:center;color:var(--muted)}
+.path{word-break:break-all}
+.ok{color:var(--green);font-weight:700}
+</style>
+</head>
+<body>
+<header>
+<h1>Postgres as a lakehouse with pg_lake</h1>
+<p>Heap tables and Iceberg tables in one Postgres, Parquet on MinIO, queries executed by DuckDB through pgduck_server.</p>
+</header>
+<nav>
+<button data-tab="pipeline" class="on">Pipeline</button>
+<button data-tab="lake">Lake files</button>
+<button data-tab="queries">Queries</button>
+</nav>
+<main>
+<section id="pipeline" class="on">
+<div class="grid g4" id="stats"></div>
+<div class="grid g2" style="margin-top:16px">
+<div class="card">
+<h2>Run the pipeline</h2>
+<div class="buttons">
+<button class="primary" data-post="run">Run all</button>
+<button data-post="reset">Reset</button>
+<button data-post="load?batch=1">Load batch 1</button>
+<button data-post="load?batch=2">Load batch 2</button>
+<button data-post="delete-cancelled">Delete cancelled</button>
+</div>
+<p class="muted">CSV rows go into a heap landing table, Postgres exports them as Parquet to <code>s3://lake/raw/orders/</code>, a pg_lake foreign table reads the Parquet back and inserts it into the Iceberg table <code>orders</code>, partitioned by <code>month(order_date)</code>.</p>
+<div class="log" id="log"></div>
+</div>
+<div class="card">
+<h2>Tables in Postgres</h2>
+<table id="tables"></table>
+<h2 style="margin-top:16px">Extensions</h2>
+<div id="exts" class="muted"></div>
+<p class="muted" id="pgver"></p>
+</div>
+</div>
+</section>
+<section id="lake">
+<div class="card">
+<h2>Iceberg snapshots of <code>orders</code> (one per write)</h2>
+<div class="snaps" id="snaps"></div>
+</div>
+<div class="card" style="margin-top:16px">
+<h2>Files in MinIO bucket <code>lake</code> <span id="verify"></span></h2>
+<table id="objects"></table>
+</div>
+</section>
+<section id="queries">
+<div class="grid g2">
+<div class="card">
+<h2>Revenue by country: Iceberg <code>orders</code> JOIN heap <code>customers</code></h2>
+<div class="bars" id="bars"></div>
+<p class="muted" id="revmeta"></p>
+</div>
+<div class="card">
+<h2>Parquet files read back through a pg_lake foreign table</h2>
+<table id="raw"></table>
+<p class="muted" id="rawmeta"></p>
+</div>
+</div>
+<div class="grid g2" style="margin-top:16px">
+<div class="card"><h2>EXPLAIN (VERBOSE) of the join</h2><pre id="revplan"></pre></div>
+<div class="card"><h2>EXPLAIN (VERBOSE) of the lake only aggregate</h2><pre id="monplan"></pre></div>
+</div>
+<div class="grid g2" style="margin-top:16px">
+<div class="card">
+<h2>Orders and revenue per month and status (fully pushed down)</h2>
+<table id="monthly"></table>
+</div>
+<div class="card">
+<h2>Partition pruning on <code>month(order_date)</code></h2>
+<p id="augmeta"></p>
+<pre id="augplan"></pre>
+</div>
+</div>
+</section>
+</main>
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"})[c]);
+const fmt = n => Number(n).toLocaleString("en-US");
+const money = n => Number(n).toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2});
+const size = b => b > 1048576 ? (b / 1048576).toFixed(2) + " MB" : (b / 1024).toFixed(1) + " KB";
+let current = "pipeline";
+
+async function get(path) {
+  const r = await fetch(path);
+  const body = await r.json();
+  if (!r.ok) throw new Error(body.error || r.status);
+  return body;
+}
+
+function storage(s) {
+  if (s === "heap") return '<span class="badge heap">heap</span>';
+  if (s === "pg_lake_iceberg") return '<span class="badge iceberg">iceberg</span>';
+  return '<span class="badge parquet">' + esc(s) + '</span>';
+}
+
+async function loadPipeline() {
+  const s = await get("/api/status");
+  const rows = Object.fromEntries(s.tables.map(t => [t.name, t.rows]));
+  const lake = await get("/api/lake");
+  $("#stats").innerHTML = [
+    ["Iceberg orders rows", fmt(rows.orders ?? 0)],
+    ["Heap customers rows", fmt(rows.customers ?? 0)],
+    ["Iceberg snapshots", lake.snapshots.length],
+    ["Objects in MinIO", lake.objects.length]
+  ].map(([l, v]) => `<div class="card"><div class="label">${l}</div><div class="stat">${v}</div></div>`).join("");
+  $("#tables").innerHTML = "<tr><th>table</th><th>storage</th><th class=num>rows</th></tr>" + s.tables.map(t =>
+    `<tr><td><code>${esc(t.name)}</code>${t.unlogged ? ' <span class="muted">unlogged</span>' : ""}</td><td>${storage(t.storage)}</td><td class=num>${fmt(t.rows)}</td></tr>`).join("");
+  $("#exts").innerHTML = s.extensions.map(e => `<code>${esc(e.name)} ${esc(e.version)}</code>`).join(" &middot; ");
+  $("#pgver").textContent = s.postgres.split(" on ")[0];
+  $("#log").innerHTML = "";
+  s.history.forEach(h => logItem(`${h.action} at ${new Date(h.at).toLocaleTimeString()}`, h.error ? esc(h.error) : describe(h.action, h.result), !!h.error));
+}
+
+function logItem(title, body, err) {
+  const div = document.createElement("div");
+  div.className = "item" + (err ? " err" : "");
+  div.innerHTML = `<strong>${esc(title)}</strong><div>${body}</div>`;
+  $("#log").prepend(div);
+}
+
+function describe(action, r) {
+  if (r.steps) return r.steps.map(s => `${esc(s.name)} <span class="muted">${s.ms} ms</span><br><code>${esc(s.sql)}</code>`).join("<br>") + `<br><span class="ok">${fmt(r.inserted)} rows inserted into iceberg</span>`;
+  if (r.loads) return r.loads.map(l => `batch ${l.batch}: ${fmt(l.inserted)} rows`).join(", ") + `, deleted ${fmt(r.delete.deleted)} cancelled`;
+  if (r.deleted !== undefined) return `<code>DELETE FROM orders WHERE status = 'cancelled'</code> removed <span class="ok">${fmt(r.deleted)}</span> rows`;
+  if (r.customers !== undefined) return `customers heap table loaded with ${fmt(r.customers)} rows, ${fmt(r.removedObjects)} old objects removed from MinIO`;
+  return esc(JSON.stringify(r));
+}
+
+document.querySelectorAll("[data-post]").forEach(b => b.onclick = async () => {
+  const all = document.querySelectorAll("[data-post]");
+  all.forEach(x => x.disabled = true);
+  try {
+    await fetch("/api/" + b.dataset.post, {method: "POST"});
+    await loadPipeline();
+  } catch (e) {
+    logItem(b.textContent + " failed", esc(e.message), true);
+  }
+  all.forEach(x => x.disabled = false);
+});
+
+async function loadLake() {
+  const l = await get("/api/lake");
+  let appends = 0;
+  $("#snaps").innerHTML = l.snapshots.length ? l.snapshots.map((s, i) => {
+    const what = s.operation === "append" ? `INSERT of batch ${++appends}` : s.operation === "delete" ? "DELETE of cancelled orders" : esc(s.operation);
+    const list = (s.manifestList || "").split("/").pop();
+    return (i ? '<span class="arrow">&rarr;</span>' : "") + `<div class="snap ${s.id === l.currentSnapshot ? "current" : ""}"><div class="label">sequence ${esc(s.sequence)}${s.id === l.currentSnapshot ? " &middot; current" : ""}</div><strong>${esc(s.operation)}</strong><div>${what}</div><div class="muted"><code>${esc(list)}</code></div><div class="muted">${new Date(s.timestamp).toLocaleTimeString()}</div></div>`;
+  }).join("") : '<span class="muted">no Iceberg table yet, run the pipeline</span>';
+  const tracked = Object.fromEntries(l.files.map(f => [f.file_path, f]));
+  const metas = new Set(l.tables.map(t => t.metadata_location));
+  const found = l.files.filter(f => l.objects.some(o => `s3://${l.bucket}/${o.key}` === f.file_path && o.size === f.file_size_in_bytes)).length;
+  $("#verify").innerHTML = l.files.length ? `<span class="badge ${found === l.files.length ? "heap" : "bad"}">${found} of ${l.files.length} Iceberg data and delete files found in MinIO with matching size</span>` : "";
+  $("#objects").innerHTML = "<tr><th>object</th><th>kind</th><th class=num>records</th><th class=num>size</th></tr>" + l.objects.map(o => {
+    const url = `s3://${l.bucket}/${o.key}`;
+    const f = tracked[url];
+    let kind = '<span class="badge meta">iceberg metadata</span>';
+    if (o.key.startsWith("raw/")) kind = '<span class="badge parquet">raw parquet (COPY TO)</span>';
+    else if (f) kind = f.content === "DATA" ? '<span class="badge iceberg">iceberg data file</span>' : '<span class="badge bad">iceberg position deletes</span>';
+    else if (o.key.endsWith(".parquet")) kind = '<span class="badge muted">parquet not in current snapshot</span>';
+    if (metas.has(url)) kind += ' <span class="badge heap">current metadata.json</span>';
+    return `<tr><td class="path"><code>${esc(o.key)}</code></td><td>${kind}</td><td class=num>${f ? fmt(f.record_count) : ""}</td><td class=num>${size(o.size)}</td></tr>`;
+  }).join("");
+}
+
+function highlight(plan) {
+  return esc(plan).replace(/(Custom Scan \(Query Pushdown\)|Engine: DuckDB|Vectorized SQL|Data Files Scanned: \d+|Deletion Files Scanned: \d+|Foreign Scan on public\.orders[^\n]*|Hash Join|Seq Scan on public\.customers[^\n]*)/g, "<mark>$1</mark>");
+}
+
+async function loadQueries() {
+  const [rev, mon, raw, aug] = await Promise.all([get("/api/query/revenue"), get("/api/query/monthly"), get("/api/query/raw"), get("/api/query/august")]);
+  const scanned = p => (p.match(/Data Files Scanned: (\d+)/) || [])[1];
+  $("#augmeta").innerHTML = `<code>${esc(aug.sql)}</code> returns <strong>${fmt(aug.rows[0].orders)}</strong> orders and reads <span class="ok">${scanned(aug.plan)}</span> data file, the full scan in the join reads ${scanned(rev.plan)}.`;
+  $("#augplan").innerHTML = highlight(aug.plan);
+  const max = Math.max(...rev.rows.map(r => Number(r.revenue)));
+  $("#bars").innerHTML = rev.rows.map(r => `<div class="row"><span>${esc(r.country)}</span><div class="bar" style="width:${(Number(r.revenue) / max * 100).toFixed(1)}%"></div><span class="num">${money(r.revenue)}</span></div>`).join("");
+  $("#revmeta").textContent = `${rev.rows.length} countries, ${fmt(rev.rows.reduce((a, r) => a + r.orders, 0))} orders, ${rev.ms} ms`;
+  $("#revplan").innerHTML = highlight(rev.plan);
+  $("#monplan").innerHTML = highlight(mon.plan);
+  $("#monthly").innerHTML = "<tr><th>month</th><th>status</th><th class=num>orders</th><th class=num>revenue</th></tr>" + mon.rows.map(r => `<tr><td>${esc(r.month)}</td><td>${esc(r.status)}</td><td class=num>${fmt(r.orders)}</td><td class=num>${money(r.revenue)}</td></tr>`).join("");
+  $("#raw").innerHTML = "<tr><th>parquet file</th><th class=num>orders</th><th class=num>revenue</th></tr>" + raw.rows.map(r => `<tr><td class="path"><code>${esc(r.file)}</code></td><td class=num>${fmt(r.orders)}</td><td class=num>${money(r.revenue)}</td></tr>`).join("");
+  $("#rawmeta").textContent = `raw files still hold cancelled orders, the Iceberg table does not. ${raw.ms} ms, pushdown: ${raw.pushdown}`;
+}
+
+const loaders = {pipeline: loadPipeline, lake: loadLake, queries: loadQueries};
+function show(tab) {
+  current = tab;
+  document.querySelectorAll("nav button").forEach(b => b.classList.toggle("on", b.dataset.tab === tab));
+  document.querySelectorAll("section").forEach(s => s.classList.toggle("on", s.id === tab));
+  loaders[tab]().catch(e => logItem("load failed", esc(e.message), true));
+  history.replaceState(null, "", "#" + tab);
+}
+document.querySelectorAll("nav button").forEach(b => b.onclick = () => show(b.dataset.tab));
+show(loaders[location.hash.slice(1)] ? location.hash.slice(1) : "pipeline");
+</script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+FROM docker.io/library/almalinux:9.8-20260902 AS build
+ARG PG_VERSION=18.6
+ARG PG_LAKE_REF=v3.5.3
+ARG VCPKG_VERSION=2025.10.17
+ARG JOBS=3
+ENV PGHOME=/usr/local/pgsql PATH=/usr/local/pgsql/bin:$PATH VCPKG_MAX_CONCURRENCY=3 CMAKE_BUILD_PARALLEL_LEVEL=3 VCPKG_TOOLCHAIN_PATH=/opt/vcpkg/scripts/buildsystems/vcpkg.cmake
+RUN dnf -y install epel-release && dnf config-manager --enable crb && dnf -y install --allowerasing ca-certificates cmake ninja-build git wget curl tar unzip zip pkgconf-pkg-config readline-devel zlib-devel flex bison libxml2-devel libxslt-devel libicu-devel openssl-devel uuid-devel lz4-devel xz-devel snappy-devel jansson-devel libcurl-devel perl perl-IPC-Cmd perl-FindBin perl-File-Compare perl-File-Copy perl-Time-Piece libtool patch which gcc-c++ python3 kernel-headers && dnf clean all
+RUN wget -q https://ftp.postgresql.org/pub/source/v$PG_VERSION/postgresql-$PG_VERSION.tar.gz && tar -xzf postgresql-$PG_VERSION.tar.gz && cd postgresql-$PG_VERSION && ./configure --prefix=$PGHOME --with-openssl --with-libxml --with-libxslt --with-icu --with-uuid=ossp --with-lz4 && make -j $JOBS && make install && (cd contrib && make -j $JOBS install) && cd / && rm -rf postgresql-$PG_VERSION*
+RUN git clone -q https://github.com/Microsoft/vcpkg.git -b $VCPKG_VERSION /opt/vcpkg && /opt/vcpkg/bootstrap-vcpkg.sh -disableMetrics
+RUN git clone -q --depth 1 --branch $PG_LAKE_REF https://github.com/snowflake-labs/pg_lake.git /src/pg_lake && cd /src/pg_lake && git config submodule.test_common/rest_catalog/polaris.update none && git submodule update --init --depth 1 avro duckdb_pglake/duckdb duckdb_pglake/duckdb-postgres && git -C duckdb_pglake/duckdb fetch -q --depth 1 origin tag v1.5.5 && git -C duckdb_pglake/duckdb-postgres submodule update --init --depth 1 database-connector
+RUN cd /src/pg_lake && make -j $JOBS install-pg_lake
+RUN cd /src/pg_lake && make install-pgduck_server PGCOMPAT_BUILD_CONFIG=Release GEN=ninja NCORES=$JOBS && rm -rf duckdb_pglake/build /opt/vcpkg/buildtrees /opt/vcpkg/downloads /opt/vcpkg/packages
+
+FROM docker.io/library/almalinux:9.8-20260902
+RUN dnf -y install epel-release && dnf config-manager --enable crb && dnf -y install --allowerasing ca-certificates readline zlib libxml2 libxslt libicu openssl uuid lz4 xz snappy jansson libcurl glibc-langpack-en && dnf clean all && useradd -u 1001 -m -s /bin/bash postgres && mkdir -p /var/lib/pglake /var/run/pgduck && chown postgres:postgres /var/lib/pglake /var/run/pgduck
+COPY --from=build /usr/local/pgsql /usr/local/pgsql
+COPY --chmod=755 entrypoint.sh /entrypoint.sh
+ENV PATH=/usr/local/pgsql/bin:$PATH PGDATA=/var/lib/pglake/data
+USER postgres
+WORKDIR /home/postgres
+EXPOSE 5432
+ENTRYPOINT ["/entrypoint.sh"]

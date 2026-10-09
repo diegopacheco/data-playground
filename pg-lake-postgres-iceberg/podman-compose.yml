@@ -1,0 +1,76 @@
+name: r11-pg-lake-postgres-iceberg
+
+services:
+  r11-minio:
+    image: docker.io/pgsty/minio:RELEASE.2026-08-04T00-00-00Z
+    container_name: r11-minio
+    command: ["server", "/data", "--console-address", ":9001"]
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: r11admin
+      MINIO_ROOT_PASSWORD: r11password
+    mem_limit: 384m
+    ports:
+      - "${minio:-27601}:9000"
+      - "${console:-27602}:9001"
+    volumes:
+      - r11-minio-data:/data
+    networks:
+      - r11-net
+
+  r11-pglake:
+    image: r11-pglake:3.5.3
+    container_name: r11-pglake
+    restart: unless-stopped
+    environment:
+      LAKE_BUCKET: lake
+      S3_KEY: r11admin
+      S3_SECRET: r11password
+      S3_ENDPOINT: r11-minio:9000
+      DUCK_MEMORY: 640MB
+    mem_limit: 1280m
+    shm_size: 256m
+    ports:
+      - "${postgres:-27600}:5432"
+    volumes:
+      - r11-pg-data:/var/lib/pglake
+    networks:
+      - r11-net
+    depends_on:
+      - r11-minio
+
+  r11-app:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: r11-pg-lake-app:latest
+    container_name: r11-app
+    restart: unless-stopped
+    environment:
+      PG_DSN: host=r11-pglake port=5432 user=postgres dbname=postgres
+      S3_URL: http://r11-minio:9000
+      S3_KEY: r11admin
+      S3_SECRET: r11password
+      LAKE_BUCKET: lake
+      DATA_DIR: /data
+      MINIO_CONSOLE_URL: "http://localhost:${console:-27602}"
+      UI_PORT: "8080"
+    mem_limit: 256m
+    ports:
+      - "${ui:-27603}:8080"
+    volumes:
+      - ./data:/data:ro
+    networks:
+      - r11-net
+    depends_on:
+      - r11-pglake
+
+networks:
+  r11-net:
+    name: r11-net
+
+volumes:
+  r11-minio-data:
+    name: r11-minio-data
+  r11-pg-data:
+    name: r11-pg-data
