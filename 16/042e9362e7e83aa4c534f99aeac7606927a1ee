@@ -1,0 +1,74 @@
+pgvector-embeddings-pipeline/scripts/ui.sh
+  s_9121753c4a3d76::t_b5879d8c06bdf5 1-6
+pgvector-embeddings-pipeline/architecture.svg
+  s_9121753c4a3d76::t_3ba9a3cb0b0ca2 1-43
+pgvector-embeddings-pipeline/README.md
+  s_9121753c4a3d76::t_6625e83de500a9 1-59,61-126
+  s_9121753c4a3d76::t_c68ade375025d8 60
+pgvector-embeddings-pipeline/.gitignore
+  s_9121753c4a3d76::t_12880a679288a5 1-4
+pgvector-embeddings-pipeline/scripts/setup.sh
+  s_9121753c4a3d76::t_34108e3abacbf9 1-19
+pgvector-embeddings-pipeline/scripts/stop-all.sh
+  s_9121753c4a3d76::t_2d525030acf0ce 1-19
+pgvector-embeddings-pipeline/app/embed.py
+  s_9121753c4a3d76::t_187b24189d02e6 1-51
+pgvector-embeddings-pipeline/app/server.py
+  s_9121753c4a3d76::t_90e54bd3430c95 81
+  s_9121753c4a3d76::t_a7ee7ae5ee12b1 1-80
+pgvector-embeddings-pipeline/scripts/test-all.sh
+  s_9121753c4a3d76::t_5a11a750f783e3 16-20
+  s_9121753c4a3d76::t_479b322c8f6b36 1-15,21
+pgvector-embeddings-pipeline/scripts/common.sh
+  s_9121753c4a3d76::t_c8d94be67e5e4a 1-92
+pgvector-embeddings-pipeline/app/bench.py
+  s_9121753c4a3d76::t_769f768ca5843a 98
+  s_9121753c4a3d76::t_2ad95b7f52f646 1,3-7,9-52,85-88
+  s_9121753c4a3d76::t_dbeb3f400ba9f7 2,8,53-84,89-97
+pgvector-embeddings-pipeline/scripts/status.sh
+  s_9121753c4a3d76::t_f2bb8e30f855d9 1-13
+pgvector-embeddings-pipeline/app/index.html
+  s_9121753c4a3d76::t_9419167bf8626f 143-147
+  s_9121753c4a3d76::t_b83db3404e51ab 1-142,148-150
+pgvector-embeddings-pipeline/tests/test_pipeline.py
+  s_9121753c4a3d76::t_993100dd1cab0b 1-95,97-135
+  s_9121753c4a3d76::t_702d0dcd831bf0 96
+pgvector-embeddings-pipeline/podman-compose.yml
+  s_9121753c4a3d76::t_1584abf8f63163 1-27
+pgvector-embeddings-pipeline/requirements.txt
+  s_9121753c4a3d76::t_bf4cab724acf3b 1-2
+pgvector-embeddings-pipeline/app/db.py
+  s_9121753c4a3d76::t_efd4f882150cc9 1-65,67-106
+  s_9121753c4a3d76::t_a9e47cbda4ec5f 66
+pgvector-embeddings-pipeline/app/catalog.py
+  s_9121753c4a3d76::t_f5ec08ce9a538d 1-87
+pgvector-embeddings-pipeline/scripts/ports.env
+  s_9121753c4a3d76::t_6ec9d1932c8cc0 1-2
+pgvector-embeddings-pipeline/scripts/start-all.sh
+  s_9121753c4a3d76::t_e5969e444a7be3 19,26-27
+  s_9121753c4a3d76::t_946c1b7115057b 1-18,20-25,28-38
+pgvector-embeddings-pipeline/scripts/sql-console.sh
+  s_9121753c4a3d76::t_368d73e6ba9c7e 1-6
+pgvector-embeddings-pipeline/app/pipeline.py
+  s_9121753c4a3d76::t_09efab76ade484 6,22
+  s_9121753c4a3d76::t_f993490f49c347 1-5,7-21,23-64,66,68-86
+  s_9121753c4a3d76::t_769f768ca5843a 65,67
+pgvector-embeddings-pipeline/data/orders.csv
+  s_9121753c4a3d76::t_a4bbcc1a0adcf5 1-201
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "16042e9362e7e83aa4c534f99aeac7606927a1ee",
+  "prompts": {},
+  "sessions": {
+    "s_9121753c4a3d76": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "39b421dc-22e8-4dc0-93df-749df3c5cb41",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "diegopacheco <diego.pacheco.it@gmail.com>"
+    }
+  }
+}
