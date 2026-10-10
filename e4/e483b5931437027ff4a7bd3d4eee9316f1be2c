@@ -1,0 +1,65 @@
+parquet-vs-orc-vs-avro/Containerfile
+  s_9121753c4a3d76::t_9d5fe85ad40854 1-8
+parquet-vs-orc-vs-avro/scripts/setup.sh
+  s_9121753c4a3d76::t_afb48f5cfb075a 1-13
+parquet-vs-orc-vs-avro/app/dataset.py
+  s_9121753c4a3d76::t_45265522e68e07 1-43
+parquet-vs-orc-vs-avro/scripts/status.sh
+  s_9121753c4a3d76::t_c22039167666ad 1-18
+parquet-vs-orc-vs-avro/scripts/ui.sh
+  s_9121753c4a3d76::t_901afe0bd4526f 1-12
+parquet-vs-orc-vs-avro/scripts/start-all.sh
+  s_9121753c4a3d76::t_28b85fd32d97da 15-16
+  s_9121753c4a3d76::t_5ffa888466fdbc 1-14,17-24
+parquet-vs-orc-vs-avro/app/formats.py
+  s_9121753c4a3d76::t_2c0cf9085ba988 1-165
+parquet-vs-orc-vs-avro/scripts/ports.env
+  s_9121753c4a3d76::t_a2c968696ff988 1
+parquet-vs-orc-vs-avro/app/index.html
+  s_9121753c4a3d76::t_30d9179ccc410e 105
+  s_9121753c4a3d76::t_42f98d98d19497 1-104,106-112
+parquet-vs-orc-vs-avro/scripts/stop-all.sh
+  s_9121753c4a3d76::t_46d602607186f7 1-16
+parquet-vs-orc-vs-avro/.gitignore
+  s_9121753c4a3d76::t_bacf81fb783074 1-4
+parquet-vs-orc-vs-avro/README.md
+  s_9121753c4a3d76::t_26c62738514ea1 1-27,29-148
+  s_9121753c4a3d76::t_429ef726f24239 28
+parquet-vs-orc-vs-avro/app/bench.py
+  s_9121753c4a3d76::t_4900fc98d2fc70 1-118
+parquet-vs-orc-vs-avro/scripts/test-all.sh
+  s_9121753c4a3d76::t_8277caced7c6f6 1-36
+parquet-vs-orc-vs-avro/diagram/architecture.svg
+  s_9121753c4a3d76::t_af7bc185f91cc4 33,42-43
+  s_9121753c4a3d76::t_0a99b545e38e92 1-32,34-41,44-47
+parquet-vs-orc-vs-avro/results/results.json
+  s_9121753c4a3d76::t_27ce43b648510a 1-696
+  s_9121753c4a3d76::t_6b7d9afaccc464 697-786
+parquet-vs-orc-vs-avro/app/server.py
+  s_9121753c4a3d76::t_7d4dfb34ff3ab7 1-37
+parquet-vs-orc-vs-avro/requirements.txt
+  s_9121753c4a3d76::t_1e358e40bee6e8 1-4
+parquet-vs-orc-vs-avro/scripts/common.sh
+  s_9121753c4a3d76::t_a2c968696ff988 1-122
+parquet-vs-orc-vs-avro/tests/test_bench.py
+  s_9121753c4a3d76::t_d449276308557d 1-63,65-76
+  s_9121753c4a3d76::t_6e1c03a23d6a00 64
+parquet-vs-orc-vs-avro/data/orders.csv
+  s_9121753c4a3d76::t_e3b70b31a7a927 1-201
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e4e483b5931437027ff4a7bd3d4eee9316f1be2c",
+  "prompts": {},
+  "sessions": {
+    "s_9121753c4a3d76": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "39b421dc-22e8-4dc0-93df-749df3c5cb41",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "diegopacheco <diego.pacheco.it@gmail.com>"
+    }
+  }
+}
