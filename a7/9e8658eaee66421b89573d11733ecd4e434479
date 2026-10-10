@@ -1,0 +1,79 @@
+parquet-rust-arrow/src/main.rs
+  s_9121753c4a3d76::t_fb53381b6124ca 1-87
+parquet-rust-arrow/.gitignore
+  s_9121753c4a3d76::t_1a43cd5171f92b 1-3
+parquet-rust-arrow/src/lake.rs
+  s_9121753c4a3d76::t_2c2a0966c0f1f6 32
+  s_9121753c4a3d76::t_ead42db6845d73 1-31,33-34,37-40,42-81
+  s_9121753c4a3d76::t_433a7807dae93a 35-36,41
+parquet-rust-arrow/rust-toolchain.toml
+  s_9121753c4a3d76::t_655b10e2cdc918 1-2
+parquet-rust-arrow/src/tests.rs
+  s_9121753c4a3d76::t_21628f9d0c7d97 1-27,44-45,47-154
+  s_9121753c4a3d76::t_09483ad2f08891 28-43,46
+parquet-rust-arrow/scripts/stop-all.sh
+  s_9121753c4a3d76::t_3a648fad26e877 1-19
+parquet-rust-arrow/src/lib.rs
+  s_9121753c4a3d76::t_cd0c24faf11795 1-5,8-30
+  s_9121753c4a3d76::t_610710b4553903 6-7
+parquet-rust-arrow/scripts/ui.sh
+  s_9121753c4a3d76::t_c742d0976235e4 1-12
+parquet-rust-arrow/scripts/common.sh
+  s_9121753c4a3d76::t_68bbf31746a5ed 1-119
+parquet-rust-arrow/architecture.svg
+  s_9121753c4a3d76::t_ddc1914943a140 36
+  s_9121753c4a3d76::t_96d4c7ee80dab0 1-35,37-49
+parquet-rust-arrow/scripts/status.sh
+  s_9121753c4a3d76::t_e4866573ae2331 1-18
+parquet-rust-arrow/src/orders.rs
+  s_9121753c4a3d76::t_5f47e66a88b42a 1-29
+parquet-rust-arrow/README.md
+  s_9121753c4a3d76::t_2e11c620eee209 69
+  s_9121753c4a3d76::t_5a412742eb3461 1-68,70-132
+parquet-rust-arrow/scripts/ports.env
+  s_9121753c4a3d76::t_2e90349ca0fca4 1
+parquet-rust-arrow/podman-compose.yml
+  s_9121753c4a3d76::t_7e2257601ef5a1 1-14
+parquet-rust-arrow/src/metadata.rs
+  s_9121753c4a3d76::t_5bcd190e21b68f 1-96
+parquet-rust-arrow/scripts/test-all.sh
+  s_9121753c4a3d76::t_c45673f901d628 1-38
+parquet-rust-arrow/static/index.html
+  s_9121753c4a3d76::t_3f3227c0daeda0 26
+  s_9121753c4a3d76::t_06a24790f6304d 1-25,27-177
+parquet-rust-arrow/Cargo.toml
+  s_9121753c4a3d76::t_4ac2a2a9f0139f 1-7,9
+  s_9121753c4a3d76::t_dcdd12935affef 8
+parquet-rust-arrow/scripts/setup.sh
+  s_9121753c4a3d76::t_695c7c7cad2922 1-14
+parquet-rust-arrow/Containerfile
+  s_9121753c4a3d76::t_dc7e4e15755825 1-14
+parquet-rust-arrow/data/orders.csv
+  s_9121753c4a3d76::t_eda0fcb447b24a 1-201
+parquet-rust-arrow/src/json.rs
+  s_9121753c4a3d76::t_218687b243a3cb 1-81
+parquet-rust-arrow/src/aggregate.rs
+  s_9121753c4a3d76::t_431c7a97248762 3
+  s_9121753c4a3d76::t_aae1c2cb786243 44-45
+  s_9121753c4a3d76::t_2e1543f9ce8dec 1-2,4-43,46-61
+parquet-rust-arrow/scripts/start-all.sh
+  s_9121753c4a3d76::t_2a8d88fc5e41be 1-17
+parquet-rust-arrow/Cargo.lock
+  s_9121753c4a3d76::t_61e2c57e9646b9 1-1018
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a79e8658eaee66421b89573d11733ecd4e434479",
+  "prompts": {},
+  "sessions": {
+    "s_9121753c4a3d76": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "39b421dc-22e8-4dc0-93df-749df3c5cb41",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "diegopacheco <diego.pacheco.it@gmail.com>"
+    }
+  }
+}
