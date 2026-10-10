@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Delta Lake on MinIO</title>
+<style>
+  :root { --bg:#f7f8fa; --card:#fff; --ink:#1f2933; --muted:#6b7280; --line:#e5e7eb; --accent:#2563eb; --before:#94a3b8; --after:#2563eb; --up:#15803d; --down:#b91c1c; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--ink); }
+  header { padding:20px 24px 0; }
+  h1 { margin:0; font-size:22px; }
+  header p { margin:4px 0 0; color:var(--muted); font-size:14px; }
+  nav { display:flex; gap:4px; padding:16px 24px 0; border-bottom:1px solid var(--line); flex-wrap:wrap; }
+  nav button { border:0; background:none; padding:10px 14px; font-size:14px; color:var(--muted); cursor:pointer; border-bottom:2px solid transparent; }
+  nav button.active { color:var(--accent); border-bottom-color:var(--accent); font-weight:600; }
+  main { padding:20px 24px; max-width:1200px; }
+  section { display:none; }
+  section.active { display:block; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:16px; margin-bottom:16px; overflow-x:auto; }
+  .card h2 { margin:0 0 12px; font-size:16px; }
+  .stats { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:16px; }
+  .stat { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:12px 16px; min-width:150px; }
+  .stat b { display:block; font-size:22px; }
+  .stat span { color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.04em; }
+  table { border-collapse:collapse; width:100%; font-size:13px; }
+  th, td { text-align:left; padding:6px 10px; border-bottom:1px solid var(--line); white-space:nowrap; }
+  th { color:var(--muted); font-weight:600; }
+  td.num, th.num { text-align:right; font-variant-numeric:tabular-nums; }
+  .tag { display:inline-block; padding:2px 8px; border-radius:10px; font-size:12px; }
+  .insert { background:#dcfce7; color:#166534; }
+  .update_preimage { background:#fee2e2; color:#991b1b; }
+  .update_postimage { background:#dbeafe; color:#1e40af; }
+  .up { color:var(--up); } .down { color:var(--down); }
+  .note { color:var(--muted); font-size:13px; line-height:1.5; }
+  .files { font-family:ui-monospace,Menlo,monospace; font-size:12px; line-height:1.6; word-break:break-all; }
+  .gone { color:var(--down); text-decoration:line-through; }
+  .legend span { display:inline-block; width:10px; height:10px; margin:0 4px 0 12px; border-radius:2px; }
+  .params { color:var(--muted); font-size:12px; white-space:normal; max-width:520px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Delta Lake on MinIO</h1>
+  <p>Spark 4.2 + Delta Lake 4.4 table <code>s3a://lake/orders</code>: write, MERGE upsert, Change Data Feed, history, time travel and VACUUM.</p>
+</header>
+<nav>
+  <button data-tab="versions" class="active">Versions</button>
+  <button data-tab="cdf">Change Data Feed</button>
+  <button data-tab="revenue">Revenue</button>
+  <button data-tab="vacuum">Vacuum</button>
+</nav>
+<main>
+  <section id="versions" class="active">
+    <div class="stats" id="versionStats"></div>
+    <div class="card"><h2>Time travel (versionAsOf)</h2><table id="versionTable"></table></div>
+    <div class="card"><h2>DESCRIBE HISTORY</h2><table id="historyTable"></table></div>
+  </section>
+  <section id="cdf">
+    <div class="stats" id="cdfStats"></div>
+    <div class="card"><h2>table_changes between version 1 and 1</h2><table id="cdfTable"></table></div>
+  </section>
+  <section id="revenue">
+    <div class="card"><h2>Revenue per category <span class="legend note"><span style="background:var(--before)"></span>version 0<span style="background:var(--after)"></span>version 1</span></h2><div id="chart"></div></div>
+    <div class="card"><h2>Before and after MERGE</h2><table id="revenueTable"></table></div>
+  </section>
+  <section id="vacuum">
+    <div class="stats" id="vacuumStats"></div>
+    <div class="card"><h2>Data files</h2><div id="vacuumFiles" class="files"></div></div>
+    <p class="note">VACUUM runs with <code>RETAIN 0 HOURS</code>, which Delta refuses by default. The job sets <code>spark.databricks.delta.retentionDurationCheck.enabled=false</code> only for this POC so the effect is visible right away. With 0 hours every file not referenced by the latest version is deleted, so time travel to version 0 and the change feed for older versions stop working.</p>
+  </section>
+</main>
+<script>
+const fmt = n => Number(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const get = name => fetch("/api/" + name).then(r => r.json());
+
+function table(el, cols, rows) {
+  const head = "<tr>" + cols.map(c => `<th class="${c.num ? "num" : ""}">${c.label}</th>`).join("") + "</tr>";
+  const body = rows.map(r => "<tr>" + cols.map(c => `<td class="${c.num ? "num" : ""}">${c.render ? c.render(r) : esc(r[c.key])}</td>`).join("") + "</tr>").join("");
+  document.getElementById(el).innerHTML = head + body;
+}
+
+function stats(el, items) {
+  document.getElementById(el).innerHTML = items.map(([k, v]) => `<div class="stat"><span>${k}</span><b>${v}</b></div>`).join("");
+}
+
+function kv(obj) {
+  return esc(Object.entries(obj || {}).map(([k, v]) => `${k}=${v}`).join(", "));
+}
+
+function chart(rows) {
+  const w = 760, h = 300, pad = 50, max = Math.max(...rows.flatMap(r => [r.revenue_before, r.revenue_after]));
+  const band = (w - pad * 2) / rows.length, bw = band / 3;
+  const y = v => h - pad - (v / max) * (h - pad * 2);
+  let svg = `<svg viewBox="0 0 ${w} ${h}" width="100%" role="img" aria-label="Revenue per category before and after merge">`;
+  [0, 0.25, 0.5, 0.75, 1].forEach(t => {
+    const v = max * t;
+    svg += `<line x1="${pad}" x2="${w - pad}" y1="${y(v)}" y2="${y(v)}" stroke="#e5e7eb"/><text x="${pad - 6}" y="${y(v) + 4}" font-size="10" text-anchor="end" fill="#6b7280">${Math.round(v)}</text>`;
+  });
+  rows.forEach((r, i) => {
+    const x = pad + i * band + bw / 2;
+    svg += `<rect x="${x}" y="${y(r.revenue_before)}" width="${bw}" height="${h - pad - y(r.revenue_before)}" fill="#94a3b8"><title>${r.category} v0 ${fmt(r.revenue_before)}</title></rect>`;
+    svg += `<rect x="${x + bw}" y="${y(r.revenue_after)}" width="${bw}" height="${h - pad - y(r.revenue_after)}" fill="#2563eb"><title>${r.category} v1 ${fmt(r.revenue_after)}</title></rect>`;
+    svg += `<text x="${x + bw}" y="${h - pad + 16}" font-size="12" text-anchor="middle" fill="#1f2933">${esc(r.category)}</text>`;
+    svg += `<text x="${x + bw}" y="${y(Math.max(r.revenue_before, r.revenue_after)) - 6}" font-size="10" text-anchor="middle" fill="#15803d">+${fmt(r.revenue_change)}</text>`;
+  });
+  document.getElementById("chart").innerHTML = svg + "</svg>";
+}
+
+async function load() {
+  const [versions, history, changes, summary, revenue, vacuum] = await Promise.all(
+    ["versions", "history", "changes", "change_summary", "revenue", "vacuum"].map(get));
+
+  stats("versionStats", [["versions in log", history.length], ["rows at v0", versions[0].rows], ["rows at v1", versions[1].rows], ["revenue delta", fmt(versions[1].revenue - versions[0].revenue)]]);
+  table("versionTable", [
+    { label: "version", key: "version", num: true },
+    { label: "rows", key: "rows", num: true },
+    { label: "total revenue", num: true, render: r => fmt(r.revenue) }
+  ], versions);
+  table("historyTable", [
+    { label: "version", key: "version", num: true },
+    { label: "timestamp", key: "timestamp" },
+    { label: "operation", key: "operation" },
+    { label: "parameters", render: r => `<div class="params">${kv(r.operationParameters)}</div>` },
+    { label: "metrics", render: r => `<div class="params">${kv(r.operationMetrics)}</div>` }
+  ], history);
+
+  const count = t => (summary.find(s => s._change_type === t) || { count: 0 }).count;
+  stats("cdfStats", [["insert", count("insert")], ["update_preimage", count("update_preimage")], ["update_postimage", count("update_postimage")]]);
+  table("cdfTable", [
+    { label: "order_id", key: "order_id", num: true },
+    { label: "change", render: r => `<span class="tag ${r._change_type}">${r._change_type}</span>` },
+    { label: "customer", key: "customer" },
+    { label: "category", key: "category" },
+    { label: "qty", key: "quantity", num: true },
+    { label: "price", num: true, render: r => fmt(r.price) },
+    { label: "commit version", key: "_commit_version", num: true },
+    { label: "commit timestamp", key: "_commit_timestamp" }
+  ], changes);
+
+  chart(revenue);
+  table("revenueTable", [
+    { label: "category", key: "category" },
+    { label: "orders v0", key: "orders_before", num: true },
+    { label: "revenue v0", num: true, render: r => fmt(r.revenue_before) },
+    { label: "orders v1", key: "orders_after", num: true },
+    { label: "revenue v1", num: true, render: r => fmt(r.revenue_after) },
+    { label: "change", num: true, render: r => `<span class="${r.revenue_change >= 0 ? "up" : "down"}">${r.revenue_change >= 0 ? "+" : ""}${fmt(r.revenue_change)}</span>` }
+  ], revenue);
+
+  const after = new Set(vacuum.files_after), removed = new Set(vacuum.dry_run);
+  stats("vacuumStats", [["files before", vacuum.files_before.length], ["dry run candidates", vacuum.dry_run.length], ["files after", vacuum.files_after.length], ["v0 read after vacuum", esc(vacuum.version0_after_vacuum)]]);
+  document.getElementById("vacuumFiles").innerHTML = vacuum.files_before.map(f =>
+    `<div class="${after.has(f) ? "" : "gone"}">${esc(f)}${removed.has(f) ? " (dry run)" : ""}</div>`).join("");
+}
+
+function show(tab) {
+  const button = document.querySelector(`nav button[data-tab="${tab}"]`);
+  if (!button) return;
+  document.querySelectorAll("nav button, section").forEach(e => e.classList.remove("active"));
+  button.classList.add("active");
+  document.getElementById(tab).classList.add("active");
+  history.replaceState(null, "", "#" + tab);
+}
+
+document.querySelectorAll("nav button").forEach(b => b.addEventListener("click", () => show(b.dataset.tab)));
+show(location.hash.slice(1) || "versions");
+
+load().catch(e => { document.querySelector("main").insertAdjacentHTML("afterbegin", `<div class="card">Reports not available yet: run ./scripts/pipeline.sh (${esc(e.message)})</div>`); });
+</script>
+</body>
+</html>

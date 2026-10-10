@@ -1,0 +1,31 @@
+order_id,customer,product,category,quantity,price,ts
+1001,Emma Brown,Building Blocks Set,toys,1,47.16,2026-01-05T10:05:00Z
+1011,Felipe Costa,The Pragmatic Programmer,books,1,44.18,2026-01-06T02:33:00Z
+1021,David Kim,Tennis Racket,sports,5,197.46,2026-01-06T17:58:00Z
+1031,Olivia Davis,Remote Control Car,toys,1,69.93,2026-01-07T10:54:00Z
+1041,Bruno Silva,Mechanical Keyboard,electronics,3,158.57,2026-01-08T02:29:00Z
+1051,Karen White,Soccer Ball,sports,1,23.66,2026-01-08T19:52:00Z
+1061,Noah Wilson,Remote Control Car,toys,1,57.29,2026-01-09T12:07:00Z
+1071,Karen White,Cotton T-Shirt,clothing,2,17.59,2026-01-10T03:55:00Z
+1081,Olivia Davis,Cast Iron Skillet,home,2,38.13,2026-01-10T19:53:00Z
+1091,Felipe Costa,Board Game,toys,1,51.92,2026-01-11T12:04:00Z
+1101,Thomas Clark,Plush Bear,toys,2,24.86,2026-01-12T03:33:00Z
+1111,Sofia Rossi,Plush Bear,toys,1,22.79,2026-01-12T19:36:00Z
+1121,Quinn Taylor,Rain Boots,clothing,2,44.06,2026-01-13T11:38:00Z
+1131,Pedro Alves,Wireless Headphones,electronics,2,135.04,2026-01-14T04:03:00Z
+1141,Olivia Davis,Throw Pillow,home,1,20.17,2026-01-14T20:33:00Z
+1151,Karen White,Plush Bear,toys,5,18.74,2026-01-15T12:59:00Z
+1161,Hugo Martins,Remote Control Car,toys,1,59.52,2026-01-16T05:17:00Z
+1171,Karen White,Puzzle 1000 Pieces,toys,1,28.91,2026-01-16T21:00:00Z
+1181,Lucas Pereira,Throw Pillow,home,2,17.03,2026-01-17T13:33:00Z
+1191,Pedro Alves,Soccer Ball,sports,4,39.33,2026-01-18T05:19:00Z
+1201,Emma Brown,Building Blocks Set,toys,1,42.87,2026-01-19T08:15:00Z
+1202,Olivia Davis,Plush Bear,toys,2,15.76,2026-01-19T09:15:00Z
+1203,Grace Lee,Throw Pillow,home,3,14.40,2026-01-19T10:15:00Z
+1204,Isabela Rocha,Cotton T-Shirt,clothing,1,20.75,2026-01-19T11:15:00Z
+1205,Noah Wilson,Running Jacket,clothing,2,73.03,2026-01-19T12:15:00Z
+1206,Grace Lee,Chef Knife,home,3,70.93,2026-01-19T13:15:00Z
+1207,Emma Brown,Mechanical Keyboard,electronics,1,119.90,2026-01-19T14:15:00Z
+1208,Emma Brown,Chef Knife,home,2,85.65,2026-01-19T15:15:00Z
+1209,Carla Mendes,Wool Sweater,clothing,3,80.76,2026-01-19T16:15:00Z
+1210,Rafael Souza,Cycling Helmet,sports,1,115.66,2026-01-19T17:15:00Z

@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 420" width="980" height="420">
+  <defs>
+    <style>@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&amp;display=swap'); text { font-family: 'Caveat', cursive; fill: #1f2933; }</style>
+    <filter id="wobble"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="3" seed="4"/><feDisplacementMap in="SourceGraphic" scale="3"/></filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1f2933"/></marker>
+  </defs>
+  <rect width="980" height="420" fill="#ffffff"/>
+  <g filter="url(#wobble)" stroke="#1f2933" stroke-width="2">
+    <rect x="30" y="60" width="170" height="110" rx="12" fill="#fff4cc"/>
+    <rect x="290" y="40" width="250" height="330" rx="12" fill="#dbeafe"/>
+    <rect x="640" y="40" width="300" height="150" rx="12" fill="#dcfce7"/>
+    <rect x="630" y="250" width="130" height="110" rx="12" fill="#fde2e4"/>
+    <rect x="790" y="250" width="160" height="110" rx="12" fill="#ede9fe"/>
+    <rect x="30" y="250" width="170" height="110" rx="12" fill="#f1f5f9"/>
+  </g>
+  <g stroke="#1f2933" stroke-width="2" fill="none" marker-end="url(#arrow)">
+    <path d="M200 115 C 240 115, 250 115, 288 115"/>
+    <path d="M540 115 C 580 115, 600 115, 638 115"/>
+    <path d="M415 370 C 415 395, 700 395, 695 362"/>
+    <path d="M760 305 C 770 305, 780 305, 788 305"/>
+    <path d="M200 305 C 240 305, 250 305, 288 305"/>
+  </g>
+  <text x="115" y="100" font-size="26" text-anchor="middle" font-weight="700">data/</text>
+  <text x="115" y="130" font-size="20" text-anchor="middle">orders.csv (200)</text>
+  <text x="115" y="155" font-size="20" text-anchor="middle">updates.csv (30)</text>
+  <text x="415" y="80" font-size="28" text-anchor="middle" font-weight="700">Spark 4.2 DeltaJob</text>
+  <text x="415" y="112" font-size="21" text-anchor="middle">1. write v0 (CDF on)</text>
+  <text x="415" y="142" font-size="21" text-anchor="middle">2. MERGE upsert v1</text>
+  <text x="415" y="172" font-size="21" text-anchor="middle">3. readChangeFeed v1..v1</text>
+  <text x="415" y="202" font-size="21" text-anchor="middle">4. versionAsOf 0 vs 1</text>
+  <text x="415" y="232" font-size="21" text-anchor="middle">5. VACUUM RETAIN 0 HOURS</text>
+  <text x="415" y="262" font-size="21" text-anchor="middle">6. DESCRIBE HISTORY</text>
+  <text x="415" y="310" font-size="20" text-anchor="middle">Scala 3.7.4 + Delta 4.4.0</text>
+  <text x="415" y="338" font-size="20" text-anchor="middle">hadoop-aws S3A</text>
+  <text x="790" y="80" font-size="28" text-anchor="middle" font-weight="700">MinIO</text>
+  <text x="790" y="112" font-size="21" text-anchor="middle">s3a://lake/orders</text>
+  <text x="790" y="142" font-size="20" text-anchor="middle">_delta_log/ + _change_data/</text>
+  <text x="790" y="170" font-size="20" text-anchor="middle">part-*.parquet</text>
+  <text x="695" y="295" font-size="26" text-anchor="middle" font-weight="700">output/</text>
+  <text x="695" y="325" font-size="19" text-anchor="middle">*.json reports</text>
+  <text x="870" y="295" font-size="26" text-anchor="middle" font-weight="700">UI</text>
+  <text x="870" y="325" font-size="18" text-anchor="middle">/api/* + index.html</text>
+  <text x="115" y="295" font-size="24" text-anchor="middle" font-weight="700">test-all.sh</text>
+  <text x="115" y="325" font-size="19" text-anchor="middle">awk + python</text>
+  <text x="115" y="348" font-size="19" text-anchor="middle">check vs /api</text>
+  <text x="565" y="405" font-size="19" text-anchor="middle">reports</text>
+</svg>

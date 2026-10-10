@@ -1,0 +1,25 @@
+name: i2-delta
+
+services:
+  minio:
+    image: docker.io/pgsty/minio:RELEASE.2026-08-04T00-00-00Z
+    container_name: i2-minio
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: password
+    ports:
+      - "20200:9000"
+      - "20201:9001"
+    volumes:
+      - i2-minio-data:/data
+    networks:
+      - i2-net
+
+volumes:
+  i2-minio-data:
+    name: i2-minio-data
+
+networks:
+  i2-net:
+    name: i2-net
