@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Parquet vs ORC vs Avro</title>
+<style>
+:root{--bg:#f7f7f5;--card:#fff;--ink:#1f2328;--muted:#656d76;--line:#e4e4e0;--csv:#8c8c8c;--parquet:#2f6fdb;--orc:#1a9e77;--avro:#e07b24;--ok:#1a7f37;--bad:#cf222e}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif}
+header{padding:24px 32px 8px}
+h1{margin:0 0 4px;font-size:22px}
+.sub{color:var(--muted)}
+main{padding:16px 32px 40px;display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(460px,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+.card h2{margin:0 0 2px;font-size:15px}
+.card p{margin:0 0 10px;color:var(--muted);font-size:12px}
+.wide{grid-column:1/-1}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:8px}
+.legend span{display:inline-flex;align-items:center;gap:6px;color:var(--muted)}
+.legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+svg text{font-size:12px;fill:var(--ink)}
+svg .val{fill:var(--muted)}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{color:var(--muted);font-weight:600}
+.ok{color:var(--ok);font-weight:600}
+.bad{color:var(--bad);font-weight:600}
+.scroll{overflow-x:auto}
+@media (max-width:560px){main{padding:12px 16px;grid-template-columns:1fr}header{padding:16px}}
+</style>
+</head>
+<body>
+<header>
+<h1>Parquet vs ORC vs Avro vs CSV</h1>
+<div class="sub" id="meta">loading results</div>
+<div class="legend" id="legend"></div>
+</header>
+<main>
+<section class="card"><h2>File size</h2><p>MB on disk, lower is better</p><div id="size"></div></section>
+<section class="card"><h2>Full write time</h2><p>median ms, in-memory table to file, lower is better</p><div id="write"></div></section>
+<section class="card"><h2>Full read time</h2><p>median ms, file to in-memory rows, lower is better</p><div id="read"></div></section>
+<section class="card"><h2>Single column projection</h2><p id="projsub">median ms reading one column, lower is better</p><div id="project"></div></section>
+<section class="card wide"><h2>Summary and correctness</h2><p>each format read back and aggregated per category, compared to the CSV result</p><div class="scroll" id="summary"></div></section>
+<section class="card wide"><h2>Per category aggregation</h2><p>CSV reference result: orders, total quantity, revenue (quantity x price)</p><div class="scroll" id="agg"></div></section>
+</main>
+<script>
+const COLORS = {csv: "var(--csv)", parquet: "var(--parquet)", orc: "var(--orc)", avro: "var(--avro)"};
+
+function el(tag, attrs, text) {
+  const n = document.createElementNS("http://www.w3.org/2000/svg", tag);
+  for (const k in attrs) n.setAttribute(k, attrs[k]);
+  if (text !== undefined) n.textContent = text;
+  return n;
+}
+
+function barChart(target, rows, value, fmt) {
+  const labelW = 130, valueW = 70, barH = 18, gap = 8, width = 440;
+  const max = Math.max(...rows.map(value));
+  const height = rows.length * (barH + gap);
+  const svg = el("svg", {viewBox: `0 0 ${width} ${height}`, width: "100%", role: "img"});
+  const span = width - labelW - valueW;
+  rows.forEach((r, i) => {
+    const y = i * (barH + gap);
+    const w = Math.max(1, value(r) / max * span);
+    svg.appendChild(el("text", {x: 0, y: y + barH - 5}, r.name));
+    const bar = el("rect", {x: labelW, y, width: w, height: barH, rx: 3, fill: COLORS[r.format]});
+    bar.appendChild(el("title", {}, `${r.name}: ${fmt(value(r))}`));
+    svg.appendChild(bar);
+    svg.appendChild(el("text", {x: labelW + w + 6, y: y + barH - 5, class: "val"}, fmt(value(r))));
+  });
+  document.getElementById(target).appendChild(svg);
+}
+
+function table(target, head, body) {
+  const t = document.createElement("table");
+  t.innerHTML = "<thead><tr>" + head.map(h => `<th>${h}</th>`).join("") + "</tr></thead><tbody>" +
+    body.map(row => "<tr>" + row.map(c => `<td>${c}</td>`).join("") + "</tr>").join("") + "</tbody>";
+  document.getElementById(target).appendChild(t);
+}
+
+const mb = v => (v / 1e6).toFixed(2) + " MB";
+const ms = v => v >= 1000 ? (v / 1000).toFixed(2) + " s" : v.toFixed(0) + " ms";
+const mark = ok => ok ? '<span class="ok">match</span>' : '<span class="bad">mismatch</span>';
+const num = v => v.toLocaleString("en-US");
+
+function render(d) {
+  const rows = d.results;
+  document.getElementById("meta").textContent =
+    `${num(d.rows)} rows, ${d.iterations} iterations (median), Python ${d.versions.python}, pyarrow ${d.versions.pyarrow}, fastavro ${d.versions.fastavro}, all checks ${d.all_ok ? "passed" : "FAILED"}`;
+  document.getElementById("projsub").textContent = `median ms reading only the ${d.projected_column} column, lower is better`;
+  document.getElementById("legend").innerHTML = Object.keys(COLORS)
+    .map(k => `<span><i style="background:${COLORS[k]}"></i>${k}</span>`).join("");
+  barChart("size", rows, r => r.size_bytes, mb);
+  barChart("write", rows, r => r.write_ms.median, ms);
+  barChart("read", rows, r => r.read_ms.median, ms);
+  barChart("project", rows, r => r.project_ms.median, ms);
+  const csvSize = rows[0].size_bytes;
+  table("summary", ["variant", "size", "vs csv", "write", "read", "projection", "rows read", "aggregation", "projection sum"],
+    rows.map(r => [r.name, mb(r.size_bytes), (r.size_bytes / csvSize * 100).toFixed(1) + "%", ms(r.write_ms.median),
+      ms(r.read_ms.median), ms(r.project_ms.median), num(r.rows_read), mark(r.aggregation_matches_csv), mark(r.projection_ok)]));
+  const cats = Object.keys(d.csv_reference).sort();
+  table("agg", ["category", "orders", "quantity", "revenue"],
+    cats.map(c => { const a = d.csv_reference[c]; return [c, num(a.orders), num(a.quantity), a.revenue.toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2})]; }));
+}
+
+fetch("/api/results").then(r => r.ok ? r.json() : Promise.reject(r.status)).then(render)
+  .catch(e => document.getElementById("meta").textContent = "could not load /api/results: " + e);
+</script>
+</body>
+</html>

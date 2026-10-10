@@ -1,0 +1,4 @@
+pyarrow==25.0.1
+fastavro==1.12.2
+cramjam==2.12.1
+zstandard==0.25.0

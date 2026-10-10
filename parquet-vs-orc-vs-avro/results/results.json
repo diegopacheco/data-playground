@@ -1,0 +1,786 @@
+{
+  "rows": 1000000,
+  "iterations": 5,
+  "projected_column": "quantity",
+  "versions": {
+    "python": "3.14.7",
+    "pyarrow": "25.0.1",
+    "fastavro": "1.12.2"
+  },
+  "source_matches_csv": true,
+  "csv_reference": {
+    "toys": {
+      "orders": 185000,
+      "quantity": 554963,
+      "revenue": 18896491.75
+    },
+    "home": {
+      "orders": 160000,
+      "quantity": 469968,
+      "revenue": 28387449.3
+    },
+    "books": {
+      "orders": 160000,
+      "quantity": 479968,
+      "revenue": 15289526.45
+    },
+    "sports": {
+      "orders": 170000,
+      "quantity": 549966,
+      "revenue": 49742074.57
+    },
+    "electronics": {
+      "orders": 150000,
+      "quantity": 419970,
+      "revenue": 79918401.41
+    },
+    "clothing": {
+      "orders": 175000,
+      "quantity": 489965,
+      "revenue": 30244059.72
+    }
+  },
+  "results": [
+    {
+      "name": "csv-none",
+      "format": "csv",
+      "codec": "none",
+      "file": "csv-none.csv",
+      "size_bytes": 79883962,
+      "write_ms": {
+        "median": 594.86,
+        "runs": [
+          618.64,
+          617.05,
+          594.86,
+          573.43,
+          568.05
+        ]
+      },
+      "read_ms": {
+        "median": 10.8,
+        "runs": [
+          11.2,
+          10.8,
+          11.49,
+          10.02,
+          10.77
+        ]
+      },
+      "project_ms": {
+        "median": 6.64,
+        "runs": [
+          6.64,
+          7.09,
+          6.9,
+          6.58,
+          6.53
+        ]
+      },
+      "rows_read": 1000000,
+      "projected_sum": 2964800,
+      "aggregation": {
+        "toys": {
+          "orders": 185000,
+          "quantity": 554963,
+          "revenue": 18896491.75
+        },
+        "home": {
+          "orders": 160000,
+          "quantity": 469968,
+          "revenue": 28387449.3
+        },
+        "books": {
+          "orders": 160000,
+          "quantity": 479968,
+          "revenue": 15289526.45
+        },
+        "sports": {
+          "orders": 170000,
+          "quantity": 549966,
+          "revenue": 49742074.57
+        },
+        "electronics": {
+          "orders": 150000,
+          "quantity": 419970,
+          "revenue": 79918401.41
+        },
+        "clothing": {
+          "orders": 175000,
+          "quantity": 489965,
+          "revenue": 30244059.72
+        }
+      },
+      "aggregation_matches_csv": true,
+      "rows_ok": true,
+      "projection_ok": true
+    },
+    {
+      "name": "parquet-none",
+      "format": "parquet",
+      "codec": "none",
+      "file": "parquet-none.parquet",
+      "size_bytes": 18267565,
+      "write_ms": {
+        "median": 69.71,
+        "runs": [
+          72.01,
+          69.36,
+          69.71,
+          71.37,
+          68.67
+        ]
+      },
+      "read_ms": {
+        "median": 9.93,
+        "runs": [
+          10.25,
+          9.93,
+          10.18,
+          8.85,
+          9.44
+        ]
+      },
+      "project_ms": {
+        "median": 1.48,
+        "runs": [
+          1.49,
+          1.48,
+          1.55,
+          1.44,
+          1.42
+        ]
+      },
+      "rows_read": 1000000,
+      "projected_sum": 2964800,
+      "aggregation": {
+        "toys": {
+          "orders": 185000,
+          "quantity": 554963,
+          "revenue": 18896491.75
+        },
+        "home": {
+          "orders": 160000,
+          "quantity": 469968,
+          "revenue": 28387449.3
+        },
+        "books": {
+          "orders": 160000,
+          "quantity": 479968,
+          "revenue": 15289526.45
+        },
+        "sports": {
+          "orders": 170000,
+          "quantity": 549966,
+          "revenue": 49742074.57
+        },
+        "electronics": {
+          "orders": 150000,
+          "quantity": 419970,
+          "revenue": 79918401.41
+        },
+        "clothing": {
+          "orders": 175000,
+          "quantity": 489965,
+          "revenue": 30244059.72
+        }
+      },
+      "aggregation_matches_csv": true,
+      "rows_ok": true,
+      "projection_ok": true
+    },
+    {
+      "name": "parquet-snappy",
+      "format": "parquet",
+      "codec": "snappy",
+      "file": "parquet-snappy.parquet",
+      "size_bytes": 9491148,
+      "write_ms": {
+        "median": 81.42,
+        "runs": [
+          80.96,
+          83.55,
+          81.42,
+          81.44,
+          80.47
+        ]
+      },
+      "read_ms": {
+        "median": 8.69,
+        "runs": [
+          8.69,
+          8.73,
+          8.47,
+          8.51,
+          8.73
+        ]
+      },
+      "project_ms": {
+        "median": 1.41,
+        "runs": [
+          1.46,
+          1.53,
+          1.36,
+          1.38,
+          1.41
+        ]
+      },
+      "rows_read": 1000000,
+      "projected_sum": 2964800,
+      "aggregation": {
+        "toys": {
+          "orders": 185000,
+          "quantity": 554963,
+          "revenue": 18896491.75
+        },
+        "home": {
+          "orders": 160000,
+          "quantity": 469968,
+          "revenue": 28387449.3
+        },
+        "books": {
+          "orders": 160000,
+          "quantity": 479968,
+          "revenue": 15289526.45
+        },
+        "sports": {
+          "orders": 170000,
+          "quantity": 549966,
+          "revenue": 49742074.57
+        },
+        "electronics": {
+          "orders": 150000,
+          "quantity": 419970,
+          "revenue": 79918401.41
+        },
+        "clothing": {
+          "orders": 175000,
+          "quantity": 489965,
+          "revenue": 30244059.72
+        }
+      },
+      "aggregation_matches_csv": true,
+      "rows_ok": true,
+      "projection_ok": true
+    },
+    {
+      "name": "parquet-zstd",
+      "format": "parquet",
+      "codec": "zstd",
+      "file": "parquet-zstd.parquet",
+      "size_bytes": 4819028,
+      "write_ms": {
+        "median": 92.69,
+        "runs": [
+          95.54,
+          91.16,
+          91.35,
+          94.59,
+          92.69
+        ]
+      },
+      "read_ms": {
+        "median": 8.62,
+        "runs": [
+          9.52,
+          8.23,
+          8.62,
+          8.63,
+          8.39
+        ]
+      },
+      "project_ms": {
+        "median": 1.54,
+        "runs": [
+          1.54,
+          1.48,
+          1.55,
+          1.57,
+          1.42
+        ]
+      },
+      "rows_read": 1000000,
+      "projected_sum": 2964800,
+      "aggregation": {
+        "toys": {
+          "orders": 185000,
+          "quantity": 554963,
+          "revenue": 18896491.75
+        },
+        "home": {
+          "orders": 160000,
+          "quantity": 469968,
+          "revenue": 28387449.3
+        },
+        "books": {
+          "orders": 160000,
+          "quantity": 479968,
+          "revenue": 15289526.45
+        },
+        "sports": {
+          "orders": 170000,
+          "quantity": 549966,
+          "revenue": 49742074.57
+        },
+        "electronics": {
+          "orders": 150000,
+          "quantity": 419970,
+          "revenue": 79918401.41
+        },
+        "clothing": {
+          "orders": 175000,
+          "quantity": 489965,
+          "revenue": 30244059.72
+        }
+      },
+      "aggregation_matches_csv": true,
+      "rows_ok": true,
+      "projection_ok": true
+    },
+    {
+      "name": "orc-uncompressed",
+      "format": "orc",
+      "codec": "uncompressed",
+      "file": "orc-uncompressed.orc",
+      "size_bytes": 45907661,
+      "write_ms": {
+        "median": 128.06,
+        "runs": [
+          130.54,
+          128.06,
+          131.72,
+          126.27,
+          127.55
+        ]
+      },
+      "read_ms": {
+        "median": 34.29,
+        "runs": [
+          33.36,
+          34.29,
+          35.17,
+          34.42,
+          33.28
+        ]
+      },
+      "project_ms": {
+        "median": 1.98,
+        "runs": [
+          1.95,
+          2.03,
+          1.96,
+          2.1,
+          1.98
+        ]
+      },
+      "rows_read": 1000000,
+      "projected_sum": 2964800,
+      "aggregation": {
+        "toys": {
+          "orders": 185000,
+          "quantity": 554963,
+          "revenue": 18896491.75
+        },
+        "home": {
+          "orders": 160000,
+          "quantity": 469968,
+          "revenue": 28387449.3
+        },
+        "books": {
+          "orders": 160000,
+          "quantity": 479968,
+          "revenue": 15289526.45
+        },
+        "sports": {
+          "orders": 170000,
+          "quantity": 549966,
+          "revenue": 49742074.57
+        },
+        "electronics": {
+          "orders": 150000,
+          "quantity": 419970,
+          "revenue": 79918401.41
+        },
+        "clothing": {
+          "orders": 175000,
+          "quantity": 489965,
+          "revenue": 30244059.72
+        }
+      },
+      "aggregation_matches_csv": true,
+      "rows_ok": true,
+      "projection_ok": true
+    },
+    {
+      "name": "orc-snappy",
+      "format": "orc",
+      "codec": "snappy",
+      "file": "orc-snappy.orc",
+      "size_bytes": 10271758,
+      "write_ms": {
+        "median": 134.2,
+        "runs": [
+          135.3,
+          135.05,
+          134.2,
+          133.9,
+          134.07
+        ]
+      },
+      "read_ms": {
+        "median": 37.08,
+        "runs": [
+          37.32,
+          36.5,
+          36.37,
+          38.62,
+          37.08
+        ]
+      },
+      "project_ms": {
+        "median": 1.99,
+        "runs": [
+          2.05,
+          1.99,
+          1.95,
+          1.96,
+          2.03
+        ]
+      },
+      "rows_read": 1000000,
+      "projected_sum": 2964800,
+      "aggregation": {
+        "toys": {
+          "orders": 185000,
+          "quantity": 554963,
+          "revenue": 18896491.75
+        },
+        "home": {
+          "orders": 160000,
+          "quantity": 469968,
+          "revenue": 28387449.3
+        },
+        "books": {
+          "orders": 160000,
+          "quantity": 479968,
+          "revenue": 15289526.45
+        },
+        "sports": {
+          "orders": 170000,
+          "quantity": 549966,
+          "revenue": 49742074.57
+        },
+        "electronics": {
+          "orders": 150000,
+          "quantity": 419970,
+          "revenue": 79918401.41
+        },
+        "clothing": {
+          "orders": 175000,
+          "quantity": 489965,
+          "revenue": 30244059.72
+        }
+      },
+      "aggregation_matches_csv": true,
+      "rows_ok": true,
+      "projection_ok": true
+    },
+    {
+      "name": "orc-zstd",
+      "format": "orc",
+      "codec": "zstd",
+      "file": "orc-zstd.orc",
+      "size_bytes": 5219974,
+      "write_ms": {
+        "median": 147.95,
+        "runs": [
+          147.95,
+          153.78,
+          147.31,
+          146.58,
+          149.37
+        ]
+      },
+      "read_ms": {
+        "median": 44.38,
+        "runs": [
+          44.64,
+          43.75,
+          43.93,
+          45.79,
+          44.38
+        ]
+      },
+      "project_ms": {
+        "median": 2.01,
+        "runs": [
+          2.01,
+          1.97,
+          1.99,
+          2.01,
+          2.1
+        ]
+      },
+      "rows_read": 1000000,
+      "projected_sum": 2964800,
+      "aggregation": {
+        "toys": {
+          "orders": 185000,
+          "quantity": 554963,
+          "revenue": 18896491.75
+        },
+        "home": {
+          "orders": 160000,
+          "quantity": 469968,
+          "revenue": 28387449.3
+        },
+        "books": {
+          "orders": 160000,
+          "quantity": 479968,
+          "revenue": 15289526.45
+        },
+        "sports": {
+          "orders": 170000,
+          "quantity": 549966,
+          "revenue": 49742074.57
+        },
+        "electronics": {
+          "orders": 150000,
+          "quantity": 419970,
+          "revenue": 79918401.41
+        },
+        "clothing": {
+          "orders": 175000,
+          "quantity": 489965,
+          "revenue": 30244059.72
+        }
+      },
+      "aggregation_matches_csv": true,
+      "rows_ok": true,
+      "projection_ok": true
+    },
+    {
+      "name": "avro-null",
+      "format": "avro",
+      "codec": "null",
+      "file": "avro-null.avro",
+      "size_bytes": 51950152,
+      "write_ms": {
+        "median": 2966.34,
+        "runs": [
+          2966.34,
+          3024.18,
+          2993.53,
+          2910.31,
+          2953.73
+        ]
+      },
+      "read_ms": {
+        "median": 1432.23,
+        "runs": [
+          1449.8,
+          1430.2,
+          1436.25,
+          1414.78,
+          1432.23
+        ]
+      },
+      "project_ms": {
+        "median": 961.89,
+        "runs": [
+          966.45,
+          965.14,
+          954.52,
+          946.99,
+          961.89
+        ]
+      },
+      "rows_read": 1000000,
+      "projected_sum": 2964800,
+      "aggregation": {
+        "toys": {
+          "orders": 185000,
+          "quantity": 554963,
+          "revenue": 18896491.75
+        },
+        "home": {
+          "orders": 160000,
+          "quantity": 469968,
+          "revenue": 28387449.3
+        },
+        "electronics": {
+          "orders": 150000,
+          "quantity": 419970,
+          "revenue": 79918401.41
+        },
+        "books": {
+          "orders": 160000,
+          "quantity": 479968,
+          "revenue": 15289526.45
+        },
+        "sports": {
+          "orders": 170000,
+          "quantity": 549966,
+          "revenue": 49742074.57
+        },
+        "clothing": {
+          "orders": 175000,
+          "quantity": 489965,
+          "revenue": 30244059.72
+        }
+      },
+      "aggregation_matches_csv": true,
+      "rows_ok": true,
+      "projection_ok": true
+    },
+    {
+      "name": "avro-snappy",
+      "format": "avro",
+      "codec": "snappy",
+      "file": "avro-snappy.avro",
+      "size_bytes": 22921264,
+      "write_ms": {
+        "median": 2980.45,
+        "runs": [
+          3049.56,
+          2999.82,
+          2937.3,
+          2962.26,
+          2980.45
+        ]
+      },
+      "read_ms": {
+        "median": 1485.71,
+        "runs": [
+          1506.92,
+          1432.82,
+          1447.52,
+          1485.71,
+          1491.43
+        ]
+      },
+      "project_ms": {
+        "median": 989.1,
+        "runs": [
+          989.1,
+          969.27,
+          991.52,
+          991.58,
+          967.99
+        ]
+      },
+      "rows_read": 1000000,
+      "projected_sum": 2964800,
+      "aggregation": {
+        "toys": {
+          "orders": 185000,
+          "quantity": 554963,
+          "revenue": 18896491.75
+        },
+        "home": {
+          "orders": 160000,
+          "quantity": 469968,
+          "revenue": 28387449.3
+        },
+        "electronics": {
+          "orders": 150000,
+          "quantity": 419970,
+          "revenue": 79918401.41
+        },
+        "books": {
+          "orders": 160000,
+          "quantity": 479968,
+          "revenue": 15289526.45
+        },
+        "sports": {
+          "orders": 170000,
+          "quantity": 549966,
+          "revenue": 49742074.57
+        },
+        "clothing": {
+          "orders": 175000,
+          "quantity": 489965,
+          "revenue": 30244059.72
+        }
+      },
+      "aggregation_matches_csv": true,
+      "rows_ok": true,
+      "projection_ok": true
+    },
+    {
+      "name": "avro-zstandard",
+      "format": "avro",
+      "codec": "zstandard",
+      "file": "avro-zstandard.avro",
+      "size_bytes": 18713011,
+      "write_ms": {
+        "median": 3082.45,
+        "runs": [
+          3160.49,
+          3134.71,
+          3072.81,
+          3062.65,
+          3082.45
+        ]
+      },
+      "read_ms": {
+        "median": 1481.31,
+        "runs": [
+          1529.56,
+          1500.93,
+          1481.31,
+          1470.04,
+          1410.42
+        ]
+      },
+      "project_ms": {
+        "median": 1053.97,
+        "runs": [
+          1074.92,
+          1034.12,
+          1053.97,
+          1074.23,
+          1035.92
+        ]
+      },
+      "rows_read": 1000000,
+      "projected_sum": 2964800,
+      "aggregation": {
+        "toys": {
+          "orders": 185000,
+          "quantity": 554963,
+          "revenue": 18896491.75
+        },
+        "home": {
+          "orders": 160000,
+          "quantity": 469968,
+          "revenue": 28387449.3
+        },
+        "electronics": {
+          "orders": 150000,
+          "quantity": 419970,
+          "revenue": 79918401.41
+        },
+        "books": {
+          "orders": 160000,
+          "quantity": 479968,
+          "revenue": 15289526.45
+        },
+        "sports": {
+          "orders": 170000,
+          "quantity": 549966,
+          "revenue": 49742074.57
+        },
+        "clothing": {
+          "orders": 175000,
+          "quantity": 489965,
+          "revenue": 30244059.72
+        }
+      },
+      "aggregation_matches_csv": true,
+      "rows_ok": true,
+      "projection_ok": true
+    }
+  ],
+  "all_ok": true
+}
