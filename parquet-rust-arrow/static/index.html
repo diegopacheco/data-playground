@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Parquet Orders Lake</title>
+<style>
+:root{--bg:#f7f8fa;--card:#fff;--ink:#1d2330;--muted:#6b7385;--line:#e3e6ec;--accent:#3b6fd8;--accent-soft:#e8effc;--ok:#1f8a4c;--skip:#b5bac6}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+header{background:var(--card);border-bottom:1px solid var(--line);padding:18px 24px}
+h1{margin:0;font-size:20px}
+header p{margin:4px 0 0;color:var(--muted)}
+main{max-width:1180px;margin:0 auto;padding:20px 16px}
+.tabs{display:flex;gap:6px;margin-bottom:16px}
+.tabs button{border:1px solid var(--line);background:var(--card);padding:8px 16px;border-radius:8px;cursor:pointer;font:inherit;color:var(--ink)}
+.tabs button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:16px}
+.card h2{margin:0 0 12px;font-size:15px}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.controls button{border:1px solid var(--line);background:var(--card);padding:6px 12px;border-radius:6px;cursor:pointer;font:inherit}
+.controls button.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.controls input{padding:5px 8px;border:1px solid var(--line);border-radius:6px;font:inherit}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.stat{background:var(--bg);border-radius:8px;padding:10px 12px}
+.stat b{display:block;font-size:20px;overflow-wrap:anywhere}
+.stat span{color:var(--muted);font-size:12px}
+.groups{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap}
+.rg{padding:6px 10px;border-radius:6px;font-size:12px;color:#fff}
+.rg.read{background:var(--ok)}
+.rg.skip{background:var(--skip)}
+.wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%}
+th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{color:var(--muted);font-weight:600;font-size:12px}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+svg text{font-size:12px;fill:var(--ink)}
+.hidden{display:none}
+.err{color:#b3261e}
+</style>
+</head>
+<body>
+<header>
+<h1>Parquet Orders Lake</h1>
+<p>orders.csv to Arrow RecordBatches to Parquet (zstd, 50 rows per row group), read back with projection, row group pruning and a row filter</p>
+</header>
+<main>
+<div class="tabs">
+<button id="tab-agg" class="on">Aggregates</button>
+<button id="tab-meta">Parquet Metadata</button>
+</div>
+<section id="view-agg">
+<div class="card">
+<h2>Row filter: ts &gt;= day</h2>
+<div class="controls" id="presets"></div>
+</div>
+<div class="card">
+<h2>Scan</h2>
+<div class="stats" id="scan"></div>
+<div class="groups" id="groups"></div>
+</div>
+<div class="card">
+<h2>Revenue per category</h2>
+<svg id="chart" width="100%" height="230"></svg>
+</div>
+<div class="card wrap">
+<h2>Per-category aggregates</h2>
+<table id="agg"></table>
+</div>
+</section>
+<section id="view-meta" class="hidden">
+<div class="card"><h2>File</h2><div class="stats" id="file"></div></div>
+<div id="rowgroups"></div>
+</section>
+<p id="error" class="err"></p>
+</main>
+<script>
+const presets = [["All rows", ""], ["2026-01-08", "2026-01-08"], ["2026-01-12", "2026-01-12"], ["2026-01-16", "2026-01-16"]];
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;"}[c]));
+const money = v => v.toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2});
+const kb = b => (b / 1024).toFixed(2) + " KB";
+let current = "";
+
+function stat(value, label) {
+  return `<div class="stat"><b>${esc(value)}</b><span>${esc(label)}</span></div>`;
+}
+
+function renderPresets() {
+  $("presets").innerHTML = presets.map(([label, day]) => `<button data-day="${day}" class="${day === current ? "on" : ""}">${label}</button>`).join("") +
+    `<input type="date" id="day" value="${current}" min="2026-01-01" max="2026-01-31">`;
+  document.querySelectorAll("#presets button").forEach(b => b.onclick = () => load(b.dataset.day));
+  $("day").onchange = e => load(e.target.value);
+}
+
+function renderChart(rows) {
+  const svg = $("chart");
+  const width = svg.clientWidth || 800;
+  const max = Math.max(1, ...rows.map(r => r.revenue));
+  const barH = 26, labelW = 100, valueW = 90;
+  svg.setAttribute("height", rows.length * (barH + 8) + 10);
+  svg.innerHTML = rows.map((r, i) => {
+    const y = 6 + i * (barH + 8);
+    const w = Math.max(2, (width - labelW - valueW) * r.revenue / max);
+    return `<text x="0" y="${y + 17}">${esc(r.category)}</text>` +
+      `<rect x="${labelW}" y="${y}" width="${w}" height="${barH}" rx="4" fill="#3b6fd8"></rect>` +
+      `<text x="${labelW + w + 6}" y="${y + 17}">${money(r.revenue)}</text>`;
+  }).join("");
+}
+
+function renderAggregates(data) {
+  const skipped = data.row_groups_total - data.row_groups_read.length;
+  $("scan").innerHTML = stat(data.from || "none", "filter ts >= day") +
+    stat(`${data.row_groups_read.length} / ${data.row_groups_total}`, "row groups read") +
+    stat(skipped, "row groups skipped by stats") +
+    stat(data.rows_read, "rows after row filter") +
+    stat(data.projection.join(", "), "projected columns");
+  $("groups").innerHTML = Array.from({length: data.row_groups_total}, (_, i) => {
+    const read = data.row_groups_read.includes(i);
+    return `<span class="rg ${read ? "read" : "skip"}">row group ${i}: ${read ? "read" : "skipped"}</span>`;
+  }).join("");
+  renderChart(data.aggregates);
+  $("agg").innerHTML = `<tr><th>category</th><th class="n">orders</th><th class="n">quantity</th><th class="n">revenue</th><th class="n">avg price</th><th class="n">min price</th><th class="n">max price</th></tr>` +
+    data.aggregates.map(a => `<tr><td>${esc(a.category)}</td><td class="n">${a.orders}</td><td class="n">${a.quantity}</td><td class="n">${money(a.revenue)}</td><td class="n">${money(a.avg_price)}</td><td class="n">${money(a.min_price)}</td><td class="n">${money(a.max_price)}</td></tr>`).join("");
+}
+
+function renderMetadata(m) {
+  $("file").innerHTML = stat(m.file, "path") + stat(kb(m.file_bytes), "file size") + stat(m.num_rows, "rows") +
+    stat(m.row_groups.length, "row groups") + stat(m.created_by, "created by");
+  $("rowgroups").innerHTML = m.row_groups.map((rg, i) => `<div class="card wrap">
+<h2>Row group ${i}: ${rg.rows} rows, ${kb(rg.compressed_bytes)} compressed / ${kb(rg.uncompressed_bytes)} uncompressed</h2>
+<table><tr><th>column</th><th>type</th><th>codec</th><th>encodings</th><th class="n">compressed</th><th class="n">uncompressed</th><th>min</th><th>max</th><th class="n">nulls</th></tr>
+${rg.columns.map(c => `<tr><td>${esc(c.name)}</td><td>${esc(c.physical_type)}</td><td>${esc(c.compression)}</td><td>${c.encodings.map(esc).join(", ")}</td><td class="n">${c.compressed_bytes} B</td><td class="n">${c.uncompressed_bytes} B</td><td>${esc(c.min)}</td><td>${esc(c.max)}</td><td class="n">${c.nulls ?? "-"}</td></tr>`).join("")}
+</table></div>`).join("");
+}
+
+async function fetchJson(url) {
+  const res = await fetch(url);
+  const body = await res.json();
+  if (!res.ok) throw new Error(body.error || res.statusText);
+  return body;
+}
+
+async function load(day) {
+  current = day;
+  renderPresets();
+  try {
+    $("error").textContent = "";
+    renderAggregates(await fetchJson("/api/aggregates" + (day ? "?from=" + day : "")));
+  } catch (e) {
+    $("error").textContent = e.message;
+  }
+}
+
+async function loadMetadata() {
+  try {
+    renderMetadata(await fetchJson("/api/metadata"));
+  } catch (e) {
+    $("error").textContent = e.message;
+  }
+}
+
+function show(tab) {
+  $("tab-agg").classList.toggle("on", tab === "agg");
+  $("tab-meta").classList.toggle("on", tab === "meta");
+  $("view-agg").classList.toggle("hidden", tab !== "agg");
+  $("view-meta").classList.toggle("hidden", tab !== "meta");
+  if (tab === "meta") loadMetadata();
+}
+
+$("tab-agg").onclick = () => show("agg");
+$("tab-meta").onclick = () => show("meta");
+if (location.hash === "#metadata") show("meta");
+load(new URLSearchParams(location.search).get("from") || "");
+</script>
+</body>
+</html>

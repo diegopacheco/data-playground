@@ -1,0 +1,14 @@
+name: i12-parquet-rust-arrow
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: i12-parquet-rust-arrow:latest
+    container_name: i12-parquet-rust-arrow
+    ports:
+      - "21280:21280"
+    mem_limit: 256m
+networks:
+  default:
+    name: i12-net

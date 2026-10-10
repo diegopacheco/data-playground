@@ -1,0 +1,9 @@
+[package]
+name = "parquet-rust-arrow"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.98"
+
+[dependencies]
+arrow = { version = "60.0.0", default-features = false, features = ["csv"] }
+parquet = { version = "60.0.0", default-features = false, features = ["arrow", "zstd"] }

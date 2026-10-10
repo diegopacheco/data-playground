@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1060" height="410" viewBox="0 0 1060 410">
+  <defs>
+    <style>@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&amp;display=swap'); text { font-family: 'Caveat', 'Comic Sans MS', cursive; fill: #1e1e1e; }</style>
+    <filter id="wobble"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="3" seed="7"/><feDisplacementMap in="SourceGraphic" scale="3"/></filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1e1e1e"/></marker>
+  </defs>
+  <rect width="1060" height="410" fill="#ffffff"/>
+  <g filter="url(#wobble)" stroke="#1e1e1e" stroke-width="2">
+    <rect x="20" y="40" width="170" height="110" rx="12" fill="#fff3bf"/>
+    <rect x="250" y="40" width="210" height="110" rx="12" fill="#d0ebff"/>
+    <rect x="520" y="40" width="220" height="110" rx="12" fill="#d0ebff"/>
+    <rect x="800" y="40" width="230" height="110" rx="12" fill="#d3f9d8"/>
+    <rect x="800" y="240" width="230" height="140" rx="12" fill="#d0ebff"/>
+    <rect x="520" y="255" width="220" height="110" rx="12" fill="#ffd8e8"/>
+    <rect x="250" y="255" width="210" height="110" rx="12" fill="#e5dbff"/>
+    <rect x="20" y="255" width="170" height="110" rx="12" fill="#fff3bf"/>
+    <line x1="190" y1="95" x2="248" y2="95" marker-end="url(#arrow)"/>
+    <line x1="460" y1="95" x2="518" y2="95" marker-end="url(#arrow)"/>
+    <line x1="740" y1="95" x2="798" y2="95" marker-end="url(#arrow)"/>
+    <line x1="915" y1="150" x2="915" y2="238" marker-end="url(#arrow)"/>
+    <line x1="800" y1="310" x2="742" y2="310" marker-end="url(#arrow)"/>
+    <line x1="520" y1="310" x2="462" y2="310" marker-end="url(#arrow)"/>
+    <line x1="250" y1="310" x2="192" y2="310" marker-end="url(#arrow)"/>
+  </g>
+  <text x="105" y="88" font-size="26" font-weight="700" text-anchor="middle">orders.csv</text>
+  <text x="105" y="116" font-size="20" text-anchor="middle">200 rows</text>
+  <text x="355" y="80" font-size="24" font-weight="700" text-anchor="middle">arrow-csv reader</text>
+  <text x="355" y="106" font-size="19" text-anchor="middle">typed schema</text>
+  <text x="355" y="130" font-size="19" text-anchor="middle">RecordBatches of 64</text>
+  <text x="630" y="80" font-size="24" font-weight="700" text-anchor="middle">ArrowWriter</text>
+  <text x="630" y="106" font-size="19" text-anchor="middle">zstd level 3</text>
+  <text x="630" y="130" font-size="19" text-anchor="middle">50 rows per row group</text>
+  <text x="915" y="80" font-size="24" font-weight="700" text-anchor="middle">orders.parquet</text>
+  <text x="915" y="106" font-size="19" text-anchor="middle">4 row groups</text>
+  <text x="915" y="130" font-size="19" text-anchor="middle">min / max stats per chunk</text>
+  <text x="927" y="200" font-size="18">read back</text>
+  <text x="915" y="272" font-size="22" font-weight="700" text-anchor="middle">Parquet reader</text>
+  <text x="915" y="300" font-size="18" text-anchor="middle">1. skip row groups by ts max</text>
+  <text x="915" y="325" font-size="18" text-anchor="middle">2. project 4 of 7 columns</text>
+  <text x="915" y="350" font-size="18" text-anchor="middle">3. RowFilter ts &gt;= day</text>
+  <text x="630" y="292" font-size="22" font-weight="700" text-anchor="middle">compute kernels</text>
+  <text x="630" y="318" font-size="18" text-anchor="middle">eq, filter, cast, mul</text>
+  <text x="630" y="342" font-size="18" text-anchor="middle">sum, min, max</text>
+  <text x="355" y="292" font-size="22" font-weight="700" text-anchor="middle">std HTTP server</text>
+  <text x="355" y="318" font-size="18" text-anchor="middle">/api/aggregates</text>
+  <text x="355" y="342" font-size="18" text-anchor="middle">/api/metadata</text>
+  <text x="105" y="300" font-size="24" font-weight="700" text-anchor="middle">Browser</text>
+  <text x="105" y="328" font-size="18" text-anchor="middle">index.html</text>
+</svg>
