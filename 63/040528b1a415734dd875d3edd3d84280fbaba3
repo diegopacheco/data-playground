@@ -1,0 +1,77 @@
+delta-spark-minio/scripts/status.sh
+  s_9121753c4a3d76::t_7525604bab4f46 1-18
+delta-spark-minio/scripts/ui.sh
+  s_9121753c4a3d76::t_1574f476821a5c 1-12
+delta-spark-minio/ui/src/main/resources/index.html
+  s_9121753c4a3d76::t_d6f92d14834685 1-157,161,169-173
+  s_9121753c4a3d76::t_695528e418a3a6 158-160,162-168
+delta-spark-minio/podman-compose.yml
+  s_9121753c4a3d76::t_0780d72555e5e7 1-25
+delta-spark-minio/scripts/pipeline.sh
+  s_9121753c4a3d76::t_133f1a24a5880e 1-9
+delta-spark-minio/build.sbt
+  s_9121753c4a3d76::t_b822620c9bc9f8 1-48
+delta-spark-minio/scripts/ports.env
+  s_9121753c4a3d76::t_5163b3ae03dd30 1-3
+delta-spark-minio/scripts/stop-all.sh
+  s_9121753c4a3d76::t_102fca4162e131 1-22
+delta-spark-minio/scripts/start-all.sh
+  s_9121753c4a3d76::t_2e79898a394eeb 8
+  s_9121753c4a3d76::t_c254b9776e70f4 1-7,9-32
+delta-spark-minio/job/src/main/scala/Report.scala
+  s_9121753c4a3d76::t_6defb0245dbfa4 1-17
+delta-spark-minio/scripts/common.sh
+  s_9121753c4a3d76::t_d3418eb3228f85 1-153
+delta-spark-minio/.gitignore
+  s_9121753c4a3d76::t_2163408c2348fa 1-8
+delta-spark-minio/job/src/main/resources/log4j2.properties
+  s_9121753c4a3d76::t_b080d0523e3ccd 1-7
+delta-spark-minio/ui/src/main/scala/UiServer.scala
+  s_9121753c4a3d76::t_3b3e3b01556943 1-34
+delta-spark-minio/job/src/main/scala/Lake.scala
+  s_9121753c4a3d76::t_5a9297d9cef4e5 34-38,45
+  s_9121753c4a3d76::t_f5fbc594bf5fe9 1-18,20-33,39-44,46-47
+  s_9121753c4a3d76::t_2a07adec6bd606 19
+delta-spark-minio/scripts/verify.py
+  s_9121753c4a3d76::t_42c9cf966b990f 1-82
+delta-spark-minio/data/orders.csv
+  s_9121753c4a3d76::t_a95dc597fdb81b 1-201
+delta-spark-minio/scripts/setup.sh
+  s_9121753c4a3d76::t_4486fec8e57af1 9
+  s_9121753c4a3d76::t_5593394a581d6e 1-8,10-25
+delta-spark-minio/README.md
+  s_9121753c4a3d76::t_8e0b08153e0110 33
+  s_9121753c4a3d76::t_62d93d78fb2183 1-32,34-145
+delta-spark-minio/architecture.svg
+  s_9121753c4a3d76::t_6bf35835c5407e 12-13,19-20,39-42
+  s_9121753c4a3d76::t_ecbe286168143e 1-11,14-18,21-38,43-47
+delta-spark-minio/scripts/test-all.sh
+  s_9121753c4a3d76::t_1ce133f4107a08 1-21
+delta-spark-minio/data/updates.csv
+  s_9121753c4a3d76::t_76d583eeceb050 1-31
+delta-spark-minio/job/src/main/scala/DeltaJob.scala
+  s_9121753c4a3d76::t_c7a25a8112facd 35
+  s_9121753c4a3d76::t_e79837762bcd09 88
+  s_9121753c4a3d76::t_ea8a86265318cd 54-56
+  s_9121753c4a3d76::t_bb9188c68fc215 63-64
+  s_9121753c4a3d76::t_925bbc5350c59e 59
+  s_9121753c4a3d76::t_922da77237ef6f 1-34,36-53,57-58,60-62,65-87,89-96
+delta-spark-minio/project/build.properties
+  s_9121753c4a3d76::t_cbf06dc1ebd06a 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "63040528b1a415734dd875d3edd3d84280fbaba3",
+  "prompts": {},
+  "sessions": {
+    "s_9121753c4a3d76": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "39b421dc-22e8-4dc0-93df-749df3c5cb41",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "diegopacheco <diego.pacheco.it@gmail.com>"
+    }
+  }
+}
