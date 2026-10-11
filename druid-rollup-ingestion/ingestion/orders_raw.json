@@ -1,0 +1,42 @@
+{
+  "type": "index_parallel",
+  "spec": {
+    "dataSchema": {
+      "dataSource": "orders_raw",
+      "timestampSpec": { "column": "ts", "format": "iso" },
+      "dimensionsSpec": {
+        "dimensions": [
+          "order_id",
+          "category",
+          "customer",
+          "product",
+          { "type": "long", "name": "quantity" },
+          { "type": "double", "name": "price" },
+          { "type": "double", "name": "revenue" }
+        ]
+      },
+      "granularitySpec": {
+        "type": "uniform",
+        "segmentGranularity": "DAY",
+        "queryGranularity": "NONE",
+        "rollup": false
+      },
+      "transformSpec": {
+        "transforms": [
+          { "type": "expression", "name": "revenue", "expression": "cast(\"quantity\", 'DOUBLE') * cast(\"price\", 'DOUBLE')" }
+        ]
+      }
+    },
+    "ioConfig": {
+      "type": "index_parallel",
+      "inputSource": { "type": "local", "baseDir": "/data", "filter": "orders.csv" },
+      "inputFormat": { "type": "csv", "findColumnsFromHeader": true },
+      "appendToExisting": false
+    },
+    "tuningConfig": {
+      "type": "index_parallel",
+      "partitionsSpec": { "type": "dynamic" },
+      "maxNumConcurrentSubTasks": 1
+    }
+  }
+}

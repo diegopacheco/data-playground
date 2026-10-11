@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 400" width="980" height="400">
+<defs>
+<style>@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700');text{font-family:Caveat,'Comic Sans MS',cursive;fill:#1d2330}.t{font-size:22px;font-weight:700}.s{font-size:17px}</style>
+<filter id="w"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="3" seed="4"/><feDisplacementMap in="SourceGraphic" scale="3"/></filter>
+<marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#1d2330"/></marker>
+</defs>
+<rect width="980" height="400" fill="#ffffff"/>
+<g filter="url(#w)" stroke="#1d2330" stroke-width="2">
+<rect x="20" y="50" width="200" height="90" rx="12" fill="#fff3c4"/>
+<rect x="20" y="200" width="200" height="110" rx="12" fill="#ffe0d6"/>
+<rect x="270" y="20" width="440" height="360" rx="16" fill="#eef5ff"/>
+<rect x="290" y="80" width="190" height="80" rx="10" fill="#d7ecff"/>
+<rect x="500" y="80" width="190" height="80" rx="10" fill="#d7ecff"/>
+<rect x="290" y="200" width="190" height="80" rx="10" fill="#dff5e1"/>
+<rect x="500" y="200" width="190" height="80" rx="10" fill="#dff5e1"/>
+<rect x="290" y="310" width="400" height="50" rx="10" fill="#f3e1ff"/>
+<rect x="760" y="200" width="200" height="80" rx="12" fill="#ffe0d6"/>
+<rect x="760" y="320" width="200" height="60" rx="12" fill="#fff3c4"/>
+<path d="M220 68 L595 68 L595 77" fill="none" marker-end="url(#a)" stroke-dasharray="6 5"/>
+<path d="M220 240 L286 150" fill="none" marker-end="url(#a)"/>
+<path d="M480 130 L496 130" fill="none" marker-end="url(#a)"/>
+<path d="M595 160 L420 196" fill="none" marker-end="url(#a)"/>
+<path d="M480 240 L496 240" fill="none" marker-end="url(#a)"/>
+<path d="M756 240 L694 240" fill="none" marker-end="url(#a)"/>
+<path d="M860 320 L860 284" fill="none" marker-end="url(#a)"/>
+</g>
+<text x="120" y="88" text-anchor="middle" class="t">data/orders.csv</text>
+<text x="120" y="115" text-anchor="middle" class="s">200 orders, 14 days</text>
+<text x="120" y="232" text-anchor="middle" class="t">start-all.sh</text>
+<text x="120" y="258" text-anchor="middle" class="s">POST ingestion/*.json</text>
+<text x="120" y="282" text-anchor="middle" class="s">index_parallel x2</text>
+<text x="490" y="50" text-anchor="middle" class="t">i32-druid (apache/druid:37.0.0, nano)</text>
+<text x="385" y="112" text-anchor="middle" class="t">coord-overlord</text>
+<text x="385" y="138" text-anchor="middle" class="s">tasks + segment balancing</text>
+<text x="595" y="112" text-anchor="middle" class="t">middleManager</text>
+<text x="595" y="138" text-anchor="middle" class="s">peon reads /data CSV</text>
+<text x="385" y="232" text-anchor="middle" class="t">historical</text>
+<text x="385" y="258" text-anchor="middle" class="s">serves DAY segments</text>
+<text x="595" y="232" text-anchor="middle" class="t">broker</text>
+<text x="595" y="258" text-anchor="middle" class="s">/druid/v2/sql</text>
+<text x="490" y="342" text-anchor="middle" class="s">zookeeper + derby metadata + local deep storage</text>
+<text x="860" y="232" text-anchor="middle" class="t">i32-ui</text>
+<text x="860" y="258" text-anchor="middle" class="s">Python 3.14 /api/*</text>
+<text x="860" y="357" text-anchor="middle" class="t">browser</text>
+</svg>

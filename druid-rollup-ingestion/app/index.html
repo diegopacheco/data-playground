@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Druid Rollup Ingestion</title>
+<style>
+  :root { --bg:#f7f8fa; --card:#fff; --ink:#1d2433; --muted:#667085; --line:#e4e7ec; --rollup:#2f6fde; --raw:#f08c2e; --ok:#1a7f4b; --bad:#c0362c; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:14px/1.5 -apple-system,Segoe UI,Helvetica,Arial,sans-serif; }
+  header { padding:20px 24px; background:var(--card); border-bottom:1px solid var(--line); }
+  header h1 { margin:0; font-size:20px; }
+  header p { margin:4px 0 0; color:var(--muted); }
+  nav { display:flex; gap:4px; padding:0 24px; background:var(--card); border-bottom:1px solid var(--line); }
+  nav button { border:0; background:none; padding:12px 14px; font:inherit; color:var(--muted); cursor:pointer; border-bottom:2px solid transparent; }
+  nav button.active { color:var(--ink); border-bottom-color:var(--rollup); font-weight:600; }
+  main { padding:24px; max-width:1100px; margin:0 auto; }
+  section { display:none; }
+  section.active { display:block; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; margin-bottom:20px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px; }
+  .card .label { color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.04em; }
+  .card .value { font-size:28px; font-weight:600; margin-top:4px; }
+  .card .sub { color:var(--muted); font-size:12px; }
+  table { width:100%; border-collapse:collapse; background:var(--card); border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+  th, td { padding:8px 12px; text-align:right; border-bottom:1px solid var(--line); }
+  th:first-child, td:first-child { text-align:left; }
+  th { background:#f1f3f6; font-weight:600; color:var(--muted); font-size:12px; text-transform:uppercase; }
+  .ok { color:var(--ok); font-weight:600; }
+  .bad { color:var(--bad); font-weight:600; }
+  .legend { display:flex; gap:16px; margin:8px 0 12px; color:var(--muted); }
+  .legend span::before { content:""; display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:6px; background:var(--c); }
+  svg text { font-size:11px; fill:var(--muted); }
+  .wrap { overflow-x:auto; }
+  #error { color:var(--bad); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Apache Druid rollup vs raw ingestion</h1>
+  <p>orders.csv ingested twice with native batch: orders_rollup (queryGranularity DAY, dims category + customer) and orders_raw (no rollup). segmentGranularity DAY for both.</p>
+</header>
+<nav>
+  <button data-tab="ratio" class="active">Rollup ratio</button>
+  <button data-tab="segments">Segments per day</button>
+  <button data-tab="aggregates">Aggregates</button>
+</nav>
+<main>
+  <p id="error"></p>
+  <section id="ratio" class="active">
+    <div class="grid" id="kpis"></div>
+    <table id="datasources"></table>
+  </section>
+  <section id="segments">
+    <div class="legend"><span style="--c:var(--rollup)">orders_rollup rows</span><span style="--c:var(--raw)">orders_raw rows</span></div>
+    <div class="card wrap"><svg id="chart" height="260"></svg></div>
+    <br>
+    <table id="days"></table>
+  </section>
+  <section id="aggregates">
+    <div class="grid" id="match"></div>
+    <table id="categories"></table>
+  </section>
+</main>
+<script>
+const fmt = n => Number(n).toLocaleString("en-US");
+const money = n => Number(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+function showTab(tab) {
+  document.querySelectorAll("nav button, section").forEach(e => e.classList.remove("active"));
+  document.querySelector(`nav button[data-tab="${tab}"]`).classList.add("active");
+  document.getElementById(tab).classList.add("active");
+  history.replaceState(null, "", "#" + tab);
+}
+
+document.querySelectorAll("nav button").forEach(b => b.onclick = () => showTab(b.dataset.tab));
+if (document.querySelector(`nav button[data-tab="${location.hash.slice(1)}"]`)) showTab(location.hash.slice(1));
+
+async function get(path) {
+  const r = await fetch(path);
+  const body = await r.json();
+  if (!r.ok) throw new Error(body.error || path);
+  return body;
+}
+
+function card(label, value, sub) {
+  return `<div class="card"><div class="label">${label}</div><div class="value">${value}</div><div class="sub">${sub}</div></div>`;
+}
+
+function renderSummary(s) {
+  const r = s.orders_rollup, w = s.orders_raw;
+  document.getElementById("kpis").innerHTML =
+    card("Rollup ratio", s.rollup_ratio + "x", `${fmt(r.events)} events / ${fmt(r.stored_rows)} stored rows`) +
+    card("Rows saved", fmt(s.rows_saved), `${(100 * s.rows_saved / w.stored_rows).toFixed(1)}% fewer rows than raw`) +
+    card("Segments", `${r.segments} / ${w.segments}`, "rollup / raw, one per DAY") +
+    card("Bytes", `${fmt(r.bytes)} / ${fmt(w.bytes)}`, "rollup / raw segment size");
+  document.getElementById("datasources").innerHTML =
+    "<tr><th>Datasource</th><th>Ingested events</th><th>Stored rows</th><th>Segments</th><th>Bytes</th></tr>" +
+    [["orders_rollup", r], ["orders_raw", w]].map(([n, d]) =>
+      `<tr><td>${n}</td><td>${fmt(d.events)}</td><td>${fmt(d.stored_rows)}</td><td>${d.segments}</td><td>${fmt(d.bytes)}</td></tr>`).join("");
+}
+
+function renderChart(days) {
+  const svg = document.getElementById("chart");
+  const width = Math.max(640, days.length * 60), height = 260, pad = 30, bottom = 40;
+  const max = Math.max(...days.map(d => Math.max(d.rollup_rows || 0, d.raw_rows || 0)));
+  const slot = (width - pad) / days.length, bar = slot / 3, scale = (height - bottom - 10) / max;
+  svg.setAttribute("width", width);
+  let out = "";
+  days.forEach((d, i) => {
+    const x = pad + i * slot + slot / 6;
+    [[d.rollup_rows || 0, "var(--rollup)", 0], [d.raw_rows || 0, "var(--raw)", bar]].forEach(([v, c, off]) => {
+      const h = v * scale, y = height - bottom - h;
+      out += `<rect x="${x + off}" y="${y}" width="${bar - 2}" height="${h}" fill="${c}" rx="2"><title>${v} rows</title></rect>`;
+      out += `<text x="${x + off + bar / 2 - 1}" y="${y - 3}" text-anchor="middle">${v}</text>`;
+    });
+    out += `<text x="${x + bar}" y="${height - bottom + 16}" text-anchor="middle">${d.day.slice(5)}</text>`;
+  });
+  out += `<line x1="${pad}" x2="${width}" y1="${height - bottom}" y2="${height - bottom}" stroke="#e4e7ec"/>`;
+  svg.innerHTML = out;
+}
+
+function renderDays(days) {
+  renderChart(days);
+  document.getElementById("days").innerHTML =
+    "<tr><th>Day</th><th>Rollup segments</th><th>Rollup rows</th><th>Raw segments</th><th>Raw rows</th><th>Rollup bytes</th><th>Raw bytes</th></tr>" +
+    days.map(d => `<tr><td>${d.day}</td><td>${d.rollup_segments || 0}</td><td>${d.rollup_rows || 0}</td><td>${d.raw_segments || 0}</td><td>${d.raw_rows || 0}</td><td>${fmt(d.rollup_bytes || 0)}</td><td>${fmt(d.raw_bytes || 0)}</td></tr>`).join("");
+}
+
+function renderCategories(c) {
+  document.getElementById("match").innerHTML =
+    card("Per-category aggregates", c.identical ? '<span class="ok">Identical</span>' : '<span class="bad">Different</span>', "orders, quantity and revenue from both datasources");
+  const raw = Object.fromEntries(c.raw.map(r => [r.category, r]));
+  document.getElementById("categories").innerHTML =
+    "<tr><th>Category</th><th>Orders rollup</th><th>Orders raw</th><th>Quantity rollup</th><th>Quantity raw</th><th>Revenue rollup</th><th>Revenue raw</th><th>Match</th></tr>" +
+    c.rollup.map(r => {
+      const w = raw[r.category] || {};
+      const same = r.orders === w.orders && r.quantity === w.quantity && r.revenue === w.revenue;
+      return `<tr><td>${r.category}</td><td>${r.orders}</td><td>${w.orders}</td><td>${r.quantity}</td><td>${w.quantity}</td><td>${money(r.revenue)}</td><td>${money(w.revenue)}</td><td class="${same ? "ok" : "bad"}">${same ? "yes" : "no"}</td></tr>`;
+    }).join("");
+}
+
+Promise.all([get("/api/summary"), get("/api/segments"), get("/api/categories")])
+  .then(([s, d, c]) => { renderSummary(s); renderDays(d); renderCategories(c); })
+  .catch(e => document.getElementById("error").textContent = e.message);
+</script>
+</body>
+</html>
