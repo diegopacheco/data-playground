@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Paimon Revenue Lakehouse</title>
+<style>
+:root{--bg:#f7f8fb;--card:#fff;--ink:#1d2433;--muted:#6b7385;--line:#e4e7ee;--accent:#2f6fde;--accent-soft:#e7eefc;--up:#1c8a4a;--down:#c2412d}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+header{padding:20px 24px;border-bottom:1px solid var(--line);background:var(--card);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+h1{font-size:18px;margin:0}
+h2{font-size:14px;margin:0 0 12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.sub{color:var(--muted);font-size:13px}
+main{max-width:1180px;margin:0 auto;padding:20px 16px;display:grid;gap:16px;grid-template-columns:1fr 320px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px}
+.tiles{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.tile .v{font-size:24px;font-weight:650;font-variant-numeric:tabular-nums}
+.tile .k{color:var(--muted);font-size:12px}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+th,td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:right}
+th:first-child,td:first-child{text-align:left}
+th{color:var(--muted);font-weight:600;font-size:12px}
+.delta{font-size:12px;margin-left:6px}
+.pos{color:var(--up)}.neg{color:var(--down)}
+.snaps{max-height:520px;overflow:auto}
+.snap{display:flex;justify-content:space-between;padding:8px;border-radius:6px;cursor:pointer;border:1px solid transparent}
+.snap:hover{background:var(--accent-soft)}
+.snap.sel{border-color:var(--accent);background:var(--accent-soft)}
+.snap small{color:var(--muted)}
+.pill{display:inline-block;padding:2px 8px;border-radius:999px;background:var(--accent-soft);color:var(--accent);font-size:12px;font-weight:600}
+button{border:1px solid var(--line);background:var(--card);border-radius:6px;padding:6px 10px;cursor:pointer;font:inherit}
+svg text{font-size:12px;fill:var(--ink)}
+.err{color:var(--down)}
+@media (max-width:860px){main{grid-template-columns:1fr}.tiles{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<header>
+<div><h1>Paimon streaming lakehouse</h1><div class="sub">Kafka topic i7-orders &rarr; Flink &rarr; Paimon <b>orders</b> (primary key, lookup changelog) &rarr; Paimon <b>revenue_by_category</b> (aggregation merge engine)</div></div>
+<div><span class="pill" id="view">latest</span> <button id="latest">Follow latest</button></div>
+</header>
+<main>
+<section class="tiles">
+<div class="card tile"><div class="k">Orders in Paimon</div><div class="v" id="t-orders">-</div></div>
+<div class="card tile"><div class="k">Units</div><div class="v" id="t-units">-</div></div>
+<div class="card tile"><div class="k">Revenue</div><div class="v" id="t-revenue">-</div></div>
+<div class="card tile"><div class="k">Data snapshots of revenue_by_category</div><div class="v" id="t-snaps">-</div></div>
+</section>
+<section>
+<div class="card"><h2>Revenue by category</h2><svg id="chart" width="100%" height="260" role="img" aria-label="revenue by category"></svg></div>
+<div class="card" style="margin-top:16px"><h2>revenue_by_category <span class="sub" id="cmp"></span></h2>
+<table><thead><tr><th>category</th><th>orders</th><th>units</th><th>revenue</th></tr></thead><tbody id="rows"></tbody></table>
+<div id="error" class="err"></div></div>
+</section>
+<aside class="card"><h2>Snapshots (time travel)</h2><div class="sub" style="margin-bottom:8px">Click a snapshot to read the table as of that commit and compare with the latest.</div><div class="snaps" id="snaps"></div></aside>
+</main>
+<script>
+const pinned=new URLSearchParams(location.search).get('snapshot');
+const state={snapshot:pinned?Number(pinned):null,latest:[],snaps:[]};
+const money=v=>Number(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const get=async u=>{const r=await fetch(u);const j=await r.json();if(!r.ok)throw new Error(j.error||r.status);return j};
+function deltaHtml(cur,base,fmt){if(base===undefined)return'';const d=cur-base;if(Math.abs(d)<0.005)return'';return `<span class="delta ${d>0?'pos':'neg'}">${d>0?'+':''}${fmt(d)}</span>`}
+function renderTable(rows,base){
+const b={};(base||[]).forEach(r=>b[r.category]=r);
+document.getElementById('rows').innerHTML=rows.map(r=>{const o=base?b[r.category]||{orders:0,units:0,revenue:0}:undefined;
+return `<tr><td>${r.category}</td><td>${r.orders}${deltaHtml(r.orders,o&&o.orders,String)}</td><td>${r.units}${deltaHtml(r.units,o&&o.units,String)}</td><td>${money(r.revenue)}${deltaHtml(r.revenue,o&&o.revenue,money)}</td></tr>`}).join('')}
+function renderChart(rows,ghost){
+const svg=document.getElementById('chart');const w=svg.clientWidth||600,h=260,left=90,right=80,bh=24,gap=10;
+const max=Math.max(1,...rows.map(r=>r.revenue),...(ghost||[]).map(r=>r.revenue));const g={};(ghost||[]).forEach(r=>g[r.category]=r.revenue);
+svg.setAttribute('height',Math.max(h,rows.length*(bh+gap)+10));
+svg.innerHTML=rows.map((r,i)=>{const y=5+i*(bh+gap);const bw=(w-left-right)*r.revenue/max;const gw=g[r.category]!==undefined?(w-left-right)*g[r.category]/max:null;
+return `<text x="${left-8}" y="${y+bh/2+4}" text-anchor="end">${r.category}</text>`+(gw!==null?`<rect x="${left}" y="${y}" width="${gw}" height="${bh}" fill="none" stroke="#9aa3b5" stroke-dasharray="4 3" rx="4"/>`:'')+`<rect x="${left}" y="${y+3}" width="${bw}" height="${bh-6}" fill="#2f6fde" rx="3"/><text x="${left+Math.max(bw,gw||0)+6}" y="${y+bh/2+4}">${money(r.revenue)}</text>`}).join('')}
+function renderSnaps(){
+document.getElementById('t-snaps').textContent=state.snaps.length;
+document.getElementById('snaps').innerHTML=state.snaps.map(s=>`<div class="snap ${state.snapshot===s.id?'sel':''}" data-id="${s.id}"><span><b>#${s.id}</b> <small>${s.kind}</small></span><small>${s.time.slice(11,19)} &middot; ${s.delta} rows</small></div>`).join('');
+document.querySelectorAll('.snap').forEach(e=>e.onclick=()=>{state.snapshot=Number(e.dataset.id);refresh()})}
+async function refresh(){
+try{
+const [sum,latest,snaps]=await Promise.all([get('/api/summary'),get('/api/revenue'),get('/api/snapshots')]);
+state.latest=latest;state.snaps=snaps;
+document.getElementById('t-orders').textContent=sum.orders;document.getElementById('t-units').textContent=sum.units;document.getElementById('t-revenue').textContent=money(sum.revenue);
+if(state.snapshot===null){renderTable(latest);renderChart(latest);document.getElementById('view').textContent='latest';document.getElementById('cmp').textContent=''}
+else{const old=await get('/api/revenue?snapshot='+state.snapshot);renderTable(latest,old);renderChart(latest,old);document.getElementById('view').textContent='comparing with snapshot #'+state.snapshot;document.getElementById('cmp').textContent='(latest, deltas vs snapshot #'+state.snapshot+', dashed bars = snapshot)'}
+renderSnaps();document.getElementById('error').textContent=''}
+catch(e){document.getElementById('error').textContent='query failed: '+e.message}}
+document.getElementById('latest').onclick=()=>{state.snapshot=null;refresh()};
+refresh();setInterval(()=>{if(state.snapshot===null)refresh()},5000);
+</script>
+</body>
+</html>
