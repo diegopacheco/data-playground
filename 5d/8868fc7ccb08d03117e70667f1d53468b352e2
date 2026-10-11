@@ -1,0 +1,75 @@
+paimon-flink-lakehouse/src/main/java/com/github/diegopacheco/paimonflink/Lakehouse.java
+  s_9121753c4a3d76::t_6a562f4f3ff8f0 25
+  s_9121753c4a3d76::t_c8e20b8a532de1 1-24,26-38,41-57
+  s_9121753c4a3d76::t_275832adf75de8 39-40
+paimon-flink-lakehouse/data/orders.csv
+  s_9121753c4a3d76::t_611cf3b9afd4d7 1-201
+paimon-flink-lakehouse/scripts/ports.env
+  s_9121753c4a3d76::t_f94fee7b9484fa 1-2
+paimon-flink-lakehouse/src/main/java/com/github/diegopacheco/paimonflink/UiServer.java
+  s_9121753c4a3d76::t_2ce5edf63eda83 61
+  s_9121753c4a3d76::t_69274b3a212122 17,32-35,39-42,47,55-56,60,74,104-106,108-112,114-116,118-121
+  s_9121753c4a3d76::t_aa89cb70f3ed00 21-30
+  s_9121753c4a3d76::t_f02c87b9f4e9fd 107,113,117
+  s_9121753c4a3d76::t_592fd96192d98e 14-16
+  s_9121753c4a3d76::t_439e55bc1b85a5 1-13,18-20,31,36-38,43-46,48-54,57-59,62-65,72-73,75-103,122-123
+  s_9121753c4a3d76::t_4370073f5bbfbb 66-71
+paimon-flink-lakehouse/scripts/test-all.sh
+  s_9121753c4a3d76::t_7837c170931d35 1-76
+paimon-flink-lakehouse/scripts/setup.sh
+  s_9121753c4a3d76::t_c80698f14a5f9f 10
+  s_9121753c4a3d76::t_fc5f97158e8e75 1-9,11-19
+paimon-flink-lakehouse/scripts/start-all.sh
+  s_9121753c4a3d76::t_56f332b46ddd79 18-23
+  s_9121753c4a3d76::t_8f8d3677d0add1 1-17,24-34
+paimon-flink-lakehouse/src/main/java/com/github/diegopacheco/paimonflink/Pipeline.java
+  s_9121753c4a3d76::t_38b1ed243fc347 1-48
+paimon-flink-lakehouse/scripts/status.sh
+  s_9121753c4a3d76::t_0eb259b66823be 1-19
+paimon-flink-lakehouse/.gitignore
+  s_9121753c4a3d76::t_65796a272f1f7f 1-3
+paimon-flink-lakehouse/scripts/common.sh
+  s_9121753c4a3d76::t_f39bd29fcea7c6 1-20,22-50,52-54,56-151,153-212
+  s_9121753c4a3d76::t_30d5c6fcfd68d4 55,152
+  s_9121753c4a3d76::t_c80698f14a5f9f 21,51
+paimon-flink-lakehouse/data/orders-updates.csv
+  s_9121753c4a3d76::t_752c45b3be57c8 1-13
+paimon-flink-lakehouse/scripts/stop-all.sh
+  s_9121753c4a3d76::t_502b4200573a2b 1-12
+paimon-flink-lakehouse/architecture.svg
+  s_9121753c4a3d76::t_1bbf6434ee431d 1-47
+paimon-flink-lakehouse/podman-compose.yml
+  s_9121753c4a3d76::t_d75d1881dbd108 1-31
+paimon-flink-lakehouse/pom.xml
+  s_9121753c4a3d76::t_f84f22cdf8227b 60-69
+  s_9121753c4a3d76::t_dfad23e0d4d6a8 1-14,16-59,70-101
+  s_9121753c4a3d76::t_ecb635d1b5ab73 15
+paimon-flink-lakehouse/src/main/java/com/github/diegopacheco/paimonflink/SqlConsole.java
+  s_9121753c4a3d76::t_09298c83def77a 1-36
+paimon-flink-lakehouse/src/main/resources/index.html
+  s_9121753c4a3d76::t_2ce5edf63eda83 48
+  s_9121753c4a3d76::t_6bd7737583742d 59-60
+  s_9121753c4a3d76::t_76a8dfa588aba7 1-47,49-58,61-91
+paimon-flink-lakehouse/scripts/sql-console.sh
+  s_9121753c4a3d76::t_6cb51dfb131704 1-10
+paimon-flink-lakehouse/scripts/ui.sh
+  s_9121753c4a3d76::t_1cd5c6709eaf0a 1-6
+paimon-flink-lakehouse/README.md
+  s_9121753c4a3d76::t_3ce32a4f029d1f 1-148
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5d8868fc7ccb08d03117e70667f1d53468b352e2",
+  "prompts": {},
+  "sessions": {
+    "s_9121753c4a3d76": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "39b421dc-22e8-4dc0-93df-749df3c5cb41",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "diegopacheco <diego.pacheco.it@gmail.com>"
+    }
+  }
+}
