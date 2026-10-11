@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="520" viewBox="0 0 1180 520">
+  <defs>
+    <style>@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&amp;display=swap'); text { font-family: 'Caveat', 'Comic Sans MS', cursive; fill: #1f2933; }</style>
+    <filter id="wobble"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="3"/></filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1f2933"/></marker>
+    <marker id="redarrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#c62828"/></marker>
+  </defs>
+  <rect width="1180" height="520" fill="#ffffff"/>
+  <g filter="url(#wobble)" stroke="#1f2933" stroke-width="2">
+    <rect x="20" y="150" width="160" height="110" rx="10" fill="#f1f3f5"/>
+    <rect x="220" y="150" width="150" height="110" rx="10" fill="#ffd8a8"/>
+    <rect x="410" y="160" width="130" height="90" rx="10" fill="#d0ebff" stroke-dasharray="8 5"/>
+    <rect x="580" y="150" width="150" height="110" rx="10" fill="#d0ebff" stroke-dasharray="8 5"/>
+    <rect x="770" y="160" width="130" height="90" rx="10" fill="#d0ebff" stroke-dasharray="8 5"/>
+    <rect x="940" y="150" width="210" height="110" rx="10" fill="#fff3bf"/>
+    <rect x="420" y="360" width="360" height="110" rx="10" fill="#ffc9c9"/>
+    <rect x="860" y="360" width="290" height="110" rx="10" fill="#d3f9d8"/>
+    <rect x="20" y="360" width="340" height="110" rx="10" fill="#e5dbff"/>
+    <line x1="180" y1="205" x2="217" y2="205" marker-end="url(#arrow)"/>
+    <line x1="370" y1="205" x2="407" y2="205" marker-end="url(#arrow)"/>
+    <line x1="540" y1="205" x2="577" y2="205" marker-end="url(#arrow)"/>
+    <line x1="730" y1="205" x2="767" y2="205" marker-end="url(#arrow)"/>
+    <line x1="900" y1="205" x2="937" y2="205" marker-end="url(#arrow)"/>
+    <line x1="475" y1="250" x2="530" y2="357" stroke="#c62828" marker-end="url(#redarrow)"/>
+    <line x1="655" y1="260" x2="615" y2="357" stroke="#c62828" marker-end="url(#redarrow)"/>
+    <line x1="835" y1="250" x2="700" y2="357" stroke="#c62828" marker-end="url(#redarrow)"/>
+    <line x1="1045" y1="260" x2="1045" y2="357" marker-end="url(#arrow)"/>
+    <line x1="420" y1="415" x2="363" y2="415" marker-end="url(#arrow)"/>
+  </g>
+  <text x="590" y="50" font-size="34" font-weight="700" text-anchor="middle">pandera-quality-gates-medallion</text>
+  <text x="590" y="84" font-size="20" text-anchor="middle">Pandera data contracts as gates between bronze, silver and gold (DuckDB), one container r12-app</text>
+  <text x="100" y="190" font-size="23" text-anchor="middle">data/incoming</text>
+  <text x="100" y="215" font-size="17" text-anchor="middle">4 CSV batches</text>
+  <text x="100" y="238" font-size="17" text-anchor="middle">+ manifest.json</text>
+  <text x="295" y="190" font-size="24" text-anchor="middle">bronze</text>
+  <text x="295" y="215" font-size="17" text-anchor="middle">every row as JSON</text>
+  <text x="295" y="238" font-size="17" text-anchor="middle">lands first</text>
+  <text x="475" y="195" font-size="21" text-anchor="middle">bronze gate</text>
+  <text x="475" y="220" font-size="16" text-anchor="middle">columns, strict</text>
+  <text x="655" y="190" font-size="24" text-anchor="middle">silver gate</text>
+  <text x="655" y="215" font-size="17" text-anchor="middle">types, nulls, unique,</text>
+  <text x="655" y="238" font-size="17" text-anchor="middle">ranges, freshness</text>
+  <text x="835" y="195" font-size="21" text-anchor="middle">gold gate</text>
+  <text x="835" y="220" font-size="16" text-anchor="middle">reconcile</text>
+  <text x="1045" y="190" font-size="24" text-anchor="middle">silver + gold</text>
+  <text x="1045" y="215" font-size="17" text-anchor="middle">committed in one</text>
+  <text x="1045" y="238" font-size="17" text-anchor="middle">DuckDB transaction</text>
+  <text x="600" y="400" font-size="24" text-anchor="middle">quarantine + gate report</text>
+  <text x="600" y="425" font-size="17" text-anchor="middle">every row of a blocked batch, with the checks</text>
+  <text x="600" y="448" font-size="17" text-anchor="middle">that failed on it, rows and failing values</text>
+  <text x="1005" y="400" font-size="24" text-anchor="middle">tests (unittest)</text>
+  <text x="1005" y="425" font-size="17" text-anchor="middle">stdlib csv recompute vs REST API</text>
+  <text x="1005" y="448" font-size="17" text-anchor="middle">plus live bad batches</text>
+  <text x="190" y="400" font-size="24" text-anchor="middle">UI + REST API :27700</text>
+  <text x="190" y="425" font-size="17" text-anchor="middle">http.server + plain HTML/CSS/JS</text>
+  <text x="190" y="448" font-size="17" text-anchor="middle">pipeline, reports, contracts, layers</text>
+  <text x="410" y="310" font-size="18" fill="#c62828" text-anchor="middle">any failed check</text>
+  <text x="820" y="310" font-size="18" fill="#c62828" text-anchor="middle">rollback</text>
+</svg>

@@ -1,0 +1,26 @@
+name: r12-pandera-quality-gates-medallion
+
+services:
+  r12-app:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: r12-pandera-quality-gates-medallion:latest
+    container_name: r12-app
+    restart: unless-stopped
+    environment:
+      UI_PORT: "8080"
+      INCOMING: /data/incoming
+      WAREHOUSE: /app/warehouse/lake.duckdb
+    mem_limit: 512m
+    cpus: 1
+    ports:
+      - "${ui:-27700}:8080"
+    volumes:
+      - ./data:/data:ro
+    networks:
+      - r12-net
+
+networks:
+  r12-net:
+    name: r12-net

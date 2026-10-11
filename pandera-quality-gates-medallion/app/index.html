@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pandera Quality Gates</title>
+<style>
+:root { --bg: #f6f7f9; --card: #ffffff; --ink: #1f2933; --muted: #616e7c; --line: #e4e7eb; --bronze: #c26d2b; --silver: #7b8794; --gold: #c99a06; --ok: #1f8a4c; --okbg: #e3f5ea; --bad: #c62828; --badbg: #fdecea; --skip: #9aa5b1; --accent: #2f5bd3; }
+* { box-sizing: border-box; }
+body { margin: 0; font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--ink); }
+header { background: var(--card); border-bottom: 1px solid var(--line); padding: 16px 24px; }
+header h1 { margin: 0; font-size: 20px; }
+header p { margin: 4px 0 0; color: var(--muted); }
+nav { display: flex; gap: 4px; padding: 0 24px; background: var(--card); border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+nav button { border: 0; background: none; padding: 12px 14px; font: inherit; color: var(--muted); cursor: pointer; border-bottom: 3px solid transparent; }
+nav button.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+main { padding: 20px 24px; max-width: 1280px; margin: 0 auto; }
+section { display: none; }
+section.active { display: block; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 18px; }
+.tile { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
+.tile b { display: block; font-size: 26px; }
+.tile span { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px; margin-bottom: 16px; overflow-x: auto; }
+.card h2 { margin: 0 0 10px; font-size: 16px; }
+.flow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.layer { border-radius: 10px; padding: 12px 16px; min-width: 140px; text-align: center; color: #fff; }
+.layer b { display: block; font-size: 22px; }
+.layer.bronze { background: var(--bronze); }
+.layer.silver { background: var(--silver); }
+.layer.gold { background: var(--gold); }
+.layer.quarantine { background: var(--bad); }
+.gatebox { border: 2px dashed var(--accent); color: var(--accent); border-radius: 8px; padding: 6px 10px; font-weight: 600; font-size: 12px; }
+.arrow { color: var(--muted); font-size: 20px; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { color: var(--muted); font-weight: 600; background: #fafbfc; }
+tr.clickable { cursor: pointer; }
+tr.clickable:hover { background: #f0f4ff; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+.pass, .promoted { background: var(--okbg); color: var(--ok); }
+.fail, .quarantined { background: var(--badbg); color: var(--bad); }
+.skipped { background: #eef0f2; color: var(--skip); }
+tr.failrow td { background: #fff7f6; }
+code, .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
+.muted { color: var(--muted); }
+select, input, textarea, .btn { font: inherit; padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--ink); }
+.btn { cursor: pointer; background: var(--accent); color: #fff; border-color: var(--accent); }
+.btn.secondary { background: #fff; color: var(--accent); }
+textarea { width: 100%; min-height: 260px; font-family: ui-monospace, Menlo, monospace; font-size: 12px; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 10px; }
+.gate-title { display: flex; justify-content: space-between; align-items: center; }
+.bar { height: 10px; background: var(--okbg); border-radius: 6px; overflow: hidden; display: flex; }
+.bar i { display: block; background: var(--bad); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Pandera quality gates in a bronze, silver, gold pipeline</h1>
+  <p>Every batch lands in bronze, then must pass the bronze contract, the silver contract and the gold contract to be promoted. Any failed check quarantines the whole batch with a report of what failed.</p>
+</header>
+<nav id="tabs">
+  <button data-tab="pipeline" class="active">Pipeline</button>
+  <button data-tab="reports">Gate reports</button>
+  <button data-tab="contracts">Contracts</button>
+  <button data-tab="layers">Layers</button>
+  <button data-tab="submit">Submit batch</button>
+</nav>
+<main>
+  <section id="pipeline" class="active">
+    <div class="tiles" id="tiles"></div>
+    <div class="card"><h2>Medallion flow</h2><div class="flow" id="flow"></div></div>
+    <div class="card"><h2>Batches</h2><table id="batchTable"></table><p class="muted">Click a batch to open its gate report.</p></div>
+    <div class="card"><h2>Gold revenue per day and region</h2><table id="goldTable"></table></div>
+  </section>
+  <section id="reports">
+    <div class="row"><label>Batch <select id="batchSelect"></select></label><span id="batchStatus"></span></div>
+    <div id="reportBody"></div>
+  </section>
+  <section id="contracts"><div id="contractBody"></div></section>
+  <section id="layers">
+    <div class="row"><label>Layer <select id="layerSelect"><option>bronze</option><option>silver</option><option>quarantine</option><option>gold</option></select></label><span class="muted" id="layerInfo"></span></div>
+    <div class="card"><table id="layerTable"></table></div>
+  </section>
+  <section id="submit">
+    <div class="card">
+      <h2>Send a new batch through the gates</h2>
+      <div class="row">
+        <label>Batch id <input id="newId"></label>
+        <label>Extracted at <input id="newExtracted" placeholder="2026-09-23T01:00:00"></label>
+        <label>Start from <select id="loadSelect"></select></label>
+        <button class="btn secondary" id="loadBtn">Load CSV</button>
+        <button class="btn" id="sendBtn">Run gates</button>
+      </div>
+      <textarea id="newCsv" spellcheck="false"></textarea>
+    </div>
+    <div id="submitResult"></div>
+  </section>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const esc = v => String(v ?? "").replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+const api = (path, opts) => fetch(path, opts).then(r => r.json());
+const money = v => Number(v).toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2});
+const badge = (text, cls) => `<span class="badge ${cls}">${esc(text)}</span>`;
+const state = {};
+
+document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => show(b.dataset.tab));
+function show(tab) {
+  document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
+  document.querySelectorAll("main section").forEach(s => s.classList.toggle("active", s.id === tab));
+  if (tab === "layers") loadLayer();
+}
+
+function table(el, columns, rows) {
+  el.innerHTML = `<tr>${columns.map(c => `<th>${esc(c)}</th>`).join("")}</tr>` + rows.join("");
+}
+
+async function loadSummary() {
+  const s = await api("/api/summary");
+  state.summary = s;
+  const promoted = s.batches.filter(b => b.status === "promoted").length;
+  $("tiles").innerHTML = [
+    ["Batches promoted", `${promoted} / ${s.batches.length}`],
+    ["Batches quarantined", s.batches.length - promoted],
+    ["Silver rows", s.layers.silver],
+    ["Quarantined rows", s.layers.quarantine],
+    ["Gold revenue", money(s.gold_revenue)],
+    ["Stack", `<div class="mono" style="font-size:12px;font-weight:400">pandera ${esc(s.stack.pandera)}<br>pandas ${esc(s.stack.pandas)}<br>duckdb ${esc(s.stack.duckdb)}</div>`],
+  ].map(([k, v]) => `<div class="tile"><span>${k}</span><b>${v}</b></div>`).join("");
+  $("flow").innerHTML = `
+    <div class="layer bronze"><b>${s.layers.bronze}</b>bronze rows</div><span class="arrow">&rarr;</span>
+    <div class="gatebox">bronze gate<br>raw structure</div><span class="arrow">&rarr;</span>
+    <div class="gatebox">silver gate<br>typed orders</div><span class="arrow">&rarr;</span>
+    <div class="layer silver"><b>${s.layers.silver}</b>silver rows</div><span class="arrow">&rarr;</span>
+    <div class="gatebox">gold gate<br>reconciliation</div><span class="arrow">&rarr;</span>
+    <div class="layer gold"><b>${s.layers.gold}</b>gold rows</div>
+    <span class="arrow" style="margin-left:18px">failed checks &rarr;</span>
+    <div class="layer quarantine"><b>${s.layers.quarantine}</b>quarantined rows</div>`;
+  table($("batchTable"), ["Batch", "File", "Extracted at", "Rows", "Status", "Blocked at", "Failed checks"], s.batches.map(b => `
+    <tr class="clickable" data-batch="${esc(b.batch_id)}"><td class="mono">${esc(b.batch_id)}</td><td class="mono">${esc(b.file)}</td><td class="mono">${esc(b.extracted_at)}</td>
+    <td>${b.rows}</td><td>${badge(b.status, b.status)}</td><td>${esc(b.blocked_at || "")}</td>
+    <td>${b.failed_checks.length ? b.failed_checks.map(esc).join("<br>") : '<span class="muted">none</span>'}</td></tr>`));
+  document.querySelectorAll("#batchTable tr[data-batch]").forEach(tr => tr.onclick = () => { $("batchSelect").value = tr.dataset.batch; loadReport(); show("reports"); });
+  $("batchSelect").innerHTML = s.batches.map(b => `<option>${esc(b.batch_id)}</option>`).join("");
+  const gold = await api("/api/layers/gold?limit=100");
+  table($("goldTable"), gold.columns, gold.rows.map(r => `<tr>${r.map((v, i) => `<td>${gold.columns[i] === "revenue" ? money(v) : esc(v)}</td>`).join("")}</tr>`));
+  if (!$("batchSelect").dataset.ready) { $("batchSelect").dataset.ready = 1; loadReport(); }
+}
+
+function renderReport(r) {
+  const gates = r.gates.map(g => {
+    const status = g.skipped ? badge("skipped", "skipped") : g.passed ? badge("passed", "pass") : badge("failed", "fail");
+    const failed = g.checks.filter(c => c.passed === false).length;
+    const rows = g.checks.map(c => `<tr class="${c.passed === false ? "failrow" : ""}">
+      <td class="mono">${esc(c.column)}</td><td>${esc(c.label)}</td>
+      <td>${c.passed === null ? badge("not run", "skipped") : c.passed ? badge("pass", "pass") : badge("fail", "fail")}</td>
+      <td>${c.failures || ""}</td>
+      <td class="mono">${c.rows.length ? esc(c.rows.join(", ")) : (c.passed === false ? "whole batch" : "")}</td>
+      <td class="mono">${c.samples.map(v => esc(v === null ? "null" : v)).join(", ")}</td></tr>`);
+    return `<div class="card"><div class="gate-title"><h2>${esc(g.gate)} gate: ${esc(g.contract)}</h2><span>${status} <span class="muted">${g.checks.length} checks, ${failed} failed</span></span></div>
+      <table><tr><th>Column</th><th>Check</th><th>Result</th><th>Failures</th><th>Rows</th><th>Failing values</th></tr>${rows.join("")}</table></div>`;
+  }).join("");
+  return `<div class="card"><h2>${esc(r.batch_id)} ${badge(r.status, r.status)}</h2>
+    <div class="muted">${r.rows} rows, extracted at <span class="mono">${esc(r.extracted_at)}</span>${r.blocked_at ? `, blocked at the <b>${esc(r.blocked_at)}</b> gate` : ", promoted to silver and gold"}</div></div>${gates}`;
+}
+
+async function loadReport() {
+  const id = $("batchSelect").value;
+  if (!id) return;
+  const r = await api(`/api/batches/${encodeURIComponent(id)}`);
+  $("batchStatus").innerHTML = badge(r.status, r.status);
+  $("reportBody").innerHTML = renderReport(r);
+}
+$("batchSelect").onchange = loadReport;
+
+async function loadContracts() {
+  const c = await api("/api/contracts");
+  $("contractBody").innerHTML = Object.entries(c).map(([gate, def]) => `<div class="card"><h2>${esc(gate)} gate: ${esc(def.name)}</h2>
+    <table><tr><th>Column</th><th>Check</th><th>Pandera check id</th></tr>${def.checks.map(k => `<tr><td class="mono">${esc(k.column)}</td><td>${esc(k.label)}</td><td class="mono">${esc(k.check)}</td></tr>`).join("")}</table></div>`).join("");
+}
+
+async function loadLayer() {
+  const name = $("layerSelect").value;
+  const l = await api(`/api/layers/${name}?limit=60`);
+  $("layerInfo").textContent = `${l.total} rows, showing ${l.rows.length}`;
+  table($("layerTable"), l.columns, l.rows.map(r => `<tr>${r.map(v => `<td class="mono">${esc(v)}</td>`).join("")}</tr>`));
+}
+$("layerSelect").onchange = loadLayer;
+
+async function loadIncoming() {
+  const files = await api("/api/incoming");
+  $("loadSelect").innerHTML = files.map(f => `<option>${esc(f.batch_id)}</option>`).join("");
+  $("newId").value = `batch-${String(Date.now()).slice(-6)}`;
+}
+$("loadBtn").onclick = async () => {
+  const id = $("loadSelect").value;
+  $("newCsv").value = await fetch(`/api/incoming/${encodeURIComponent(id)}`).then(r => r.text());
+  const f = (await api("/api/incoming")).find(x => x.batch_id === id);
+  $("newExtracted").value = f ? f.extracted_at : "";
+};
+$("sendBtn").onclick = async () => {
+  const res = await fetch("/api/batches", {method: "POST", headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({batch_id: $("newId").value, extracted_at: $("newExtracted").value, csv: $("newCsv").value})});
+  const body = await res.json();
+  $("submitResult").innerHTML = res.ok ? renderReport(body) : `<div class="card">${badge("rejected", "fail")} ${esc(body.error)}</div>`;
+  $("newId").value = `batch-${String(Date.now()).slice(-6)}`;
+  $("batchSelect").dataset.ready = 1;
+  loadSummary();
+};
+
+loadSummary();
+loadContracts();
+loadIncoming();
+</script>
+</body>
+</html>
