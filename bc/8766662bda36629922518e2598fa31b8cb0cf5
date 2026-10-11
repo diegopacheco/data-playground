@@ -1,0 +1,60 @@
+pandera-quality-gates-medallion/scripts/common.sh
+  s_3b53f3faf7302c::t_c9d54e9ff79693 1-85
+pandera-quality-gates-medallion/app/contracts.py
+  s_3b53f3faf7302c::t_cff5353a5457cf 1-87
+pandera-quality-gates-medallion/Containerfile
+  s_3b53f3faf7302c::t_a06efc3b666a8a 1-8
+pandera-quality-gates-medallion/app/server.py
+  s_3b53f3faf7302c::t_9f6caa92d1a984 1-80
+pandera-quality-gates-medallion/tests/test_gates.py
+  s_3b53f3faf7302c::t_3f0e4d4ccbd29f 27-28
+  s_3b53f3faf7302c::t_3a87ded8f49417 1-26,29-234
+pandera-quality-gates-medallion/scripts/ports.env
+  s_3b53f3faf7302c::t_3ca4f302ff7b3e 1
+pandera-quality-gates-medallion/scripts/test-all.sh
+  s_3b53f3faf7302c::t_4f95762d3c8a9c 1-13
+pandera-quality-gates-medallion/scripts/stop-all.sh
+  s_3b53f3faf7302c::t_5b841b7fc31d4d 1-15
+pandera-quality-gates-medallion/podman-compose.yml
+  s_3b53f3faf7302c::t_9aafafc67cd680 1-26
+pandera-quality-gates-medallion/scripts/start-all.sh
+  s_3b53f3faf7302c::t_10ba6d5cbec432 1-20
+pandera-quality-gates-medallion/app/index.html
+  s_3b53f3faf7302c::t_17320d1294448c 1-217
+pandera-quality-gates-medallion/scripts/status.sh
+  s_3b53f3faf7302c::t_16c6e6a4b9aaef 1-13
+pandera-quality-gates-medallion/printscreens/architecture.svg
+  s_3b53f3faf7302c::t_22b57fbb2d81dc 1-56,58-59
+  s_3b53f3faf7302c::t_b05a09b4dbb62b 57
+pandera-quality-gates-medallion/app/pipeline.py
+  s_3b53f3faf7302c::t_00cb0b42dbf711 1-27,29-47,49-223
+  s_3b53f3faf7302c::t_c4480248c7f48b 28,48
+pandera-quality-gates-medallion/README.md
+  s_3b53f3faf7302c::t_deea49ac794fe3 1-190
+pandera-quality-gates-medallion/.gitignore
+  s_3b53f3faf7302c::t_580b163dffedcd 1-4
+pandera-quality-gates-medallion/app/gen.py
+  s_3b53f3faf7302c::t_343e27a6c82109 1-83
+pandera-quality-gates-medallion/requirements.txt
+  s_3b53f3faf7302c::t_bd1be458098792 1-3
+pandera-quality-gates-medallion/scripts/setup.sh
+  s_3b53f3faf7302c::t_03879d5cd5d179 1-22
+pandera-quality-gates-medallion/scripts/ui.sh
+  s_3b53f3faf7302c::t_7e74a253c06759 1-8
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "bc8766662bda36629922518e2598fa31b8cb0cf5",
+  "prompts": {},
+  "sessions": {
+    "s_3b53f3faf7302c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7b7528e4-a24f-44b8-a1f0-3181aa699c71",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "diegopacheco <diego.pacheco.it@gmail.com>"
+    }
+  }
+}
