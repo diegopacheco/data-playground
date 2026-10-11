@@ -1,0 +1,73 @@
+druid-rollup-ingestion/app/index.html
+  s_9121753c4a3d76::t_849e48579c5139 69,71-77
+  s_9121753c4a3d76::t_3644d96b3f9003 1-68,70,78-148
+druid-rollup-ingestion/scripts/common.sh
+  s_9121753c4a3d76::t_195dfbee33e18e 1-91
+druid-rollup-ingestion/druid/launch.sh
+  s_9121753c4a3d76::t_bb7755d64bac8c 1-3,8-9,11-13
+  s_9121753c4a3d76::t_f84199664c93f5 10
+  s_9121753c4a3d76::t_40dd35f6d767b6 4-7
+druid-rollup-ingestion/app/druid.py
+  s_9121753c4a3d76::t_18b49a0830c430 1-16
+druid-rollup-ingestion/podman-compose.yml
+  s_9121753c4a3d76::t_9b4318125b5a10 8-9
+  s_9121753c4a3d76::t_92959321b6f021 26
+  s_9121753c4a3d76::t_7b2e7f954f9925 1-6,10,13-14,16-25,27-37
+  s_9121753c4a3d76::t_905272c830290e 11-12
+  s_9121753c4a3d76::t_9a22efe4752078 7,15
+druid-rollup-ingestion/ingestion/orders_rollup.json
+  s_9121753c4a3d76::t_52887158a994b5 1-37
+druid-rollup-ingestion/ingestion/orders_raw.json
+  s_9121753c4a3d76::t_79a4d42e7ea4f9 1-42
+druid-rollup-ingestion/.gitignore
+  s_9121753c4a3d76::t_3046bb59537794 1-2
+druid-rollup-ingestion/data/orders.csv
+  s_9121753c4a3d76::t_ca22cd122a0fa9 1-201
+druid-rollup-ingestion/Containerfile
+  s_9121753c4a3d76::t_f6855a4b902571 1-5
+druid-rollup-ingestion/scripts/setup.sh
+  s_9121753c4a3d76::t_7bda1170d2c48f 1-16
+druid-rollup-ingestion/scripts/stop-all.sh
+  s_9121753c4a3d76::t_055328f6a5b9aa 1-15
+druid-rollup-ingestion/scripts/start-all.sh
+  s_9121753c4a3d76::t_5b2f17d1fe0f87 22-28
+  s_9121753c4a3d76::t_1c6a942c181dbc 45-46
+  s_9121753c4a3d76::t_897ebd190e5737 1-21,29-44,47-61,63-71
+  s_9121753c4a3d76::t_cd075b81f52b4c 62
+druid-rollup-ingestion/scripts/test-all.sh
+  s_9121753c4a3d76::t_084b57b7679236 1-68
+druid-rollup-ingestion/scripts/ui.sh
+  s_9121753c4a3d76::t_a7356691264e11 1-6
+druid-rollup-ingestion/scripts/status.sh
+  s_9121753c4a3d76::t_965e0bd047d90e 1-14
+druid-rollup-ingestion/app/server.py
+  s_9121753c4a3d76::t_361a2708afc532 1-39
+druid-rollup-ingestion/app/report.py
+  s_9121753c4a3d76::t_d57b2accacf262 1-60
+druid-rollup-ingestion/README.md
+  s_9121753c4a3d76::t_2c0119d254d468 1-130
+druid-rollup-ingestion/scripts/sql-console.sh
+  s_9121753c4a3d76::t_823eb6a3c0e86f 1-23
+druid-rollup-ingestion/architecture.svg
+  s_9121753c4a3d76::t_eddca982554a8c 19
+  s_9121753c4a3d76::t_8b4e06341c2fd8 1-18,20-45
+druid-rollup-ingestion/scripts/ports.env
+  s_9121753c4a3d76::t_9699953bac88ef 2
+  s_9121753c4a3d76::t_f84199664c93f5 1,3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ca6185feb9f6e0aeea44a8bf83143fe6b7a711a9",
+  "prompts": {},
+  "sessions": {
+    "s_9121753c4a3d76": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "39b421dc-22e8-4dc0-93df-749df3c5cb41",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "diegopacheco <diego.pacheco.it@gmail.com>"
+    }
+  }
+}
