@@ -1,0 +1,71 @@
+duckdb-vs-polars-vs-datafusion/src/polars_queries.py
+  s_9121753c4a3d76::t_deebfa3ec76a0b 1-33
+duckdb-vs-polars-vs-datafusion/.gitignore
+  s_9121753c4a3d76::t_53843014201225 1-5
+duckdb-vs-polars-vs-datafusion/data/orders.csv
+  s_9121753c4a3d76::t_e447d727c2d1fd 1-201
+duckdb-vs-polars-vs-datafusion/src/worker.py
+  s_9121753c4a3d76::t_d01c9696433295 1-42
+duckdb-vs-polars-vs-datafusion/tests/test_results.py
+  s_9121753c4a3d76::t_011b966a6455f1 1-60
+duckdb-vs-polars-vs-datafusion/src/bench.py
+  s_9121753c4a3d76::t_3e09afae0f118b 1-9,11-28,30-52
+  s_9121753c4a3d76::t_2d010977173328 10
+  s_9121753c4a3d76::t_c6bccfb4850a6d 29
+duckdb-vs-polars-vs-datafusion/requirements.txt
+  s_9121753c4a3d76::t_53843014201225 1-4
+duckdb-vs-polars-vs-datafusion/src/gen.py
+  s_9121753c4a3d76::t_143bc9aeaaadae 1-15,17-34,38,40-65
+  s_9121753c4a3d76::t_2c4faed4ed346e 16
+  s_9121753c4a3d76::t_9509dd8a8090ff 35-37,39
+duckdb-vs-polars-vs-datafusion/scripts/ui.sh
+  s_9121753c4a3d76::t_53843014201225 1-6
+duckdb-vs-polars-vs-datafusion/ui/index.html
+  s_9121753c4a3d76::t_29d855c38750df 88
+  s_9121753c4a3d76::t_81273fb5625b30 61-62,109
+  s_9121753c4a3d76::t_60d7822639fb1d 1-60,63-87,89-98,100-108,110-114
+  s_9121753c4a3d76::t_83948c5dfc5af9 99
+duckdb-vs-polars-vs-datafusion/README.md
+  s_9121753c4a3d76::t_1e0aa34e1c3e7c 110
+  s_9121753c4a3d76::t_72840006717aee 1-109,111-143
+duckdb-vs-polars-vs-datafusion/scripts/ports.env
+  s_9121753c4a3d76::t_53843014201225 1
+duckdb-vs-polars-vs-datafusion/architecture.svg
+  s_9121753c4a3d76::t_f1f37ac43c61a6 1-60
+duckdb-vs-polars-vs-datafusion/scripts/start-all.sh
+  s_9121753c4a3d76::t_53843014201225 1-6,9-11
+  s_9121753c4a3d76::t_79068c5c152a17 7-8
+duckdb-vs-polars-vs-datafusion/scripts/test-all.sh
+  s_9121753c4a3d76::t_53843014201225 1-7
+duckdb-vs-polars-vs-datafusion/src/engines.py
+  s_9121753c4a3d76::t_ca0984b9bbb1e5 1-44
+duckdb-vs-polars-vs-datafusion/scripts/common.sh
+  s_9121753c4a3d76::t_53843014201225 1-118
+duckdb-vs-polars-vs-datafusion/scripts/status.sh
+  s_9121753c4a3d76::t_53843014201225 1-13
+duckdb-vs-polars-vs-datafusion/src/queries.py
+  s_9121753c4a3d76::t_1c4f9c5248de19 1-15,23-28
+  s_9121753c4a3d76::t_ac6c97df322e8d 16-22
+duckdb-vs-polars-vs-datafusion/scripts/setup.sh
+  s_9121753c4a3d76::t_53843014201225 1-16
+duckdb-vs-polars-vs-datafusion/src/server.py
+  s_9121753c4a3d76::t_dd8d03ba510aff 1-30
+duckdb-vs-polars-vs-datafusion/scripts/stop-all.sh
+  s_9121753c4a3d76::t_53843014201225 1-7
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "10e35db5b039afef1f87ad265e1ba709bc3ba200",
+  "prompts": {},
+  "sessions": {
+    "s_9121753c4a3d76": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "39b421dc-22e8-4dc0-93df-749df3c5cb41",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "diegopacheco <diego.pacheco.it@gmail.com>"
+    }
+  }
+}
