@@ -1,0 +1,4 @@
+duckdb==1.5.5
+polars==1.44.2
+datafusion==54.0.0
+pyarrow==25.0.1

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DuckDB vs Polars vs DataFusion</title>
+<style>
+:root{--bg:#f7f7f4;--card:#fff;--ink:#1d2330;--muted:#6b7280;--line:#e5e7eb;--duckdb:#e0a800;--polars:#2f6fdb;--datafusion:#c2410c;--ok:#15803d;--bad:#b91c1c}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}
+main{max-width:1100px;margin:0 auto;padding:24px 16px 48px}
+h1{margin:0 0 4px;font-size:26px}
+.sub{color:var(--muted);margin-bottom:20px}
+.meta{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px}
+.pill{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:13px}
+.legend{display:flex;gap:16px;margin:0 0 16px;flex-wrap:wrap}
+.legend span{display:inline-flex;align-items:center;gap:6px;font-size:14px}
+.legend i{width:14px;height:14px;border-radius:3px;display:inline-block}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,500px),1fr));gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;min-width:0}
+.card h2{margin:0;font-size:17px}
+.head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
+.badge{font-size:12px;font-weight:600;border-radius:6px;padding:2px 8px;white-space:nowrap}
+.badge.ok{color:var(--ok);background:#dcfce7}
+.badge.bad{color:var(--bad);background:#fee2e2}
+.label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:10px 0 2px}
+svg{width:100%;height:auto;display:block}
+svg text{font-size:11px;fill:var(--muted)}
+svg text.v{fill:var(--ink);font-weight:600}
+details{margin-top:10px}
+summary{cursor:pointer;color:var(--muted);font-size:13px}
+pre{background:#f3f4f6;border-radius:8px;padding:10px;overflow:auto;font-size:12px}
+table{border-collapse:collapse;width:100%;font-size:12px}
+td,th{border-bottom:1px solid var(--line);padding:4px 6px;text-align:left}
+.wrap{overflow-x:auto}
+</style>
+</head>
+<body>
+<main>
+<h1>DuckDB vs Polars vs DataFusion</h1>
+<div class="sub">Same four queries over the same Parquet file (zstd), each engine in its own Python process. Lower is better.</div>
+<div class="meta" id="meta"></div>
+<div class="legend" id="legend"></div>
+<div class="grid" id="queries"></div>
+<div class="card" style="margin-top:16px">
+<div class="head"><h2>Peak memory per query (MB, process RSS)</h2></div>
+<div id="memory"></div>
+</div>
+</main>
+<script>
+const ENGINES = ["duckdb", "polars", "datafusion"];
+const COLOR = e => `var(--${e})`;
+
+function el(tag, attrs, text) {
+  const n = document.createElementNS("http://www.w3.org/2000/svg", tag);
+  for (const k in attrs) n.setAttribute(k, attrs[k]);
+  if (text !== undefined) n.textContent = text;
+  return n;
+}
+
+function groupedBars(groups, unit, W = 520) {
+  const H = 220, top = 20, bottom = 30, left = 44, right = 8;
+  const max = Math.max(...groups.flatMap(g => g.values)) * 1.15;
+  const svg = el("svg", {viewBox: `0 0 ${W} ${H}`, role: "img"});
+  const plotH = H - top - bottom;
+  for (let i = 0; i <= 4; i++) {
+    const v = max * i / 4, y = top + plotH - plotH * i / 4;
+    svg.append(el("line", {x1: left, x2: W - right, y1: y, y2: y, stroke: "#e5e7eb"}));
+    svg.append(el("text", {x: left - 6, y: y + 4, "text-anchor": "end"}, v < 10 ? v.toFixed(1) : Math.round(v)));
+  }
+  const gw = (W - left - right) / groups.length, bw = Math.min(46, gw * 0.8 / ENGINES.length);
+  groups.forEach((g, gi) => {
+    const x0 = left + gi * gw + (gw - bw * ENGINES.length) / 2;
+    g.values.forEach((v, i) => {
+      const h = plotH * v / max, x = x0 + i * bw, y = top + plotH - h;
+      const r = el("rect", {x: x + 2, y, width: bw - 4, height: h, rx: 3, fill: COLOR(ENGINES[i])});
+      r.append(el("title", {}, `${ENGINES[i]} ${g.name}: ${v} ${unit}`));
+      svg.append(r);
+      svg.append(el("text", {x: x + bw / 2, y: y - 4, "text-anchor": "middle", class: "v"}, v < 10 ? v.toFixed(1) : Math.round(v)));
+    });
+    svg.append(el("text", {x: left + gi * gw + gw / 2, y: H - 10, "text-anchor": "middle"}, g.name));
+  });
+  return svg;
+}
+
+function resultTable(q) {
+  const rows = q.result.slice(0, 8);
+  return `<table><tr>${q.columns.map(c => `<th>${c}</th>`).join("")}</tr>${rows.map(r => `<tr>${r.map(v => `<td>${typeof v === "number" ? v.toLocaleString() : v}</td>`).join("")}</tr>`).join("")}</table>`;
+}
+
+function queryCard(q) {
+  const card = document.createElement("div");
+  card.className = "card";
+  card.innerHTML = `<div class="head"><h2>${q.id.toUpperCase()} ${q.title}</h2><span class="badge ${q.identical ? "ok" : "bad"}">${q.identical ? "identical results" : "results differ"}</span></div><div class="label">Latency (ms)</div>`;
+  card.append(groupedBars([
+    {name: "cold-ish (first run, fresh process)", values: ENGINES.map(e => q.engines[e].cold_ms)},
+    {name: "warm (median)", values: ENGINES.map(e => q.engines[e].warm_median_ms)},
+  ], "ms"));
+  card.insertAdjacentHTML("beforeend", `<details><summary>SQL (DuckDB and DataFusion)</summary><pre>${q.sql.replace(/&/g, "&amp;").replace(/</g, "&lt;")}</pre></details><details><summary>Result: ${q.row_count} rows (first 8)</summary><div class="wrap">${resultTable(q)}</div></details>`);
+  return card;
+}
+
+async function main() {
+  const r = await (await fetch("/api/results")).json();
+  const pills = [`${r.dataset_rows.toLocaleString()} rows`, `${r.dataset_mb} MB parquet`, `Python ${r.python}`, ...ENGINES.map(e => `${e} ${r.versions[e]}`), `${r.warm_runs} warm runs`, r.machine, r.generated_at];
+  document.getElementById("meta").innerHTML = pills.map(p => `<span class="pill">${p}</span>`).join("");
+  document.getElementById("legend").innerHTML = ENGINES.map(e => `<span><i style="background:${COLOR(e)}"></i>${e}</span>`).join("");
+  r.queries.forEach(q => document.getElementById("queries").append(queryCard(q)));
+  document.getElementById("memory").append(groupedBars(r.queries.map(q => ({name: q.id.toUpperCase(), values: ENGINES.map(e => q.engines[e].peak_rss_mb)})), "MB", 1060));
+}
+main();
+</script>
+</body>
+</html>

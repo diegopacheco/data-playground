@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 430" font-family="Caveat, 'Comic Sans MS', cursive">
+<defs>
+<style>@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&amp;display=swap');</style>
+<filter id="w"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="3" seed="7"/><feDisplacementMap in="SourceGraphic" scale="3"/></filter>
+<marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#374151"/></marker>
+</defs>
+<rect width="1100" height="430" fill="#fffdf8"/>
+<g filter="url(#w)" stroke="#374151" stroke-width="2">
+<rect x="30" y="40" width="170" height="70" rx="10" fill="#fde2e4"/>
+<rect x="250" y="40" width="190" height="70" rx="10" fill="#e2ece9"/>
+<rect x="490" y="40" width="240" height="70" rx="10" fill="#fff1c1"/>
+<rect x="790" y="40" width="270" height="70" rx="10" fill="#dbe7f7"/>
+<rect x="640" y="185" width="140" height="70" rx="10" fill="#fdecc8"/>
+<rect x="800" y="185" width="140" height="70" rx="10" fill="#d6e4ff"/>
+<rect x="960" y="185" width="130" height="70" rx="10" fill="#fbd5c5"/>
+<rect x="560" y="330" width="200" height="70" rx="10" fill="#e8def8"/>
+<rect x="270" y="330" width="230" height="70" rx="10" fill="#dbe7f7"/>
+<rect x="30" y="330" width="190" height="70" rx="10" fill="#e2ece9"/>
+<rect x="820" y="330" width="240" height="70" rx="10" fill="#fde2e4"/>
+</g>
+<g stroke="#374151" stroke-width="2" fill="none" marker-end="url(#a)">
+<path d="M200 75 L246 75"/>
+<path d="M440 75 L486 75"/>
+<path d="M730 75 L786 75"/>
+<path d="M880 110 L720 181"/>
+<path d="M925 110 L870 181"/>
+<path d="M970 110 L1022 181"/>
+<path d="M710 255 L680 326"/>
+<path d="M870 255 L700 326"/>
+<path d="M1025 255 L740 330"/>
+<path d="M560 365 L504 365"/>
+<path d="M270 365 L224 365"/>
+<path d="M820 365 L764 365"/>
+</g>
+<g fill="#1f2937" text-anchor="middle">
+<text x="115" y="72" font-size="22" font-weight="700">orders.csv</text>
+<text x="115" y="96" font-size="17">200 base rows</text>
+<text x="345" y="72" font-size="22" font-weight="700">gen.py</text>
+<text x="345" y="96" font-size="17">pyarrow, x50000 copies</text>
+<text x="610" y="72" font-size="22" font-weight="700">orders.parquet (zstd)</text>
+<text x="610" y="96" font-size="17">10M rows + products dim</text>
+<text x="925" y="72" font-size="22" font-weight="700">bench.py</text>
+<text x="925" y="96" font-size="17">one fresh process per engine x query</text>
+<text x="710" y="217" font-size="22" font-weight="700">DuckDB</text>
+<text x="710" y="240" font-size="16">SQL on read_parquet</text>
+<text x="870" y="217" font-size="22" font-weight="700">Polars</text>
+<text x="870" y="240" font-size="16">lazy scan_parquet</text>
+<text x="1025" y="217" font-size="22" font-weight="700">DataFusion</text>
+<text x="1025" y="240" font-size="16">SQL on parquet</text>
+<text x="660" y="362" font-size="22" font-weight="700">results.json</text>
+<text x="660" y="386" font-size="17">timings, memory, rows</text>
+<text x="385" y="362" font-size="22" font-weight="700">server.py</text>
+<text x="385" y="386" font-size="17">GET /api/results</text>
+<text x="125" y="362" font-size="22" font-weight="700">index.html</text>
+<text x="125" y="386" font-size="17">grouped bar charts</text>
+<text x="940" y="362" font-size="22" font-weight="700">test_results.py</text>
+<text x="940" y="386" font-size="17">awk recompute on base CSV</text>
+<text x="560" y="160" font-size="17" fill="#6b7280">cold run + median of N warm runs, ru_maxrss</text>
+</g>
+</svg>
