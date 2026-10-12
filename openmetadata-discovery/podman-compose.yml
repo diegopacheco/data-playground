@@ -1,0 +1,142 @@
+name: r14-openmetadata-discovery
+
+x-openmetadata-env: &om-env
+  OPENMETADATA_CLUSTER_NAME: r14-openmetadata
+  SERVER_PORT: "8585"
+  SERVER_ADMIN_PORT: "8586"
+  DB_DRIVER_CLASS: org.postgresql.Driver
+  DB_SCHEME: postgresql
+  DB_PARAMS: "allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC"
+  DB_USER: openmetadata_user
+  DB_USER_PASSWORD: openmetadata_password
+  DB_HOST: r14-postgres
+  DB_PORT: "5432"
+  OM_DATABASE: openmetadata_db
+  ELASTICSEARCH_HOST: r14-elasticsearch
+  ELASTICSEARCH_PORT: "9200"
+  ELASTICSEARCH_SCHEME: http
+  SEARCH_TYPE: elasticsearch
+  PIPELINE_SERVICE_CLIENT_ENABLED: "false"
+  SERVER_HOST_API_URL: http://r14-openmetadata:8585/api
+  AUTHORIZER_ADMIN_PRINCIPALS: "[admin]"
+  AUTHORIZER_PRINCIPAL_DOMAIN: open-metadata.org
+  MALLOC_ARENA_MAX: "2"
+
+services:
+  r14-postgres:
+    image: docker.io/library/postgres:18.6
+    container_name: r14-postgres
+    restart: unless-stopped
+    command: ["postgres", "-c", "shared_preload_libraries=pg_stat_statements", "-c", "shared_buffers=64MB", "-c", "work_mem=8MB", "-c", "max_connections=60"]
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    mem_limit: 384m
+    ports:
+      - "${postgres:-27902}:5432"
+    volumes:
+      - r14-pg-data:/var/lib/postgresql
+      - ./sql:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "psql -U postgres -tAc 'select 1' -d shop"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    networks:
+      - r14-net
+
+  r14-elasticsearch:
+    image: docker.io/library/elasticsearch:9.5.3
+    container_name: r14-elasticsearch
+    restart: unless-stopped
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      xpack.ml.enabled: "false"
+      ES_JAVA_OPTS: "-Xms384m -Xmx384m"
+      cluster.routing.allocation.disk.threshold_enabled: "false"
+    mem_limit: 1g
+    volumes:
+      - r14-es-data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:9200/_cluster/health | grep -qE 'green|yellow'"]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+    networks:
+      - r14-net
+
+  r14-migrate:
+    image: docker.getcollate.io/openmetadata/server:2.0.2
+    container_name: r14-migrate
+    command: "./bootstrap/openmetadata-ops.sh migrate"
+    environment:
+      <<: *om-env
+      OPENMETADATA_HEAP_OPTS: "-Xmx512m -Xms256m"
+    mem_limit: 1g
+    depends_on:
+      r14-postgres:
+        condition: service_healthy
+      r14-elasticsearch:
+        condition: service_healthy
+    networks:
+      - r14-net
+
+  r14-openmetadata:
+    image: docker.getcollate.io/openmetadata/server:2.0.2
+    container_name: r14-openmetadata
+    restart: unless-stopped
+    environment:
+      <<: *om-env
+      OPENMETADATA_HEAP_OPTS: "-Xmx768m -Xms768m"
+    mem_limit: 1536m
+    ports:
+      - "${openmetadata:-27901}:8585"
+    depends_on:
+      r14-postgres:
+        condition: service_healthy
+      r14-elasticsearch:
+        condition: service_healthy
+      r14-migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8586/healthcheck"]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+    networks:
+      - r14-net
+
+  r14-app:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: r14-openmetadata-discovery:latest
+    container_name: r14-app
+    restart: unless-stopped
+    environment:
+      OM_URL: http://r14-openmetadata:8585
+      OM_PUBLIC_URL: "http://localhost:${openmetadata:-27901}"
+      PG_HOST: r14-postgres
+      PG_PORT: "5432"
+      PG_DATABASE: shop
+      PG_USER: om_reader
+      PG_PASSWORD: om_reader_password
+      PG_ADMIN_USER: postgres
+      PG_ADMIN_PASSWORD: postgres
+      UI_PORT: "8080"
+    mem_limit: 768m
+    ports:
+      - "${ui:-27900}:8080"
+    networks:
+      - r14-net
+
+volumes:
+  r14-pg-data:
+    name: r14-pg-data
+  r14-es-data:
+    name: r14-es-data
+
+networks:
+  r14-net:
+    name: r14-net

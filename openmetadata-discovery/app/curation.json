@@ -1,0 +1,83 @@
+{
+  "service": "shop_postgres",
+  "database": "shop",
+  "schemas": ["raw", "analytics"],
+  "teams": [
+    {"name": "commerce", "displayName": "Commerce", "description": "Owns the web shop checkout and catalog systems"},
+    {"name": "finance", "displayName": "Finance", "description": "Owns revenue reporting"}
+  ],
+  "users": [
+    {"name": "ana.analyst", "displayName": "Ana Analyst", "email": "ana.analyst@open-metadata.org", "team": "finance"},
+    {"name": "carl.engineer", "displayName": "Carl Engineer", "email": "carl.engineer@open-metadata.org", "team": "commerce"}
+  ],
+  "classification": {
+    "name": "DataDomain",
+    "description": "Business domain a data asset belongs to",
+    "tags": [
+      {"name": "Customer", "description": "Data about people who buy in the shop"},
+      {"name": "Sales", "description": "Orders, line items and revenue"},
+      {"name": "Merchandising", "description": "Products and categories"}
+    ]
+  },
+  "glossary": {
+    "name": "Commerce",
+    "displayName": "Commerce Glossary",
+    "description": "Shared business vocabulary of the web shop",
+    "terms": [
+      {"name": "Customer", "description": "A person with a registered account who can place orders"},
+      {"name": "Order", "description": "A basket submitted at checkout"},
+      {"name": "Revenue", "description": "Quantity times price paid, only for completed orders"},
+      {"name": "LifetimeValue", "displayName": "Lifetime Value", "description": "Revenue of every completed order of one customer"}
+    ]
+  },
+  "tables": {
+    "raw.customers": {
+      "owners": [{"type": "team", "name": "commerce"}],
+      "tags": ["Tier.Tier1", "DataDomain.Customer", "Commerce.Customer"],
+      "columns": {"full_name": ["PII.Sensitive"], "email": ["PII.Sensitive"], "country": ["PII.NonSensitive"]}
+    },
+    "raw.products": {
+      "owners": [{"type": "team", "name": "commerce"}],
+      "tags": ["Tier.Tier2", "DataDomain.Merchandising"],
+      "columns": {}
+    },
+    "raw.orders": {
+      "owners": [{"type": "user", "name": "carl.engineer"}],
+      "tags": ["Tier.Tier1", "DataDomain.Sales", "Commerce.Order"],
+      "columns": {}
+    },
+    "raw.order_items": {
+      "owners": [{"type": "user", "name": "carl.engineer"}],
+      "tags": ["Tier.Tier1", "DataDomain.Sales"],
+      "columns": {"unit_price": ["Commerce.Revenue"]}
+    },
+    "analytics.order_revenue": {
+      "owners": [{"type": "team", "name": "finance"}],
+      "tags": ["DataDomain.Sales", "Commerce.Revenue"],
+      "columns": {"revenue": ["Commerce.Revenue"]}
+    },
+    "analytics.customer_lifetime_value": {
+      "owners": [{"type": "user", "name": "ana.analyst"}],
+      "tags": ["Tier.Tier2", "DataDomain.Customer", "Commerce.LifetimeValue"],
+      "columns": {"full_name": ["PII.Sensitive"], "lifetime_revenue": ["Commerce.LifetimeValue"]}
+    },
+    "analytics.product_sales": {
+      "owners": [{"type": "user", "name": "ana.analyst"}],
+      "tags": ["DataDomain.Merchandising"],
+      "columns": {"revenue": ["Commerce.Revenue"]}
+    },
+    "analytics.daily_sales": {
+      "owners": [{"type": "team", "name": "finance"}],
+      "tags": ["Tier.Tier1", "DataDomain.Sales", "Commerce.Revenue"],
+      "columns": {"revenue": ["Commerce.Revenue"]}
+    }
+  },
+  "lineage": [
+    {
+      "from": "analytics.order_revenue",
+      "to": "analytics.daily_sales",
+      "description": "Finance nightly batch job",
+      "sql": "INSERT INTO analytics.daily_sales SELECT order_date, COUNT(*), SUM(revenue) FROM analytics.order_revenue GROUP BY order_date"
+    }
+  ]
+}

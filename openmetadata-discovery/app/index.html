@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OpenMetadata Discovery</title>
+<style>
+:root { --bg: #f6f7fb; --card: #ffffff; --ink: #1f2933; --muted: #62707d; --line: #e3e7ee; --accent: #3558d6; --ok: #1f8a4c; --bad: #c0392b; --pii: #fde2e1; --tier: #e6ecff; --dom: #e3f5ea; --gloss: #fff1d6; }
+* { box-sizing: border-box; }
+body { margin: 0; font-family: -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--ink); }
+header { background: var(--card); border-bottom: 1px solid var(--line); padding: 16px 24px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+header h1 { font-size: 20px; margin: 0; }
+header .sub { color: var(--muted); font-size: 14px; }
+header a.om { margin-left: auto; background: var(--accent); color: #fff; padding: 8px 14px; border-radius: 6px; text-decoration: none; font-size: 14px; }
+nav { display: flex; gap: 4px; padding: 0 24px; background: var(--card); border-bottom: 1px solid var(--line); overflow-x: auto; }
+nav button { border: 0; background: none; padding: 12px 14px; font-size: 14px; cursor: pointer; color: var(--muted); border-bottom: 2px solid transparent; }
+nav button.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+main { padding: 20px 24px; max-width: 1280px; margin: 0 auto; }
+section { display: none; }
+section.active { display: block; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-bottom: 18px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+.card .n { font-size: 26px; font-weight: 700; }
+.card .l { color: var(--muted); font-size: 13px; }
+table.grid { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; font-size: 14px; }
+table.grid th, table.grid td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+table.grid th { background: #f0f2f7; font-weight: 600; color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .03em; }
+.chip { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 12px; margin: 1px 2px; background: #eef0f4; white-space: nowrap; }
+.chip.PII { background: var(--pii); } .chip.Tier { background: var(--tier); } .chip.DataDomain { background: var(--dom); } .chip.Commerce { background: var(--gloss); }
+.layout { display: grid; grid-template-columns: 280px 1fr; gap: 16px; }
+.list { background: var(--card); border: 1px solid var(--line); border-radius: 10px; }
+.list div { padding: 10px 12px; border-bottom: 1px solid var(--line); cursor: pointer; font-size: 14px; }
+.list div.sel { background: #eef2ff; font-weight: 600; }
+.list small { color: var(--muted); display: block; font-weight: 400; }
+h2 { font-size: 17px; margin: 4px 0 10px; }
+.muted { color: var(--muted); font-size: 13px; }
+.ok { color: var(--ok); font-weight: 600; } .bad { color: var(--bad); font-weight: 600; }
+.searchbar { display: flex; gap: 8px; margin-bottom: 10px; }
+.searchbar input { flex: 1; padding: 10px 12px; font-size: 15px; border: 1px solid var(--line); border-radius: 8px; }
+button.primary { background: var(--accent); color: #fff; border: 0; border-radius: 8px; padding: 9px 14px; cursor: pointer; font-size: 14px; }
+.quick button { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 4px 10px; margin: 0 4px 6px 0; cursor: pointer; font-size: 12px; }
+svg text { font-family: inherit; }
+#graph { background: var(--card); border: 1px solid var(--line); border-radius: 10px; width: 100%; }
+pre { background: #f0f2f7; padding: 10px; border-radius: 8px; white-space: pre-wrap; font-size: 12px; margin: 4px 0; }
+@media (max-width: 760px) { .layout { grid-template-columns: 1fr; } main { padding: 16px; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>OpenMetadata Discovery</h1>
+  <span class="sub" id="sub">loading</span>
+  <a class="om" id="omlink" href="#" target="_blank" rel="noopener">Open OpenMetadata UI</a>
+</header>
+<nav id="tabs"></nav>
+<main>
+  <section id="overview"></section>
+  <section id="catalog"></section>
+  <section id="lineage"></section>
+  <section id="search"></section>
+  <section id="vocabulary"></section>
+  <section id="verify"></section>
+</main>
+<script>
+const TABS = [["overview", "Overview"], ["catalog", "Catalog"], ["lineage", "Lineage"], ["search", "Search"], ["vocabulary", "Glossary and Tags"], ["verify", "Verify"]];
+const state = {};
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+const chips = tags => tags.map(t => `<span class="chip ${esc(t.split(".")[0])}">${esc(t)}</span>`).join("");
+const api = async (path, opts) => { const r = await fetch("/api/" + path, opts); const j = await r.json(); if (!r.ok) throw new Error(j.error || r.status); return j; };
+
+function show(id) {
+  document.querySelectorAll("nav button").forEach(b => b.classList.toggle("active", b.dataset.id === id));
+  document.querySelectorAll("section").forEach(s => s.classList.toggle("active", s.id === id));
+  location.hash = id;
+  if (id === "lineage") drawLineage();
+  if (id === "verify") loadVerify();
+}
+
+function renderOverview() {
+  const s = state.status, tables = state.catalog;
+  const cols = tables.reduce((a, t) => a + t.columns.length, 0);
+  const tagged = tables.reduce((a, t) => a + t.tags.length + t.columns.reduce((b, c) => b + c.tags.length, 0), 0);
+  const views = tables.filter(t => t.type === "View").length;
+  const ing = s.lastIngest;
+  document.getElementById("overview").innerHTML = `
+    <div class="cards">
+      <div class="card"><div class="n">${tables.length - views}</div><div class="l">tables ingested</div></div>
+      <div class="card"><div class="n">${views}</div><div class="l">views ingested</div></div>
+      <div class="card"><div class="n">${cols}</div><div class="l">columns with types and comments</div></div>
+      <div class="card"><div class="n">${state.lineage.edges.length}</div><div class="l">lineage edges</div></div>
+      <div class="card"><div class="n">${tagged}</div><div class="l">tag and glossary labels</div></div>
+      <div class="card"><div class="n">${s.openmetadata}</div><div class="l">OpenMetadata server</div></div>
+    </div>
+    <h2>Ingestion run</h2>
+    <p class="muted">Postgres database <b>shop</b> (schemas raw and analytics) registered as service <b>${esc(s.service)}</b>. The app runs the OpenMetadata ingestion framework, then curates through the REST API.
+    <button class="primary" id="rerun">Run ingestion again</button> <span id="runmsg" class="muted"></span></p>
+    ${ing ? `<table class="grid"><tr><th>Step</th><th>Seconds</th><th>Result</th></tr>${ing.steps ? ing.steps.map(x => `<tr><td>${esc(x.step)}</td><td>${x.seconds}</td><td class="muted">${esc(JSON.stringify(x.detail))}</td></tr>`).join("") : `<tr><td colspan="3" class="bad">${esc(ing.error)}</td></tr>`}</table>`
+      : `<p class="muted">No ingestion ran since this app started. The catalog below was read from OpenMetadata.</p>`}`;
+  document.getElementById("rerun").onclick = async () => {
+    document.getElementById("runmsg").textContent = "running";
+    try { await api("ingest", {method: "POST"}); await load(); } catch (e) { document.getElementById("runmsg").textContent = e.message; }
+  };
+}
+
+function renderCatalog(key) {
+  const tables = state.catalog;
+  key = key || (tables[0] && tables[0].key);
+  const t = tables.find(x => x.key === key);
+  document.getElementById("catalog").innerHTML = `<div class="layout">
+    <div class="list">${tables.map(x => `<div data-key="${esc(x.key)}" class="${x.key === key ? "sel" : ""}">${esc(x.key)}<small>${esc(x.type)} &middot; ${x.columns.length} columns</small></div>`).join("")}</div>
+    <div>${t ? `
+      <h2>${esc(t.key)} <span class="chip">${esc(t.type)}</span></h2>
+      <p>${esc(t.description)}</p>
+      <p class="muted">FQN ${esc(t.fqn)} &middot; <a href="${esc(t.url)}" target="_blank" rel="noopener">open in OpenMetadata</a></p>
+      <p>Owners: ${t.owners.map(o => `<span class="chip">${esc(o)}</span>`).join("") || "<span class='muted'>none</span>"}</p>
+      <p>Tags and glossary terms: ${chips(t.tags) || "<span class='muted'>none</span>"}</p>
+      <table class="grid"><tr><th>Column</th><th>Type</th><th>Description</th><th>Tags</th></tr>
+      ${t.columns.map(c => `<tr><td><b>${esc(c.name)}</b></td><td>${esc(c.dataTypeDisplay)} <span class="muted">${esc(c.dataType)}</span></td><td>${esc(c.description)}</td><td>${chips(c.tags)}</td></tr>`).join("")}</table>` : ""}
+    </div></div>`;
+  document.querySelectorAll("#catalog .list div").forEach(d => d.onclick = () => renderCatalog(d.dataset.key));
+}
+
+function drawLineage() {
+  const {nodes, edges} = state.lineage;
+  const level = {};
+  const depth = k => level[k] ?? (level[k] = Math.max(0, ...edges.filter(e => e.to === k).map(e => depth(e.from) + 1)));
+  nodes.forEach(n => depth(n.key));
+  nodes.filter(n => !edges.some(e => e.to === n.key)).forEach(n => {
+    const next = edges.filter(e => e.from === n.key).map(e => level[e.to]);
+    if (next.length) level[n.key] = Math.min(...next) - 1;
+  });
+  const cols = {};
+  nodes.forEach(n => (cols[level[n.key]] = cols[level[n.key]] || []).push(n));
+  const W = 250, H = 46, GX = 110, GY = 26, pos = {};
+  Object.entries(cols).forEach(([l, list]) => list.forEach((n, i) => pos[n.key] = {x: 20 + l * (W + GX), y: 20 + i * (H + GY), n}));
+  const width = 40 + Object.keys(cols).length * (W + GX) - GX, height = 40 + Math.max(...Object.values(cols).map(c => c.length)) * (H + GY) - GY;
+  const paths = edges.filter(e => pos[e.from] && pos[e.to]).map(e => {
+    const a = pos[e.from], b = pos[e.to], x1 = a.x + W, y1 = a.y + H / 2, x2 = b.x - 6, y2 = b.y + H / 2, m = (x1 + x2) / 2;
+    const manual = e.source === "Manual";
+    return `<path d="M${x1},${y1} C${m},${y1} ${m},${y2} ${x2},${y2}" fill="none" stroke="${manual ? "#d9822b" : "#7a8aa0"}" stroke-width="2" ${manual ? 'stroke-dasharray="6 4"' : ""} marker-end="url(#arr)"><title>${esc(e.from)} -> ${esc(e.to)} (${esc(e.source)})</title></path>`;
+  }).join("");
+  const boxes = Object.values(pos).map(p => `<g><rect x="${p.x}" y="${p.y}" width="${W}" height="${H}" rx="8" fill="${p.n.type === "View" ? "#e6ecff" : "#e3f5ea"}" stroke="#9aa6b8"/>
+    <text x="${p.x + 12}" y="${p.y + 20}" font-size="14" font-weight="600">${esc(p.n.key)}</text><text x="${p.x + 12}" y="${p.y + 37}" font-size="12" fill="#62707d">${esc(p.n.type)}</text></g>`).join("");
+  document.getElementById("lineage").innerHTML = `
+    <p class="muted">Solid grey edges were derived by OpenMetadata from the Postgres view definitions (lineage ingestion). The dashed orange edge was added through the lineage REST API for a batch job that Postgres cannot describe.</p>
+    <svg id="graph" viewBox="0 0 ${width} ${height}" style="max-width:${width}px"><defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#7a8aa0"/></marker></defs>${paths}${boxes}</svg>
+    <h2 style="margin-top:16px">Edges</h2>
+    <table class="grid"><tr><th>From</th><th>To</th><th>Source</th><th>Column mappings</th><th>SQL</th></tr>
+    ${edges.map(e => `<tr><td>${esc(e.from)}</td><td>${esc(e.to)}</td><td>${esc(e.source)}</td><td>${e.columns}</td><td><pre>${esc(e.sql)}</pre></td></tr>`).join("")}</table>`;
+}
+
+async function runSearch(q) {
+  document.getElementById("q").value = q;
+  const r = await api("search?q=" + encodeURIComponent(q));
+  document.getElementById("results").innerHTML = `<p class="muted">${r.hits.length} hits from OpenMetadata search (Elasticsearch table index)</p>
+    <table class="grid"><tr><th>Asset</th><th>Score</th><th>Description</th><th>Tags</th></tr>${r.hits.map(h => `<tr><td><b>${esc(h.key)}</b></td><td>${(h.score || 0).toFixed(2)}</td><td>${esc(h.description)}</td><td>${chips(h.tags)}</td></tr>`).join("")}</table>`;
+}
+
+function renderSearch() {
+  const quick = ["revenue", "email", "loyalty", "checkout", "tags.tagFQN:PII.Sensitive", "tier.tagFQN:Tier.Tier1", "tags.tagFQN:Commerce.Revenue"];
+  document.getElementById("search").innerHTML = `<form class="searchbar" id="sf"><input id="q" placeholder="Search tables, columns, descriptions, tags"><button class="primary">Search</button></form>
+    <div class="quick">${quick.map(q => `<button data-q="${esc(q)}">${esc(q)}</button>`).join("")}</div><div id="results"></div>`;
+  document.getElementById("sf").onsubmit = e => { e.preventDefault(); runSearch(document.getElementById("q").value); };
+  document.querySelectorAll(".quick button").forEach(b => b.onclick = () => runSearch(b.dataset.q));
+  runSearch("revenue");
+}
+
+function renderVocabulary() {
+  const v = state.vocabulary, tables = state.catalog;
+  const usedBy = fqn => tables.filter(t => t.tags.includes(fqn) || t.columns.some(c => c.tags.includes(fqn))).map(t => t.key);
+  const row = (fqn, desc) => `<tr><td>${chips([fqn])}</td><td>${esc(desc)}</td><td>${usedBy(fqn).map(k => `<span class="chip">${esc(k)}</span>`).join("")}</td></tr>`;
+  document.getElementById("vocabulary").innerHTML = `
+    <h2>Glossary terms</h2><table class="grid"><tr><th>Term</th><th>Definition</th><th>Assets</th></tr>${v.terms.map(t => row(t.fqn, t.description)).join("")}</table>
+    <h2 style="margin-top:18px">Classification tags</h2><table class="grid"><tr><th>Tag</th><th>Description</th><th>Assets</th></tr>${v.tags.map(t => row(t.fqn, t.description)).join("")}
+    ${row("PII.Sensitive", "Built in OpenMetadata classification")}${row("Tier.Tier1", "Built in OpenMetadata tier")}</table>
+    <h2 style="margin-top:18px">Owners</h2><table class="grid"><tr><th>Owner</th><th>Kind</th><th>Assets</th></tr>
+    ${v.teams.map(t => ["team", t]).concat(v.users.map(u => ["user", u])).map(([k, o]) => `<tr><td>${esc(o.displayName)} <span class="muted">${esc(o.name)}</span></td><td>${k}</td><td>${tables.filter(t => t.owners.includes(k + ":" + o.name)).map(t => `<span class="chip">${esc(t.key)}</span>`).join("")}</td></tr>`).join("")}</table>`;
+}
+
+async function loadVerify() {
+  const el = document.getElementById("verify");
+  el.innerHTML = `<p class="muted">comparing Postgres system catalogs and curation.json with what OpenMetadata returns</p>`;
+  const v = await api("verify");
+  el.innerHTML = `<div class="cards"><div class="card"><div class="n ${v.ok ? "ok" : "bad"}">${v.passed}/${v.total}</div><div class="l">checks passed</div></div></div>
+    <table class="grid"><tr><th>Check</th><th>Result</th><th>Catalog value</th></tr>${v.checks.map(c => `<tr><td>${esc(c.check)}</td><td class="${c.ok ? "ok" : "bad"}">${c.ok ? "PASS" : "FAIL"}</td><td class="muted">${esc(c.detail)}</td></tr>`).join("")}</table>`;
+}
+
+async function load() {
+  const [status, cat, lineage, vocabulary] = await Promise.all([api("status"), api("catalog"), api("lineage"), api("vocabulary")]);
+  Object.assign(state, {status, catalog: cat.tables, lineage, vocabulary});
+  document.getElementById("sub").textContent = `OpenMetadata ${status.openmetadata} catalog of Postgres service ${status.service}`;
+  document.getElementById("omlink").href = status.openmetadataUrl;
+  renderOverview(); renderCatalog(); renderSearch(); renderVocabulary();
+  const id = location.hash.slice(1);
+  show(TABS.some(t => t[0] === id) ? id : "overview");
+}
+
+document.getElementById("tabs").innerHTML = TABS.map(([id, label]) => `<button data-id="${id}">${label}</button>`).join("");
+document.querySelectorAll("nav button").forEach(b => b.onclick = () => show(b.dataset.id));
+load().catch(e => document.getElementById("sub").textContent = "error: " + e.message);
+</script>
+</body>
+</html>
