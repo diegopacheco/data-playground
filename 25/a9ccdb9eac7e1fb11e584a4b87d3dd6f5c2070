@@ -1,0 +1,60 @@
+clickhouse-projections-vs-mvs/README.md
+  s_b6bbcda70c6e46::t_be588b7483706f 1-197
+clickhouse-projections-vs-mvs/scripts/status.sh
+  s_b6bbcda70c6e46::t_afd8120ac413e1 1-18
+clickhouse-projections-vs-mvs/podman-compose.yml
+  s_b6bbcda70c6e46::t_e1190b9182d093 1-26
+clickhouse-projections-vs-mvs/app/schema.py
+  s_b6bbcda70c6e46::t_f20f49455d8477 1-64
+clickhouse-projections-vs-mvs/scripts/start-all.sh
+  s_b6bbcda70c6e46::t_eb3c6eabb40fdb 1-30
+clickhouse-projections-vs-mvs/architecture.svg
+  s_b6bbcda70c6e46::t_d4187681753e75 44
+  s_b6bbcda70c6e46::t_51c59e63682661 1-43,45-57
+clickhouse-projections-vs-mvs/scripts/ui.sh
+  s_b6bbcda70c6e46::t_639f4d7cdb5396 1-6
+clickhouse-projections-vs-mvs/.gitignore
+  s_b6bbcda70c6e46::t_d0e4fc950d901b 1-3
+clickhouse-projections-vs-mvs/scripts/common.sh
+  s_b6bbcda70c6e46::t_8a716b5d96237f 1-94
+clickhouse-projections-vs-mvs/scripts/test-all.sh
+  s_b6bbcda70c6e46::t_de8fb9f0840005 1-130
+clickhouse-projections-vs-mvs/scripts/sql-console.sh
+  s_b6bbcda70c6e46::t_6a0c7a517bbfde 1-6
+clickhouse-projections-vs-mvs/app/queries.py
+  s_b6bbcda70c6e46::t_9beb177681af76 1-53
+clickhouse-projections-vs-mvs/scripts/stop-all.sh
+  s_b6bbcda70c6e46::t_943d7784377ea6 1-24
+clickhouse-projections-vs-mvs/app/clickhouse.py
+  s_b6bbcda70c6e46::t_98e88a98986875 1-35
+clickhouse-projections-vs-mvs/app/bench.py
+  s_b6bbcda70c6e46::t_a154ef0337718a 1-194
+clickhouse-projections-vs-mvs/app/index.html
+  s_b6bbcda70c6e46::t_53c96c7f140f3b 1-36,39-97,99-104,106-143,145-149,151-180
+  s_b6bbcda70c6e46::t_3d2ca7a93da7cb 37-38,98,105,144,150
+clickhouse-projections-vs-mvs/app/server.py
+  s_b6bbcda70c6e46::t_91696049a0421f 1-48
+clickhouse-projections-vs-mvs/scripts/ports.env
+  s_b6bbcda70c6e46::t_8bc379c42f76e3 1-2
+clickhouse-projections-vs-mvs/app/events.py
+  s_b6bbcda70c6e46::t_e0f5fd9405732f 1-2,5-44
+  s_b6bbcda70c6e46::t_ea9a993a7556e4 3-4
+clickhouse-projections-vs-mvs/scripts/setup.sh
+  s_b6bbcda70c6e46::t_de36d23afcf4eb 1-20
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "25a9ccdb9eac7e1fb11e584a4b87d3dd6f5c2070",
+  "prompts": {},
+  "sessions": {
+    "s_b6bbcda70c6e46": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c06d4699-89b6-4d61-b86f-bb3f56253de2",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "diegopacheco <diego.pacheco.it@gmail.com>"
+    }
+  }
+}
