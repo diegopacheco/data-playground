@@ -1,0 +1,25 @@
+README.md
+  s_b6bbcda70c6e46::t_20920506d753e0 38
+  s_b6bbcda70c6e46::t_579098c1c1767c 164-165
+  s_b6bbcda70c6e46::t_8a88b5f93cf97a 82
+  s_b6bbcda70c6e46::t_f5f19354889d7f 93
+  s_b6bbcda70c6e46::t_937ec1125776d1 138-139
+  s_b6bbcda70c6e46::t_74e6bd965c6507 72-73
+  s_b6bbcda70c6e46::t_960c8782dce382 121
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d3989d0d5b673669af85a8ac204733e8862a9e50",
+  "prompts": {},
+  "sessions": {
+    "s_b6bbcda70c6e46": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c06d4699-89b6-4d61-b86f-bb3f56253de2",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "diegopacheco <diego.pacheco.it@gmail.com>"
+    }
+  }
+}
