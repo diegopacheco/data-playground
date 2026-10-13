@@ -35,6 +35,7 @@ Lineage shows which job built each table and where its data came from.
 
 * [gravitino-openlineage-marquez](gravitino-openlineage-marquez/) - Gravitino owners and tags, OpenLineage events, lineage graph in Marquez
 * [openmetadata-discovery](openmetadata-discovery/) - OpenMetadata catalog of Postgres with tags, glossary, owners, search and view lineage
+* [pii-masking-trino-opa](pii-masking-trino-opa/) - Trino column masks and row filters decided by Open Policy Agent, same SQL as five users, bypass attempts measured
 
 ## ⚙️ Batch Engines
 
@@ -68,6 +69,8 @@ Schema registries make sure producers and consumers keep agreeing on the data sh
 * [nats-jetstream-streams](nats-jetstream-streams/) - NATS JetStream cluster: retention modes, acks and redelivery, replay, KV and failover
 * [automq-diskless-kafka](automq-diskless-kafka/) - AutoMQ: Kafka with no data on broker disks, all of it on S3, survives broker replacement
 * [schema-registry-avro-protobuf](schema-registry-avro-protobuf/) - Apicurio Registry: Avro and Protobuf evolution under BACKWARD, FORWARD, FULL and NONE
+* [exactly-once-kafka-transactions](exactly-once-kafka-transactions/) - Kafka transactions proven by SIGKILL mid-batch: read_committed sees no duplicates, at-least-once does, zombie producer fenced
+* [kafka-iceberg-topics-redpanda](kafka-iceberg-topics-redpanda/) - Redpanda Iceberg Topics writing topics straight into Iceberg tables, no connector, read with DuckDB
 
 ## 🔁 Change Data Capture
 
@@ -76,6 +79,7 @@ Other systems stay in sync without polling the source.
 
 * [debezium-kafka-cassandra](debezium-kafka-cassandra/) - Debezium: MySQL binlog to Kafka to Cassandra
 * [flink-cdc-postgres-iceberg](flink-cdc-postgres-iceberg/) - Flink CDC: Postgres 18 to Iceberg in upsert mode
+* [debezium-outbox-pattern](debezium-outbox-pattern/) - Transactional outbox with the Debezium Event Router on Postgres 18, compared with crashed dual writes
 
 ## ⚡ Real-Time OLAP
 
@@ -86,6 +90,7 @@ They power dashboards and user-facing analytics.
 * [druid-rollup-ingestion](druid-rollup-ingestion/) - Apache Druid rollup vs raw ingestion
 * [pinot-realtime-olap](pinot-realtime-olap/) - Apache Pinot REALTIME table consuming Kafka
 * [doris-olap-stream-load](doris-olap-stream-load/) - Apache Doris Stream Load with a materialized view
+* [clickhouse-projections-vs-mvs](clickhouse-projections-vs-mvs/) - ClickHouse projections vs materialized views on 13M events: write cost, read speed, backfill and deletes
 
 ## 📥 Ingestion
 
@@ -113,6 +118,7 @@ They add tests, dependencies and versioning on top of plain queries.
 * [dbt-python-cassandra](dbt-python-cassandra/) - dbt models with results stored in Cassandra
 * [dbt-spark-iceberg](dbt-spark-iceberg/) - dbt on Spark writing incremental Iceberg tables
 * [sqlmesh-vs-dbt](sqlmesh-vs-dbt/) - Same models in SQLMesh and dbt, compared
+* [data-vault-2-dbt](data-vault-2-dbt/) - Data Vault 2.0 with dbt on DuckDB: hubs, links and insert-only satellites, point-in-time table and a star mart
 
 ## ✅ Data Quality
 
@@ -129,6 +135,8 @@ Search engines rank text matches with scores like BM25.
 * [pgvector-embeddings-pipeline](pgvector-embeddings-pipeline/) - Local embeddings into Postgres 18 with pgvector
 * [qdrant-vector-search](qdrant-vector-search/) - Qdrant semantic, hybrid and recommend search
 * [paradedb-search-analytics](paradedb-search-analytics/) - ParadeDB BM25 search and analytics inside Postgres
+* [duckdb-vss-vs-pgvector-vs-qdrant](duckdb-vss-vs-pgvector-vs-qdrant/) - HNSW recall and latency of DuckDB vss, pgvector and Qdrant at the same index settings
+* [iceberg-to-embeddings-incremental](iceberg-to-embeddings-incremental/) - pgvector kept in sync with an Iceberg table by embedding only the rows changed between snapshots
 
 ## 🤖 Feature Stores
 
@@ -153,6 +161,8 @@ Specialized databases built for one job and built to do it very fast.
 Here: wide-column storage, a financial ledger and a graph.
 
 * [scylladb-vs-cassandra-bench](scylladb-vs-cassandra-bench/) - ScyllaDB vs Cassandra on the same workload
+* [tikv-vs-scylla-vs-foundationdb](tikv-vs-scylla-vs-foundationdb/) - TiKV vs ScyllaDB vs FoundationDB on point reads and ordered range scans
+* [timescaledb-vs-questdb-vs-influx3](timescaledb-vs-questdb-vs-influx3/) - TimescaleDB vs QuestDB vs InfluxDB 3 Core on time-series ingest and downsampling
 * [tigerbeetle-ledger-ingest](tigerbeetle-ledger-ingest/) - TigerBeetle double-entry ledger for orders
 * [sql-playground](sql-playground/) - PostgreSQL 18 workbench with plans, timing, hints, 8 contention races and every join type
 * [apache-age-graph](apache-age-graph/) - Apache AGE: openCypher graph and SQL tables in one Postgres 18
