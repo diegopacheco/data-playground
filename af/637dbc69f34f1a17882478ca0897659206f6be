@@ -1,0 +1,151 @@
+data-vault-2-dbt/dbt/models/raw_vault/load_audit.sql
+  s_b6bbcda70c6e46::t_4dfb04f395f9dd 1-28
+data-vault-2-dbt/app/vault.py
+  s_b6bbcda70c6e46::t_4dfb04f395f9dd 1-20
+data-vault-2-dbt/data/2026-01-03/orders.csv
+  s_b6bbcda70c6e46::t_cf492c4b6e6c6a 1-63
+data-vault-2-dbt/data/2026-01-01/orders.csv
+  s_b6bbcda70c6e46::t_cf492c4b6e6c6a 1-121
+data-vault-2-dbt/data/2026-01-02/order_lines.csv
+  s_b6bbcda70c6e46::t_cf492c4b6e6c6a 1-131
+data-vault-2-dbt/app/server.py
+  s_b6bbcda70c6e46::t_4dfb04f395f9dd 1-127
+data-vault-2-dbt/scripts/status.sh
+  s_b6bbcda70c6e46::t_4dfb04f395f9dd 1-18
+data-vault-2-dbt/data/2026-01-01/customers.csv
+  s_b6bbcda70c6e46::t_cf492c4b6e6c6a 1-41
+data-vault-2-dbt/data/2026-01-03/customers.csv
+  s_b6bbcda70c6e46::t_cf492c4b6e6c6a 1-28
+data-vault-2-dbt/app/console.py
+  s_b6bbcda70c6e46::t_4dfb04f395f9dd 1-26
+data-vault-2-dbt/app/index.html
+  s_b6bbcda70c6e46::t_bd658bea1b93e3 147,177
+  s_b6bbcda70c6e46::t_87510b38f4e494 1-45,47-85,89,91-98,100-108,110,112-146,148-176,178-186
+  s_b6bbcda70c6e46::t_7f6f7ddb29226b 46,86-88,90,99,109,111
+data-vault-2-dbt/data/2026-01-03/order_lines.csv
+  s_b6bbcda70c6e46::t_cf492c4b6e6c6a 1-131
+data-vault-2-dbt/README.md
+  s_b6bbcda70c6e46::t_4312cb0c23adab 1-174
+data-vault-2-dbt/scripts/stop-all.sh
+  s_b6bbcda70c6e46::t_4dfb04f395f9dd 1-18
+data-vault-2-dbt/dbt/macros/satellite.sql
+  s_b6bbcda70c6e46::t_61f975dd81bcde 1-14,16-22
+  s_b6bbcda70c6e46::t_b8125cd1c3e472 15
+data-vault-2-dbt/app/pipeline.py
+  s_b6bbcda70c6e46::t_4dfb04f395f9dd 1-33
+data-vault-2-dbt/data/2026-01-03/products.csv
+  s_b6bbcda70c6e46::t_cf492c4b6e6c6a 1-11
+data-vault-2-dbt/data/2026-01-02/orders.csv
+  s_b6bbcda70c6e46::t_cf492c4b6e6c6a 1-63
+data-vault-2-dbt/data/2026-01-02/customers.csv
+  s_b6bbcda70c6e46::t_cf492c4b6e6c6a 1-28
+data-vault-2-dbt/scripts/start-all.sh
+  s_b6bbcda70c6e46::t_4dfb04f395f9dd 1-22
+data-vault-2-dbt/data/2026-01-02/products.csv
+  s_b6bbcda70c6e46::t_cf492c4b6e6c6a 1-11
+data-vault-2-dbt/data/2026-01-01/products.csv
+  s_b6bbcda70c6e46::t_cf492c4b6e6c6a 1-16
+data-vault-2-dbt/scripts/ui.sh
+  s_b6bbcda70c6e46::t_4dfb04f395f9dd 1-6
+data-vault-2-dbt/scripts/setup.sh
+  s_b6bbcda70c6e46::t_4dfb04f395f9dd 1-18
+data-vault-2-dbt/scripts/sql-console.sh
+  s_b6bbcda70c6e46::t_4dfb04f395f9dd 1-6
+data-vault-2-dbt/architecture.svg
+  s_b6bbcda70c6e46::t_072ebcffba408d 1-61,63-66
+  s_b6bbcda70c6e46::t_9917c7991ee602 62
+data-vault-2-dbt/scripts/test-all.sh
+  s_b6bbcda70c6e46::t_2bf827ee1f0148 1-145
+data-vault-2-dbt/dbt/macros/hashing.sql
+  s_b6bbcda70c6e46::t_cadccd9938c02c 1-7
+data-vault-2-dbt/data/2026-01-01/order_lines.csv
+  s_b6bbcda70c6e46::t_cf492c4b6e6c6a 1-311
+data-vault-2-dbt/scripts/common.sh
+  s_b6bbcda70c6e46::t_4dfb04f395f9dd 1-80
+data-vault-2-dbt/.gitignore
+  s_b6bbcda70c6e46::t_c7b0d2491f6011 1-9
+data-vault-2-dbt/dbt/dbt_project.yml
+  s_b6bbcda70c6e46::t_4c6adc8e79bda7 1-30
+data-vault-2-dbt/dbt/macros/delivery.sql
+  s_b6bbcda70c6e46::t_ea3bb3d89670ee 1-8
+data-vault-2-dbt/dbt/macros/generate_schema_name.sql
+  s_b6bbcda70c6e46::t_f92b0959ecc48e 1-3
+data-vault-2-dbt/dbt/macros/hub.sql
+  s_b6bbcda70c6e46::t_abf274ec7f8636 1-12
+data-vault-2-dbt/dbt/macros/link.sql
+  s_b6bbcda70c6e46::t_d1e997940a128c 1-12
+data-vault-2-dbt/dbt/models/business_vault/bridge_order_line.sql
+  s_b6bbcda70c6e46::t_587936d767ac1d 1-8
+data-vault-2-dbt/dbt/models/business_vault/customer_as_of.sql
+  s_b6bbcda70c6e46::t_660d7b747def52 1-16
+data-vault-2-dbt/dbt/models/business_vault/pit_customer.sql
+  s_b6bbcda70c6e46::t_6c0cdf634a3c83 1-11
+data-vault-2-dbt/dbt/models/business_vault/schema.yml
+  s_b6bbcda70c6e46::t_b1db8cbcd93c9e 1-22
+data-vault-2-dbt/dbt/models/mart/dim_customer.sql
+  s_b6bbcda70c6e46::t_2ff85b128490ff 1-3
+data-vault-2-dbt/dbt/models/mart/dim_product.sql
+  s_b6bbcda70c6e46::t_97057bffb5dcb4 1-3
+data-vault-2-dbt/dbt/models/mart/fct_order_lines.sql
+  s_b6bbcda70c6e46::t_6d35a0b8b55814 1-15
+data-vault-2-dbt/dbt/models/mart/schema.yml
+  s_b6bbcda70c6e46::t_86cbc3d090b5b3 1-31
+data-vault-2-dbt/dbt/models/raw_vault/hub_customer.sql
+  s_b6bbcda70c6e46::t_33011f1e1ed6ea 1
+data-vault-2-dbt/dbt/models/raw_vault/hub_order.sql
+  s_b6bbcda70c6e46::t_c997338bdef5cd 1
+data-vault-2-dbt/dbt/models/raw_vault/hub_product.sql
+  s_b6bbcda70c6e46::t_0a256f296ec35e 1
+data-vault-2-dbt/dbt/models/raw_vault/link_order_customer.sql
+  s_b6bbcda70c6e46::t_eb8020bac1332b 1
+data-vault-2-dbt/dbt/models/raw_vault/link_order_line.sql
+  s_b6bbcda70c6e46::t_e5b576cb8130ed 1
+data-vault-2-dbt/dbt/models/raw_vault/sat_customer_contact.sql
+  s_b6bbcda70c6e46::t_26b50d93269153 1
+data-vault-2-dbt/dbt/models/raw_vault/sat_customer_profile.sql
+  s_b6bbcda70c6e46::t_8ffcc4959d9ee6 1
+data-vault-2-dbt/dbt/models/raw_vault/sat_order.sql
+  s_b6bbcda70c6e46::t_10e50d289a3aa1 1
+data-vault-2-dbt/dbt/models/raw_vault/sat_order_line.sql
+  s_b6bbcda70c6e46::t_93aa013689754b 1
+data-vault-2-dbt/dbt/models/raw_vault/sat_product.sql
+  s_b6bbcda70c6e46::t_f7897bd0426aea 1
+data-vault-2-dbt/dbt/models/raw_vault/schema.yml
+  s_b6bbcda70c6e46::t_817d319da5a3c6 1-148
+data-vault-2-dbt/dbt/models/staging/schema.yml
+  s_b6bbcda70c6e46::t_2db3f6d2d3999a 1-21
+data-vault-2-dbt/dbt/models/staging/stg_customers.sql
+  s_b6bbcda70c6e46::t_947a36dc204887 1-11
+data-vault-2-dbt/dbt/models/staging/stg_order_lines.sql
+  s_b6bbcda70c6e46::t_ac2900db35af05 1-12
+data-vault-2-dbt/dbt/models/staging/stg_orders.sql
+  s_b6bbcda70c6e46::t_0cd6b31ea963e3 1-11
+data-vault-2-dbt/dbt/models/staging/stg_products.sql
+  s_b6bbcda70c6e46::t_a54d0aece5a701 1-9
+data-vault-2-dbt/dbt/profiles.yml
+  s_b6bbcda70c6e46::t_3c9af7560cb8a8 1-8
+data-vault-2-dbt/dbt/tests/generic/changes_only.sql
+  s_b6bbcda70c6e46::t_06b622f6d81ef5 1-8
+data-vault-2-dbt/dbt/tests/generic/unique_per_load.sql
+  s_b6bbcda70c6e46::t_ce19058549d607 1-6
+data-vault-2-dbt/requirements.txt
+  s_b6bbcda70c6e46::t_a9aafaf48b08ad 1-3
+data-vault-2-dbt/scripts/ports.env
+  s_b6bbcda70c6e46::t_c828a801060c4b 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "af637dbc69f34f1a17882478ca0897659206f6be",
+  "prompts": {},
+  "sessions": {
+    "s_b6bbcda70c6e46": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c06d4699-89b6-4d61-b86f-bb3f56253de2",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "diegopacheco <diego.pacheco.it@gmail.com>"
+    }
+  }
+}
