@@ -1,0 +1,74 @@
+kafka-iceberg-topics-redpanda/requirements.txt
+  s_b6bbcda70c6e46::t_97ea3dcdf617a6 1
+kafka-iceberg-topics-redpanda/app/config.py
+  s_b6bbcda70c6e46::t_bd161306d51078 1-37,39-43,45-53
+  s_b6bbcda70c6e46::t_b19b8cc611cb6f 38,44
+kafka-iceberg-topics-redpanda/app/server.py
+  s_b6bbcda70c6e46::t_b19b8cc611cb6f 47,50,76-80,103
+  s_b6bbcda70c6e46::t_acd9efcb60ef29 1-9,12-46,48-49,51-75,81-96,98-102,104-120
+  s_b6bbcda70c6e46::t_0652d32fe9cfe6 97
+  s_b6bbcda70c6e46::t_58b1539cd38a48 10-11
+kafka-iceberg-topics-redpanda/.gitignore
+  s_b6bbcda70c6e46::t_5d7cb70c5d7708 1-3
+kafka-iceberg-topics-redpanda/redpanda/bootstrap.yaml
+  s_b6bbcda70c6e46::t_b4f8fb5f4ff2ab 1-13
+  s_b6bbcda70c6e46::t_65adca1b968b6b 14-15
+kafka-iceberg-topics-redpanda/podman-compose.yml
+  s_b6bbcda70c6e46::t_4711d5f256e36b 1-77
+  s_b6bbcda70c6e46::t_f44c68431b44e6 78-83
+kafka-iceberg-topics-redpanda/README.md
+  s_b6bbcda70c6e46::t_1c28706a3b78b9 20
+  s_b6bbcda70c6e46::t_9723dc60a36947 1-19,21-189
+kafka-iceberg-topics-redpanda/scripts/stop-all.sh
+  s_b6bbcda70c6e46::t_5d7cb70c5d7708 1-23
+kafka-iceberg-topics-redpanda/app/index.html
+  s_b6bbcda70c6e46::t_5a9b48a5c3f56d 1-31,34-54,56-89,91-93,98-100,110-112,116-153,155-170
+  s_b6bbcda70c6e46::t_a6e42816b29a3b 32-33,55,90,94-97,101-109,113-115,154
+kafka-iceberg-topics-redpanda/scripts/test-all.sh
+  s_b6bbcda70c6e46::t_db6d70b30e76dd 66-69
+  s_b6bbcda70c6e46::t_10439587218ba9 1-65,70-83
+kafka-iceberg-topics-redpanda/app/pipeline.py
+  s_b6bbcda70c6e46::t_0652d32fe9cfe6 5,10-11,39,41-42,46,50,65
+  s_b6bbcda70c6e46::t_5891e0cafe055d 1-4,6-9,12-38,40,43-45,47-49,51-64,66-76
+kafka-iceberg-topics-redpanda/scripts/status.sh
+  s_b6bbcda70c6e46::t_5d7cb70c5d7708 1-18
+kafka-iceberg-topics-redpanda/scripts/ports.env
+  s_b6bbcda70c6e46::t_936c4517282b6c 1-8
+kafka-iceberg-topics-redpanda/architecture.svg
+  s_b6bbcda70c6e46::t_0cb628944e4569 1-65
+kafka-iceberg-topics-redpanda/scripts/ui.sh
+  s_b6bbcda70c6e46::t_5d7cb70c5d7708 1-6
+kafka-iceberg-topics-redpanda/scripts/common.sh
+  s_b6bbcda70c6e46::t_6c28b1f64fc2e9 62-63
+  s_b6bbcda70c6e46::t_5d7cb70c5d7708 1-61,64-91
+kafka-iceberg-topics-redpanda/scripts/sql-console.sh
+  s_b6bbcda70c6e46::t_65adca1b968b6b 1-6
+kafka-iceberg-topics-redpanda/app/lake.py
+  s_b6bbcda70c6e46::t_3f8a9e3ff65a25 11
+  s_b6bbcda70c6e46::t_529e61022f0b21 1-10,12-27
+kafka-iceberg-topics-redpanda/scripts/setup.sh
+  s_b6bbcda70c6e46::t_9a1062c4cc1969 1-26
+kafka-iceberg-topics-redpanda/app/console.py
+  s_b6bbcda70c6e46::t_65adca1b968b6b 1-12,16-23
+  s_b6bbcda70c6e46::t_db6d70b30e76dd 13-15
+kafka-iceberg-topics-redpanda/scripts/start-all.sh
+  s_b6bbcda70c6e46::t_0146ffb7b2836a 1-50
+kafka-iceberg-topics-redpanda/data/orders.csv
+  s_b6bbcda70c6e46::t_36e25c989d082e 1-201
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "17852a7c46fcc4aa4fa314aa53e9a850731dbbd8",
+  "prompts": {},
+  "sessions": {
+    "s_b6bbcda70c6e46": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c06d4699-89b6-4d61-b86f-bb3f56253de2",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "diegopacheco <diego.pacheco.it@gmail.com>"
+    }
+  }
+}
