@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ClickHouse Projections vs Materialized Views</title>
+<style>
+:root{--bg:#f7f8fa;--card:#fff;--ink:#1d2330;--muted:#6b7385;--line:#e3e6ec;--accent:#2f6fde;--accent-soft:#e8f0fd;--base:#8a93a6;--projection:#2f6fde;--view:#1f8a4c;--ok:#1f8a4c;--bad:#c2412d;--warn:#fff4d6}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+header{padding:20px 24px 8px}
+h1{margin:0;font-size:22px}
+header p{margin:4px 0 0;color:var(--muted)}
+nav{display:flex;flex-wrap:wrap;gap:6px;padding:8px 24px 0}
+nav button,.pick button{border:1px solid var(--line);background:#fff;border-radius:6px;padding:6px 12px;cursor:pointer;font:inherit}
+nav button.on,.pick button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+main{padding:12px 24px 32px;display:grid;gap:16px;grid-template-columns:1fr 1fr}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;min-width:0}
+.card h2{margin:0 0 4px;font-size:15px}
+.card p{margin:0 0 12px;color:var(--muted)}
+.wide{grid-column:1/-1}
+.kpis{display:flex;gap:12px;flex-wrap:wrap}
+.kpi{border:1px solid var(--line);border-radius:8px;padding:8px 12px;min-width:150px;background:#fff}
+.kpi span{display:block;color:var(--muted);font-size:12px}
+.kpi strong{font-size:18px;font-variant-numeric:tabular-nums}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{color:var(--muted);font-weight:600;font-size:12px}
+td.left,th.left{text-align:left}
+td.stale{background:var(--warn);color:var(--bad);font-weight:600}
+.scroll{overflow-x:auto}
+.dot{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px}
+.bar{height:14px;border-radius:3px;min-width:2px}
+.barcell{width:34%;min-width:160px}
+.base{background:var(--base)}.projection{background:var(--projection)}.view{background:var(--view)}
+.good,.card p.good{color:var(--ok);font-weight:600}.bad,.card p.bad{color:var(--bad);font-weight:600}
+td.wrap{white-space:normal;min-width:260px}
+.pick{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+pre{margin:0 0 10px;padding:10px;background:#f2f4f8;border:1px solid var(--line);border-radius:8px;font:12px/1.4 ui-monospace,Menlo,monospace;white-space:pre-wrap;word-break:break-word}
+.label{font-size:12px;color:var(--muted);margin:0 0 4px}
+.batches{display:flex;align-items:flex-end;gap:10px;height:120px;margin-top:8px}
+.batch{display:flex;align-items:flex-end;gap:2px;flex:1;height:100%}
+.batch div{flex:1;border-radius:2px 2px 0 0}
+.err{color:var(--bad)}
+@media (max-width:900px){main{grid-template-columns:1fr;padding:12px 16px}header{padding:16px 16px 4px}nav{padding:8px 16px 0}}
+</style>
+</head>
+<body>
+<header>
+<h1>ClickHouse projections vs materialized views</h1>
+<p id="sub">Same generated events in three tables: a plain MergeTree, the same table with an aggregating projection, and the same table feeding a materialized view into an AggregatingMergeTree.</p>
+</header>
+<nav id="nav"></nav>
+<main id="main"></main>
+<script>
+const TABS = {write: "Write cost and storage", read: "Read latency", cases: "What was really read", consistency: "Backfill and mutations"};
+const NAMES = {base: "Plain MergeTree", projection: "Projection", view: "Materialized view"};
+const VARIANTS = ["base", "projection", "view"];
+const num = v => Number(v).toLocaleString("en-US");
+const fixed = (v, d) => Number(v).toLocaleString("en-US", {minimumFractionDigits: d, maximumFractionDigits: d});
+const bytes = v => v >= 1048576 ? fixed(v / 1048576, 2) + " MiB" : fixed(v / 1024, 2) + " KiB";
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+const name = v => `<span class="dot ${v}"></span>${NAMES[v]}`;
+const params = new URLSearchParams(location.search);
+let data = null, live = null, tab = TABS[params.get("tab")] ? params.get("tab") : "write", picked = params.get("case");
+
+async function get(path) {
+  const r = await fetch(path);
+  const body = await r.json();
+  if (!r.ok) throw new Error(body.error || r.status);
+  return body;
+}
+
+function bar(variant, value, max) {
+  return `<div class="bar ${variant}" style="width:${Math.max(0.5, 100 * value / max)}%"></div>`;
+}
+
+function kpis() {
+  const d = data.dataset, groups = data.storage[1].pre_aggregated_rows;
+  return `<section class="card wide"><div class="kpis">
+    <div class="kpi"><span>ClickHouse</span><strong>${esc(data.clickhouse)}</strong></div>
+    <div class="kpi"><span>events per table</span><strong>${num(d.total_rows)}</strong></div>
+    <div class="kpi"><span>timed insert batches</span><strong>${d.live_batches} x ${num(d.batch_rows)}</strong></div>
+    <div class="kpi"><span>pre-aggregated groups</span><strong>${num(groups)}</strong></div>
+    <div class="kpi"><span>generator seed</span><strong>${d.seed}</strong></div>
+  </div></section>`;
+}
+
+function write() {
+  const base = data.write[0], max = Math.max(...data.write.map(w => w.seconds));
+  const rows = data.write.map(w => `<tr><td>${name(w.variant)}</td><td>${fixed(w.seconds, 3)} s</td><td>${num(Math.round(w.rows_per_second))}</td>
+    <td class="${w.seconds > base.seconds ? "bad" : ""}">${w.variant === "base" ? "baseline" : (w.seconds >= base.seconds ? "+" : "") + fixed(100 * (w.seconds / base.seconds - 1), 1) + " %"}</td>
+    <td class="barcell">${bar(w.variant, w.seconds, max)}</td></tr>`).join("");
+  const top = Math.max(...data.write.flatMap(w => w.batch_seconds));
+  const batches = base.batch_seconds.map((_, i) => `<div class="batch" title="batch ${i + 1}">${data.write.map(w =>
+    `<div class="${w.variant}" style="height:${100 * w.batch_seconds[i] / top}%"></div>`).join("")}</div>`).join("");
+  const size = data.storage.map(s => `<tr><td>${name(s.variant)}</td><td>${bytes(s.raw_bytes)}</td><td>${num(s.pre_aggregated_rows)}</td>
+    <td>${bytes(s.pre_aggregated_bytes)}</td><td>${bytes(s.total_bytes)}</td><td>${s.variant === "base" ? "baseline" : "+" + fixed(100 * (s.total_bytes / data.storage[0].total_bytes - 1), 3) + " %"}</td></tr>`).join("");
+  return kpis() + `<section class="card wide"><h2>Insert time for the same ${data.dataset.live_batches} batches</h2>
+    <p>Each batch is one INSERT ... SELECT of ${num(data.dataset.batch_rows)} generated rows. The projection is built inside the insert, the view runs its SELECT on every inserted block.</p>
+    <div class="scroll"><table><tr><th>table</th><th>total insert time</th><th>rows / s</th><th>vs plain table</th><th class="left">total insert time</th></tr>${rows}</table></div></section>
+    <section class="card"><h2>Seconds per batch</h2><p>Three bars per batch: plain, projection, view. Tallest bar is ${fixed(top, 3)} s.</p><div class="batches">${batches}</div></section>
+    <section class="card"><h2>Bytes on disk after OPTIMIZE FINAL</h2><p>Active parts from system.parts, projection parts from system.projection_parts.</p>
+    <div class="scroll"><table><tr><th>table</th><th>base data</th><th>pre-agg rows</th><th>pre-agg bytes</th><th>total</th><th>vs plain</th></tr>${size}</table></div></section>`;
+}
+
+function served(c, v) {
+  if (v.projections.length) return "projection " + v.projections[0].split(".").pop();
+  if (v.variant === "view" && c.view_reads_target) return "view target table";
+  return "base table";
+}
+
+function read() {
+  return kpis() + data.read.map(c => {
+    const base = c.variants[0], max = Math.max(...c.variants.map(v => v.median_ms));
+    const rows = c.variants.map(v => `<tr><td>${name(v.variant)}</td><td>${fixed(v.median_ms, 2)} ms</td><td>${fixed(v.p95_ms, 2)} ms</td>
+      <td>${num(v.read_rows)}</td><td class="left">${served(c, v)}</td><td class="${base.median_ms / v.median_ms > 2 ? "good" : ""}">${fixed(base.median_ms / v.median_ms, 1)}x</td>
+      <td class="barcell">${bar(v.variant, v.median_ms, max)}</td></tr>`).join("");
+    return `<section class="card wide"><h2>${esc(c.title)}</h2><p>${esc(c.note)}</p><div class="scroll"><table>
+      <tr><th>table</th><th>median</th><th>p95</th><th>rows read</th><th class="left">served by</th><th>speedup</th><th class="left">median of ${base.runs} runs</th></tr>${rows}</table></div></section>`;
+  }).join("");
+}
+
+function cases() {
+  const c = data.read.find(x => x.id === picked) || data.read[0];
+  const pick = data.read.map(x => `<button class="${x.id === c.id ? "on" : ""}" data-case="${x.id}">${esc(x.title)}</button>`).join("");
+  const sql = c.variants.map(v => `<div class="label">${name(v.variant)} read ${num(v.read_rows)} rows, system.query_log projections = [${esc(v.projections.join(", "))}], served by ${served(c, v)}</div><pre>${esc(v.sql)}</pre>`).join("");
+  const p = c.variants[1];
+  return `<section class="card wide"><div class="pick">${pick}</div><h2>${esc(c.title)}</h2><p>${esc(c.note)}</p></section>
+    <section class="card"><h2>SQL sent to each table</h2><p>The plain and projection tables always get the same statement.</p>${sql}</section>
+    <section class="card"><h2>EXPLAIN projections = 1 on the projection table</h2>
+    <p class="${p.projections.length ? "good" : "bad"}">${p.projections.length ? "Projection chosen automatically, SQL unchanged." : "Projection cannot serve this query, the base table is read."}</p><pre>${esc(c.explain)}</pre></section>`;
+}
+
+function consistency() {
+  const stages = data.stages.map(s => {
+    const cells = VARIANTS.map(v => {
+      const off = s[v].events !== s.base.events || s[v].revenue !== s.base.revenue;
+      return `<td class="${off ? "stale" : ""}">${num(s[v].events)}</td><td class="${off ? "stale" : ""}">${num(s[v].revenue)}</td>`;
+    }).join("");
+    const gap = s.view.events - s.base.events;
+    const verdict = gap === 0 && s.view.revenue === s.base.revenue ? `<span class="good">all identical</span>` : `<span class="bad">view ${gap > 0 ? "has " + num(gap) + " deleted" : "misses " + num(-gap)} events</span>`;
+    return `<tr><td class="wrap">${esc(s.title)}</td>${cells}<td class="left">${verdict}</td></tr>`;
+  }).join("");
+  const m = data.merge_state, b = data.backfill, mu = data.mutations;
+  const cost = ["delete", "update"].map(k => `<tr><td>ALTER TABLE ... ${k.toUpperCase()}</td>${VARIANTS.map(v => `<td>${fixed(mu[k][v], 3)} s</td>`).join("")}</tr>`).join("");
+  const now = live ? VARIANTS.map(v => `<tr><td>${name(v)}</td><td>${num(live[v].events)}</td><td>${num(live[v].revenue)}</td></tr>`).join("") : "";
+  return `<section class="card wide"><h2>Totals of each table after every step</h2><p>count() and sum(amount) over the whole table. The projection table is queried with the plain SQL, the view through its target with -Merge combinators. Highlighted cells differ from the plain table.</p>
+    <div class="scroll"><table><tr><th>step</th><th>plain events</th><th>plain revenue</th><th>proj. events</th><th>proj. revenue</th><th>view events</th><th>view revenue</th><th class="left">result</th></tr>${stages}</table></div></section>
+    <section class="card"><h2>Backfill of ${num(data.dataset.historic_rows)} rows that existed before</h2><p>The projection is rebuilt by one mutation, the view target needs a hand written INSERT ... SELECT with the right filter.</p>
+    <div class="label">${name("projection")} ${fixed(b.projection.seconds, 3)} s</div><pre>${esc(b.projection.statement)}</pre>
+    <div class="label">${name("view")} ${fixed(b.view.seconds, 3)} s</div><pre>${esc(b.view.statement)}</pre></section>
+    <section class="card"><h2>View target before its parts merge</h2><p>Measured right after the backfill with merges paused: the same key lives in several parts, so reading needs GROUP BY with -Merge or FINAL.</p>
+    <table><tr><th>bench.daily_totals</th><th>value</th></tr>
+    <tr><td>active parts</td><td>${num(m.parts)}</td></tr><tr><td>rows without FINAL</td><td class="stale">${num(m.rows_without_final)}</td></tr>
+    <tr><td>rows with FINAL</td><td>${num(m.rows_with_final)}</td></tr><tr><td>distinct keys</td><td>${num(m.groups)}</td></tr></table>
+    <h2 style="margin-top:16px">Mutation cost</h2><table><tr><th>statement</th><th>plain</th><th>projection</th><th>view source</th></tr>${cost}
+    <tr><td>rebuild view target</td><td>-</td><td>-</td><td>${fixed(mu.repair_view_seconds, 3)} s</td></tr></table></section>
+    <section class="card wide"><h2>Live totals queried from ClickHouse right now</h2><table><tr><th>table</th><th>events</th><th>revenue</th></tr>${now}</table></section>`;
+}
+
+function render() {
+  document.getElementById("nav").innerHTML = Object.entries(TABS).map(([k, v]) => `<button class="${k === tab ? "on" : ""}" data-tab="${k}">${v}</button>`).join("");
+  document.getElementById("main").innerHTML = {write, read, cases, consistency}[tab]();
+  document.querySelectorAll("[data-tab]").forEach(b => b.onclick = () => { tab = b.dataset.tab; render(); });
+  document.querySelectorAll("[data-case]").forEach(b => b.onclick = () => { picked = b.dataset.case; render(); });
+}
+
+(async () => {
+  try {
+    [data, live] = await Promise.all([get("/api/results"), get("/api/live")]);
+    render();
+  } catch (e) {
+    document.getElementById("main").innerHTML = `<p class="err">Failed to load: ${esc(e.message)}</p>`;
+  }
+})();
+</script>
+</body>
+</html>

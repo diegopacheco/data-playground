@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 580" width="1180" height="580">
+<defs>
+<style>@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700');text{font-family:Caveat,'Comic Sans MS',cursive;fill:#1d2330}.t{font-size:24px;font-weight:700}.s{font-size:18px}.l{font-size:16px;fill:#5a6275}</style>
+<filter id="w"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="3" seed="7"/><feDisplacementMap in="SourceGraphic" scale="3"/></filter>
+<marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#1d2330"/></marker>
+</defs>
+<rect width="1180" height="580" fill="#ffffff"/>
+<g filter="url(#w)" stroke="#1d2330" stroke-width="2">
+<rect x="290" y="30" width="520" height="520" rx="14" fill="#f6f9fc"/>
+<rect x="30" y="210" width="190" height="150" rx="12" fill="#fff3c4"/>
+<rect x="320" y="90" width="460" height="90" rx="12" fill="#d7ecff"/>
+<rect x="320" y="215" width="460" height="120" rx="12" fill="#dff5e1"/>
+<rect x="320" y="375" width="195" height="150" rx="12" fill="#f3e1ff"/>
+<rect x="585" y="375" width="195" height="150" rx="12" fill="#ffe0d6"/>
+<rect x="880" y="90" width="270" height="130" rx="12" fill="#e6f7f7"/>
+<rect x="880" y="290" width="270" height="150" rx="12" fill="#fde2ef"/>
+<path d="M220 250 L316 140" fill="none" marker-end="url(#a)"/>
+<path d="M220 285 L316 280" fill="none" marker-end="url(#a)"/>
+<path d="M220 320 L316 440" fill="none" marker-end="url(#a)"/>
+<path d="M515 450 L581 450" fill="none" marker-end="url(#a)"/>
+<path d="M810 155 L876 155" fill="none" marker-end="url(#a)"/>
+<path d="M880 365 L814 365" fill="none" marker-end="url(#a)"/>
+</g>
+<text x="550" y="66" text-anchor="middle" class="t">s4-clickhouse 26.9.2.8, database bench</text>
+<text x="125" y="244" text-anchor="middle" class="t">bench.py</text>
+<text x="125" y="272" text-anchor="middle" class="s">13 batches of 1M events</text>
+<text x="125" y="296" text-anchor="middle" class="s">numbers() + seed 42</text>
+<text x="125" y="320" text-anchor="middle" class="s">same INSERT ... SELECT</text>
+<text x="125" y="344" text-anchor="middle" class="s">into three tables</text>
+<text x="550" y="124" text-anchor="middle" class="t">events_base</text>
+<text x="550" y="152" text-anchor="middle" class="s">plain MergeTree ORDER BY (user_id, ts), the baseline</text>
+<text x="550" y="249" text-anchor="middle" class="t">events_proj</text>
+<text x="550" y="277" text-anchor="middle" class="s">same table + PROJECTION daily_totals</text>
+<text x="550" y="301" text-anchor="middle" class="s">aggregates stored inside every part, chosen by the optimizer</text>
+<text x="550" y="323" text-anchor="middle" class="l">read with the unchanged SQL</text>
+<text x="417" y="409" text-anchor="middle" class="t">events_mv</text>
+<text x="417" y="437" text-anchor="middle" class="s">same table,</text>
+<text x="417" y="461" text-anchor="middle" class="s">source of the view</text>
+<text x="417" y="485" text-anchor="middle" class="s">daily_totals_mv</text>
+<text x="550" y="440" text-anchor="middle" class="l">on insert</text>
+<text x="682" y="409" text-anchor="middle" class="t">daily_totals</text>
+<text x="682" y="437" text-anchor="middle" class="s">AggregatingMergeTree</text>
+<text x="682" y="461" text-anchor="middle" class="s">countState, sumState</text>
+<text x="682" y="485" text-anchor="middle" class="s">-Merge or FINAL</text>
+<text x="682" y="509" text-anchor="middle" class="l">its own table name</text>
+<text x="1015" y="124" text-anchor="middle" class="t">server.py + index.html</text>
+<text x="1015" y="152" text-anchor="middle" class="s">serves .run/results.json</text>
+<text x="1015" y="176" text-anchor="middle" class="s">and live totals of the three</text>
+<text x="1015" y="200" text-anchor="middle" class="l">write cost, read latency, EXPLAIN</text>
+<text x="843" y="143" text-anchor="middle" class="l">HTTP</text>
+<text x="1015" y="324" text-anchor="middle" class="t">test-all.sh</text>
+<text x="1015" y="352" text-anchor="middle" class="s">awk regenerates the 13M events</text>
+<text x="1015" y="376" text-anchor="middle" class="s">and recomputes every aggregate,</text>
+<text x="1015" y="400" text-anchor="middle" class="s">then compares the three tables</text>
+<text x="1015" y="424" text-anchor="middle" class="l">and system.query_log rows read</text>
+<text x="845" y="353" text-anchor="middle" class="l">SQL</text>
+</svg>
