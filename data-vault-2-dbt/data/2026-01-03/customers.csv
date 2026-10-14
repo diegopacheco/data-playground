@@ -1,0 +1,28 @@
+customer_id,name,email,city,segment
+C003,Diego Costa,diego.costa3@corp.test,Porto Alegre,consumer
+C007,Hugo Melo,hugo.melo7@corp.test,Toronto,corporate
+C011,Luis Nunes,luis.nunes11@corp.test,Berlin,corporate
+C015,Paulo Alves,paulo.alves15@corp.test,Seattle,small-business
+C005,Fabio Alves,fabio.alves5@mail.test,Dublin,small-business
+C009,Joao Lima,joao.lima9@mail.test,Dublin,consumer
+C013,Nuno Costa,nuno.costa13@mail.test,Dublin,corporate
+C020,Ana Silva,ana.silva20@corp.test,Dublin,corporate
+C021,Bruno Nunes,bruno.nunes21@corp.test,Dublin,corporate
+C030,Karen Silva,karen.silva30@mail.test,Porto Alegre,consumer
+C031,Luis Nunes,luis.nunes31@mail.test,Toronto,corporate
+C032,Marta Rocha,marta.rocha32@mail.test,Sao Paulo,small-business
+C033,Nuno Costa,nuno.costa33@mail.test,Sao Paulo,consumer
+C034,Olga Reis,olga.reis34@mail.test,Madrid,small-business
+C035,Paulo Alves,paulo.alves35@mail.test,Berlin,small-business
+C036,Rita Souza,rita.souza36@mail.test,Lisbon,consumer
+C037,Sergio Melo,sergio.melo37@mail.test,Sao Paulo,corporate
+C041,Bruno Nunes,bruno.nunes41@mail.test,Austin,corporate
+C042,Carla Rocha,carla.rocha42@mail.test,Porto Alegre,small-business
+C043,Diego Costa,diego.costa43@mail.test,Seattle,small-business
+C044,Elisa Reis,elisa.reis44@mail.test,Madrid,small-business
+C045,Fabio Alves,fabio.alves45@mail.test,Madrid,small-business
+C046,Gina Souza,gina.souza46@mail.test,Toronto,corporate
+C047,Hugo Melo,hugo.melo47@mail.test,Porto Alegre,small-business
+C048,Iris Pires,iris.pires48@mail.test,Lisbon,corporate
+C049,Joao Lima,joao.lima49@mail.test,Austin,corporate
+C050,Karen Silva,karen.silva50@mail.test,Berlin,small-business

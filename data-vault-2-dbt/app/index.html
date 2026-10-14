@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Data Vault 2.0 with dbt</title>
+<style>
+:root{--bg:#f7f8fa;--card:#fff;--ink:#1d2330;--muted:#6b7385;--line:#e3e6ec;--accent:#2f6fde;--accent-soft:#e8f0fd;--up:#1f8a4c;--down:#c2412d;--hub:#d7ecff;--link:#ffe0d6;--sat:#fff3c4}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+header{padding:20px 24px 8px}
+h1{margin:0;font-size:22px}
+header p{margin:4px 0 0;color:var(--muted)}
+nav{display:flex;gap:6px;padding:8px 24px 0}
+nav button,.pick button{border:1px solid var(--line);background:#fff;border-radius:6px;padding:6px 14px;cursor:pointer;font:inherit}
+nav button.on,.pick button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+main{padding:12px 24px 32px;display:grid;gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;min-width:0}
+.card h2{margin:0 0 4px;font-size:15px}
+.card p{margin:0 0 12px;color:var(--muted)}
+.two{display:grid;gap:16px;grid-template-columns:1fr 1fr}
+.kpis{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.kpi{border:1px solid var(--line);border-radius:8px;padding:8px 12px;min-width:130px}
+.kpi span{display:block;color:var(--muted);font-size:12px}
+.kpi strong{font-size:18px;font-variant-numeric:tabular-nums}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{color:var(--muted);font-weight:600;font-size:12px}
+th.group{text-align:center;border-left:1px solid var(--line)}
+td.first{border-left:1px solid var(--line)}
+td.changed{background:#fff4d6;font-weight:600}
+td.zero{color:var(--up);font-weight:600}
+.left td,.left th{text-align:left}
+.mono{font-family:ui-monospace,Menlo,monospace;font-size:12px}
+.tag{display:inline-block;border-radius:5px;padding:1px 7px;font-size:12px;border:1px solid var(--line)}
+.tag.hub{background:var(--hub)}.tag.link{background:var(--link)}.tag.sat{background:var(--sat)}
+.scroll{overflow-x:auto}
+.pick{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:4px}
+.pick button{padding:3px 8px;font-size:12px}
+.pick button.multi{border-color:#e0b000;background:#fffbe6}
+.pick button.on{background:var(--accent);border-color:var(--accent)}
+svg text{font:12px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;fill:var(--ink)}
+svg .name{font-weight:700;font-size:13px}
+svg .small{fill:var(--muted);font-size:11px}
+svg .edge{font-size:11px;paint-order:stroke;stroke:#fff;stroke-width:5px}
+.err{color:var(--down)}
+@media (max-width:900px){.two{grid-template-columns:1fr}main,nav{padding-left:16px;padding-right:16px}}
+</style>
+</head>
+<body>
+<header>
+<h1>Data Vault 2.0 with dbt on DuckDB</h1>
+<p>Three deliveries loaded in sequence by <code>dbt build</code>: hubs, links and insert-only satellites written by hand-made macros, a point-in-time table, a bridge and a star-schema mart.</p>
+</header>
+<nav id="nav"></nav>
+<main id="main"></main>
+<script>
+const TABS = {model: "Vault model", batches: "Rows per load", history: "Satellite history", mart: "Information mart"};
+const params = new URLSearchParams(location.search);
+let tab = TABS[params.get("tab")] ? params.get("tab") : "model";
+let customer = params.get("customer") || "C020";
+const main = document.getElementById("main");
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+const num = v => Number(v).toLocaleString("en-US");
+const money = v => Number(v).toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2});
+const short = v => /^[0-9a-f]{32}$/.test(v) ? v.slice(0, 10) + "…" : v;
+
+async function get(path) {
+  const r = await fetch(path);
+  const body = await r.json();
+  if (!r.ok) throw new Error(body.error || r.status);
+  return body;
+}
+
+function grid(rows, klass) {
+  if (!rows.length) return "<p>no rows</p>";
+  const cols = Object.keys(rows[0]);
+  return `<div class="scroll"><table class="${klass || ""}"><tr>${cols.map(c => `<th>${esc(c)}</th>`).join("")}</tr>` +
+    rows.map(r => `<tr>${cols.map(c => `<td>${esc(short(r[c]))}</td>`).join("")}</tr>`).join("") + "</table></div>";
+}
+
+function diagram(tables, edges) {
+  const vault = tables.filter(t => t.layer === "raw_vault");
+  const spot = {
+    sat_customer_contact: [20, 10], sat_customer_profile: [20, 120], hub_customer: [400, 65],
+    link_order_customer: [780, 65], sat_order: [1160, 10], hub_order: [1160, 170],
+    sat_order_line: [400, 300], link_order_line: [780, 300], hub_product: [1160, 330], sat_product: [780, 430]
+  };
+  const w = 220, h = 90, fill = {hub: "var(--hub)", link: "var(--link)", sat: "var(--sat)"};
+  const side = (a, b) => {
+    const [ax, ay] = spot[a], [bx, by] = spot[b];
+    if (Math.abs(ax - bx) >= w) return ax < bx ? [ax + w, ay + h / 2, bx, by + h / 2] : [ax, ay + h / 2, bx + w, by + h / 2];
+    return ay < by ? [ax + w / 2, ay + h, bx + w / 2, by] : [ax + w / 2, ay, bx + w / 2, by + h];
+  };
+  const lines = edges.map(e => {
+    const [x1, y1, x2, y2] = side(e.from, e.to);
+    return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#1d2330" stroke-width="1.5" marker-end="url(#arrow)"/>
+      <text class="edge" x="${(x1 + x2) / 2}" y="${(y1 + y2) / 2 + 4}" text-anchor="middle">${esc(e.key)}</text>`;
+  }).join("");
+  const boxes = vault.map(t => {
+    const [x, y] = spot[t.name];
+    const own = t.columns.filter(c => !["load_date", "record_source", "hashdiff"].includes(c));
+    return `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="10" fill="${fill[t.kind]}" stroke="#1d2330"/>
+      <text class="name" x="${x + 12}" y="${y + 22}">${esc(t.name)}</text>
+      <text x="${x + w - 12}" y="${y + 22}" text-anchor="end">${num(t.rows)} rows</text>
+      <text class="small" x="${x + 12}" y="${y + 44}">${esc(own.slice(0, 2).join(", "))}</text>
+      <text class="small" x="${x + 12}" y="${y + 62}">${esc(own.slice(2).join(", "))}</text>
+      <text class="small" x="${x + 12}" y="${y + 80}">${t.kind === "sat" ? "hashdiff, " : ""}load_date, record_source</text>`;
+  }).join("");
+  return `<div class="scroll"><svg viewBox="0 0 1400 530" width="100%" style="min-width:1000px">
+    <defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#1d2330"/></marker></defs>
+    ${lines}${boxes}</svg></div>`;
+}
+
+async function model() {
+  const m = await get("/api/model");
+  const count = kind => m.tables.filter(t => t.layer === "raw_vault" && t.kind === kind).length;
+  const others = m.tables.filter(t => t.layer !== "raw_vault").map(t => ({layer: t.layer, table: t.name, rows: num(t.rows), columns: t.columns.join(", ")}));
+  main.innerHTML = `<section class="card"><h2>Raw vault</h2>
+    <p><span class="tag hub">hub</span> one row per business key · <span class="tag link">link</span> one row per relationship · <span class="tag sat">sat</span> one row per attribute change. Arrows follow the hash key each table points to.</p>
+    <div class="kpis"><div class="kpi"><span>hubs</span><strong>${count("hub")}</strong></div><div class="kpi"><span>links</span><strong>${count("link")}</strong></div><div class="kpi"><span>satellites</span><strong>${count("sat")}</strong></div><div class="kpi"><span>hash key references</span><strong>${m.edges.length}</strong></div></div>
+    ${diagram(m.tables, m.edges)}</section>
+    <section class="card"><h2>Business vault and information mart built on top</h2><p>Row counts read live from DuckDB.</p>${grid(others, "left")}</section>`;
+}
+
+async function batches() {
+  const rows = await get("/api/batches");
+  const dates = [...new Set(rows.map(r => r.load_date))];
+  const names = [...new Set(rows.map(r => r.table_name))];
+  const at = (d, n) => rows.find(r => r.load_date === d && r.table_name === n);
+  const sum = (d, f) => rows.filter(r => r.load_date === d).reduce((s, r) => s + r[f], 0);
+  const labels = ["initial load", "new entities + changed attributes", "exact re-delivery"];
+  main.innerHTML = `<section class="card"><h2>Rows delivered, rows added and total rows per load</h2>
+    <p>Delivered is the size of the staging feed. Added is what the hub, link or satellite macro really inserted. A re-delivery adds nothing.</p>
+    <div class="kpis">${dates.map((d, i) => `<div class="kpi"><span>${d} · ${labels[i] || "load"}</span><strong>+${num(sum(d, "added_rows"))} rows</strong></div>`).join("")}</div>
+    <div class="scroll"><table><tr><th rowspan="2">table</th>${dates.map((d, i) => `<th class="group" colspan="3">load ${i + 1} · ${d}</th>`).join("")}</tr>
+    <tr>${dates.map(() => `<th class="group">delivered</th><th>added</th><th>total</th>`).join("")}</tr>
+    ${names.map(n => `<tr><td><span class="tag ${at(dates[0], n).kind}">${at(dates[0], n).kind}</span> ${n}</td>${dates.map(d => {
+      const r = at(d, n);
+      return `<td class="first">${num(r.delivered_rows)}</td><td class="${r.added_rows === 0 ? "zero" : r.added_rows < r.delivered_rows ? "changed" : ""}">+${num(r.added_rows)}</td><td>${num(r.total_rows)}</td>`;
+    }).join("")}</tr>`).join("")}
+    <tr><th>all tables</th>${dates.map(d => `<th class="group">${num(sum(d, "delivered_rows"))}</th><th>+${num(sum(d, "added_rows"))}</th><th>${num(sum(d, "total_rows"))}</th>`).join("")}</tr>
+    </table></div></section>`;
+}
+
+async function versions() {
+  const [list, h] = await Promise.all([get("/api/customers"), get("/api/history?customer_id=" + encodeURIComponent(customer))]);
+  main.innerHTML = `<section class="card"><h2>Business key</h2><p>Highlighted customers have more than one satellite version.</p>
+    <div class="pick">${list.map(c => `<button data-id="${c.customer_id}" class="${c.customer_id === customer ? "on" : c.contact_versions + c.profile_versions > 2 ? "multi" : ""}">${c.customer_id}</button>`).join("")}</div></section>
+    <section class="card"><h2>hub_customer</h2><p>The business key is stored once, with the load that first saw it.</p>${grid(h.hub, "left mono")}</section>
+    <div class="two"><section class="card"><h2>sat_customer_contact · ${h.sat_customer_contact.length} version(s)</h2><p>A row is inserted only when the hashdiff of name and email changes.</p>${grid(h.sat_customer_contact, "left mono")}</section>
+    <section class="card"><h2>sat_customer_profile · ${h.sat_customer_profile.length} version(s)</h2><p>A row is inserted only when the hashdiff of city and segment changes.</p>${grid(h.sat_customer_profile, "left mono")}</section></div>
+    <section class="card"><h2>pit_customer joined to both satellites · ${customer} as of each load date</h2><p>The point-in-time table stores which satellite load date is valid on each as-of date, so the join is an equality join.</p>${grid(h.as_of, "left")}</section>`;
+  main.querySelectorAll(".pick button").forEach(b => b.onclick = () => { customer = b.dataset.id; show(); });
+}
+
+async function mart() {
+  const m = await get("/api/mart");
+  const cats = [...new Set(m.revenue.map(r => r.category))], segs = [...new Set(m.revenue.map(r => r.segment))];
+  const cell = (c, s) => (m.revenue.find(r => r.category === c && r.segment === s) || {revenue: 0}).revenue;
+  const total = rows => rows.reduce((s, r) => s + r.revenue, 0);
+  main.innerHTML = `<section class="card"><h2>Star schema: fct_order_lines with dim_customer and dim_product</h2>
+    <p>Views over the bridge, the point-in-time table and the current satellite rows.</p>
+    <div class="kpis"><div class="kpi"><span>order lines</span><strong>${num(m.totals.order_lines)}</strong></div><div class="kpi"><span>orders</span><strong>${num(m.totals.orders)}</strong></div><div class="kpi"><span>quantity</span><strong>${num(m.totals.quantity)}</strong></div><div class="kpi"><span>revenue</span><strong>${money(m.totals.revenue)}</strong></div></div>
+    <div class="scroll"><table><tr><th>category \\ segment</th>${segs.map(s => `<th>${s}</th>`).join("")}<th>total</th></tr>
+    ${cats.map(c => `<tr><td>${c}</td>${segs.map(s => `<td>${money(cell(c, s))}</td>`).join("")}<td><b>${money(total(m.revenue.filter(r => r.category === c)))}</b></td></tr>`).join("")}
+    <tr><th>total</th>${segs.map(s => `<th>${money(total(m.revenue.filter(r => r.segment === s)))}</th>`).join("")}<th>${money(m.totals.revenue)}</th></tr></table></div></section>
+    <section class="card"><h2>Top order lines by revenue</h2><p>Fact rows joined to both dimensions.</p>${grid(m.lines.map(r => ({...r, unit_price: money(r.unit_price), revenue: money(r.revenue)})), "left")}</section>`;
+}
+
+async function show() {
+  document.getElementById("nav").innerHTML = Object.keys(TABS).map(t => `<button data-tab="${t}" class="${t === tab ? "on" : ""}">${TABS[t]}</button>`).join("");
+  document.querySelectorAll("nav button").forEach(b => b.onclick = () => { tab = b.dataset.tab; show(); });
+  history.replaceState(null, "", `?tab=${tab}` + (tab === "history" ? `&customer=${customer}` : ""));
+  try {
+    await ({model, batches, history: versions, mart})[tab]();
+  } catch (e) {
+    main.innerHTML = `<section class="card err">${esc(e.message)}</section>`;
+  }
+}
+
+show();
+</script>
+</body>
+</html>

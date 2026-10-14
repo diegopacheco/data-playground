@@ -1,0 +1,16 @@
+product_id,name,category,price
+P01,Atlas,books,85.43
+P02,Novel,books,95.01
+P03,Cookbook,books,52.02
+P04,Guide,books,176.00
+P05,Headphones,electronics,63.47
+P06,Keyboard,electronics,44.15
+P07,Monitor,electronics,92.49
+P08,Webcam,electronics,154.33
+P09,Lamp,home,104.14
+P10,Kettle,home,59.04
+P11,Blender,home,62.11
+P12,Chair,home,62.70
+P13,Racket,sports,162.33
+P14,Helmet,sports,118.89
+P15,Gloves,sports,112.49

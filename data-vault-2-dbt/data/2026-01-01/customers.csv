@@ -1,0 +1,41 @@
+customer_id,name,email,city,segment
+C001,Bruno Nunes,bruno.nunes1@mail.test,Porto Alegre,corporate
+C002,Carla Rocha,carla.rocha2@mail.test,Toronto,small-business
+C003,Diego Costa,diego.costa3@mail.test,Porto Alegre,consumer
+C004,Elisa Reis,elisa.reis4@mail.test,Toronto,corporate
+C005,Fabio Alves,fabio.alves5@mail.test,Seattle,small-business
+C006,Gina Souza,gina.souza6@mail.test,Lisbon,consumer
+C007,Hugo Melo,hugo.melo7@mail.test,Toronto,corporate
+C008,Iris Pires,iris.pires8@mail.test,Sao Paulo,consumer
+C009,Joao Lima,joao.lima9@mail.test,Berlin,consumer
+C010,Karen Silva,karen.silva10@mail.test,Madrid,consumer
+C011,Luis Nunes,luis.nunes11@mail.test,Berlin,corporate
+C012,Marta Rocha,marta.rocha12@mail.test,Madrid,corporate
+C013,Nuno Costa,nuno.costa13@mail.test,Seattle,corporate
+C014,Olga Reis,olga.reis14@mail.test,Lisbon,small-business
+C015,Paulo Alves,paulo.alves15@mail.test,Seattle,small-business
+C016,Rita Souza,rita.souza16@mail.test,Berlin,consumer
+C017,Sergio Melo,sergio.melo17@mail.test,Toronto,consumer
+C018,Tania Pires,tania.pires18@mail.test,Toronto,small-business
+C019,Vitor Lima,vitor.lima19@mail.test,Madrid,consumer
+C020,Ana Silva,ana.silva20@mail.test,Porto Alegre,consumer
+C021,Bruno Nunes,bruno.nunes21@mail.test,Lisbon,consumer
+C022,Carla Rocha,carla.rocha22@mail.test,Seattle,small-business
+C023,Diego Costa,diego.costa23@mail.test,Berlin,consumer
+C024,Elisa Reis,elisa.reis24@mail.test,Berlin,small-business
+C025,Fabio Alves,fabio.alves25@mail.test,Toronto,corporate
+C026,Gina Souza,gina.souza26@mail.test,Toronto,consumer
+C027,Hugo Melo,hugo.melo27@mail.test,Berlin,small-business
+C028,Iris Pires,iris.pires28@mail.test,Lisbon,consumer
+C029,Joao Lima,joao.lima29@mail.test,Madrid,consumer
+C030,Karen Silva,karen.silva30@mail.test,Porto Alegre,consumer
+C031,Luis Nunes,luis.nunes31@mail.test,Toronto,corporate
+C032,Marta Rocha,marta.rocha32@mail.test,Sao Paulo,small-business
+C033,Nuno Costa,nuno.costa33@mail.test,Sao Paulo,consumer
+C034,Olga Reis,olga.reis34@mail.test,Madrid,small-business
+C035,Paulo Alves,paulo.alves35@mail.test,Berlin,small-business
+C036,Rita Souza,rita.souza36@mail.test,Lisbon,consumer
+C037,Sergio Melo,sergio.melo37@mail.test,Sao Paulo,corporate
+C038,Tania Pires,tania.pires38@mail.test,Lisbon,consumer
+C039,Vitor Lima,vitor.lima39@mail.test,Berlin,corporate
+C040,Ana Silva,ana.silva40@mail.test,Madrid,corporate

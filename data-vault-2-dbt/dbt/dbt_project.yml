@@ -1,0 +1,30 @@
+name: vault
+version: '1.0.0'
+profile: vault
+
+model-paths: ["models"]
+macro-paths: ["macros"]
+test-paths: ["tests"]
+target-path: target
+clean-targets: ["target"]
+
+flags:
+  send_anonymous_usage_stats: false
+
+vars:
+  data_dir: ../data
+
+models:
+  vault:
+    staging:
+      +schema: staging
+      +materialized: table
+    raw_vault:
+      +schema: raw_vault
+      +materialized: incremental
+    business_vault:
+      +schema: business_vault
+      +materialized: table
+    mart:
+      +schema: mart
+      +materialized: view

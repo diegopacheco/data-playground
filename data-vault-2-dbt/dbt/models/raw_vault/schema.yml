@@ -1,0 +1,148 @@
+version: 2
+
+models:
+  - name: hub_customer
+    columns:
+      - name: customer_hk
+        data_tests: [unique, not_null]
+      - name: customer_id
+        data_tests: [unique, not_null]
+      - name: load_date
+        data_tests: [not_null]
+      - name: record_source
+        data_tests: [not_null]
+  - name: hub_product
+    columns:
+      - name: product_hk
+        data_tests: [unique, not_null]
+      - name: product_id
+        data_tests: [unique, not_null]
+      - name: load_date
+        data_tests: [not_null]
+      - name: record_source
+        data_tests: [not_null]
+  - name: hub_order
+    columns:
+      - name: order_hk
+        data_tests: [unique, not_null]
+      - name: order_id
+        data_tests: [unique, not_null]
+      - name: load_date
+        data_tests: [not_null]
+      - name: record_source
+        data_tests: [not_null]
+  - name: link_order_customer
+    columns:
+      - name: order_customer_hk
+        data_tests: [unique, not_null]
+      - name: order_hk
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('hub_order')
+                field: order_hk
+      - name: customer_hk
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('hub_customer')
+                field: customer_hk
+      - name: load_date
+        data_tests: [not_null]
+  - name: link_order_line
+    columns:
+      - name: order_line_hk
+        data_tests: [unique, not_null]
+      - name: order_hk
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('hub_order')
+                field: order_hk
+      - name: product_hk
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('hub_product')
+                field: product_hk
+      - name: load_date
+        data_tests: [not_null]
+  - name: sat_customer_contact
+    columns:
+      - name: customer_hk
+        data_tests:
+          - not_null
+          - unique_per_load
+          - changes_only
+          - relationships:
+              arguments:
+                to: ref('hub_customer')
+                field: customer_hk
+      - name: hashdiff
+        data_tests: [not_null]
+      - name: load_date
+        data_tests: [not_null]
+  - name: sat_customer_profile
+    columns:
+      - name: customer_hk
+        data_tests:
+          - not_null
+          - unique_per_load
+          - changes_only
+          - relationships:
+              arguments:
+                to: ref('hub_customer')
+                field: customer_hk
+      - name: hashdiff
+        data_tests: [not_null]
+      - name: load_date
+        data_tests: [not_null]
+  - name: sat_product
+    columns:
+      - name: product_hk
+        data_tests:
+          - not_null
+          - unique_per_load
+          - changes_only
+          - relationships:
+              arguments:
+                to: ref('hub_product')
+                field: product_hk
+      - name: hashdiff
+        data_tests: [not_null]
+      - name: load_date
+        data_tests: [not_null]
+  - name: sat_order
+    columns:
+      - name: order_hk
+        data_tests:
+          - not_null
+          - unique_per_load
+          - changes_only
+          - relationships:
+              arguments:
+                to: ref('hub_order')
+                field: order_hk
+      - name: hashdiff
+        data_tests: [not_null]
+      - name: load_date
+        data_tests: [not_null]
+  - name: sat_order_line
+    columns:
+      - name: order_line_hk
+        data_tests:
+          - not_null
+          - unique_per_load
+          - changes_only
+          - relationships:
+              arguments:
+                to: ref('link_order_line')
+                field: order_line_hk
+      - name: hashdiff
+        data_tests: [not_null]
+      - name: load_date
+        data_tests: [not_null]

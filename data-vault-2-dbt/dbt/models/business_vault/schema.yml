@@ -1,0 +1,22 @@
+version: 2
+
+models:
+  - name: pit_customer
+    columns:
+      - name: customer_hk
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('hub_customer')
+                field: customer_hk
+      - name: contact_load_date
+        data_tests: [not_null]
+      - name: profile_load_date
+        data_tests: [not_null]
+  - name: bridge_order_line
+    columns:
+      - name: order_line_hk
+        data_tests: [unique, not_null]
+      - name: customer_hk
+        data_tests: [not_null]

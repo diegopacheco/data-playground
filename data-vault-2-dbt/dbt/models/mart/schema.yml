@@ -1,0 +1,31 @@
+version: 2
+
+models:
+  - name: dim_customer
+    columns:
+      - name: customer_hk
+        data_tests: [unique, not_null]
+  - name: dim_product
+    columns:
+      - name: product_hk
+        data_tests: [unique, not_null]
+  - name: fct_order_lines
+    columns:
+      - name: order_line_hk
+        data_tests: [unique, not_null]
+      - name: customer_hk
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_customer')
+                field: customer_hk
+      - name: product_hk
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_product')
+                field: product_hk
+      - name: revenue
+        data_tests: [not_null]
