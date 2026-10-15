@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Debezium Outbox Pattern</title>
+<style>
+:root{--bg:#f7f8fa;--card:#fff;--ink:#1d2330;--muted:#6b7385;--line:#e3e6ec;--accent:#2f6fde;--accent-soft:#e8f0fd;--up:#1f8a4c;--up-soft:#e3f5ea;--down:#c2412d;--down-soft:#fde9e5;--warn:#fff4d6}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+header{padding:20px 24px 8px}
+h1{margin:0;font-size:22px}
+header p{margin:4px 0 0;color:var(--muted)}
+nav{display:flex;gap:6px;padding:8px 24px 0}
+nav button,.tabs button{border:1px solid var(--line);background:#fff;border-radius:6px;padding:6px 14px;cursor:pointer;font:inherit}
+nav button.on,.tabs button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+main{padding:12px 24px 32px;display:grid;gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;min-width:0}
+.card h2{margin:0 0 12px;font-size:15px}
+.card p{margin:0 0 10px;color:var(--muted)}
+.kpis{display:flex;gap:12px;flex-wrap:wrap}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 14px;min-width:130px}
+.kpi span{display:block;color:var(--muted);font-size:12px}
+.kpi strong{font-size:20px;font-variant-numeric:tabular-nums}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{color:var(--muted);font-weight:600;font-size:12px}
+td.n,th.n{text-align:right;white-space:nowrap}
+td.mono{font-family:ui-monospace,Menlo,monospace;font-size:12px}
+tr.dup td{background:var(--warn)}
+.muted{color:var(--muted);font-size:12px}
+.badge{display:inline-block;border-radius:10px;padding:1px 9px;font-size:12px;font-weight:600}
+.badge.ok{background:var(--up-soft);color:var(--up)}
+.badge.bad{background:var(--down-soft);color:var(--down)}
+.chip{display:inline-block;border:1px solid var(--line);border-radius:6px;padding:1px 7px;font-size:12px;margin:0 4px 2px 0;background:#fff}
+.chip.lost{border-color:var(--down);color:var(--down);background:var(--down-soft)}
+.scroll{overflow-x:auto}
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.tabs button{font-size:12px;padding:5px 10px}
+.grid3{display:grid;gap:16px;grid-template-columns:repeat(3,1fr)}
+.grid2{display:grid;gap:16px;grid-template-columns:1fr 1fr}
+.bar{display:flex;align-items:center;gap:8px;margin:6px 0}
+.bar label{width:60px;color:var(--muted);font-size:12px}
+.bar div{height:18px;border-radius:4px;background:var(--accent)}
+.bar div.ev{background:#8a63d2}
+.bar b{font-variant-numeric:tabular-nums}
+.err{color:var(--down)}
+@media (max-width:900px){.grid3,.grid2{grid-template-columns:1fr}main,nav{padding-left:16px;padding-right:16px}header{padding:16px 16px 4px}}
+</style>
+</head>
+<body>
+<header>
+<h1>Transactional outbox with Debezium</h1>
+<p>Business row and outbox row commit in one PostgreSQL transaction. Debezium reads the WAL of the outbox table and the Outbox Event Router sends each row to <code>outbox.event.&lt;aggregatetype&gt;</code>.</p>
+</header>
+<nav id="nav"></nav>
+<main id="main"></main>
+<script>
+const TABS = {proof: "Proof", events: "Events", ordering: "Ordering", dualwrite: "Dual write"};
+const params = new URLSearchParams(location.search);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+const badge = (ok, yes = "true", no = "false") => `<span class="badge ${ok ? "ok" : "bad"}">${ok ? yes : no}</span>`;
+const kpi = (label, value) => `<div class="kpi"><span>${label}</span><strong>${value}</strong></div>`;
+const main = document.getElementById("main");
+let tab = TABS[params.get("tab")] ? params.get("tab") : "proof";
+let topic = params.get("topic") || "outbox.event.order";
+
+async function get(path) {
+  const r = await fetch("/api/" + path);
+  const body = await r.json();
+  if (!r.ok) throw new Error(body.error || r.status);
+  return body;
+}
+
+function renderNav() {
+  document.getElementById("nav").innerHTML = Object.entries(TABS).map(([k, v]) => `<button data-tab="${k}" class="${k === tab ? "on" : ""}">${v}</button>`).join("");
+  document.querySelectorAll("nav button").forEach(b => b.onclick = () => { tab = b.dataset.tab; render(); });
+}
+
+async function proof() {
+  const [claims, topics, facts] = await Promise.all([get("proof"), get("topics"), get("facts")]);
+  const outbox = topics.filter(t => t.topic.startsWith("outbox."));
+  const sum = k => outbox.reduce((a, t) => a + t[k], 0);
+  main.innerHTML = `
+  <div class="kpis">${kpi("committed transactions", claims[0].expected)}${kpi("unique events on kafka", claims[0].actual)}${kpi("kafka messages", sum("messages"))}
+  ${kpi("redelivered after restart", sum("redelivered"))}${kpi("rolled back", facts.rollback_attempts)}${kpi("outbox rows deleted", facts.delete_outbox_rows)}${kpi("claims true", claims.filter(c => c.ok).length + " / " + claims.length)}</div>
+  <section class="card"><h2>Claims, computed live from PostgreSQL and Kafka</h2><div class="scroll"><table>
+  <tr><th>claim</th><th>how it is measured</th><th class="n">expected</th><th class="n">actual</th><th></th></tr>
+  ${claims.map(c => `<tr><td>${esc(c.claim)}</td><td class="muted">${esc(c.detail)}</td><td class="n">${c.expected}</td><td class="n">${c.actual}</td><td>${badge(c.ok)}</td></tr>`).join("")}
+  </table></div></section>
+  <div class="grid2">
+  <section class="card"><h2>Topics</h2><div class="scroll"><table>
+  <tr><th>topic</th><th class="n">messages</th><th class="n">unique ids</th><th class="n">redelivered</th><th class="n">keys</th><th class="n">partitions</th><th class="n">tombstones</th></tr>
+  ${topics.map(t => `<tr><td class="mono">${esc(t.topic)}</td><td class="n">${t.messages}</td><td class="n">${t.unique_events}</td><td class="n">${t.redelivered}</td><td class="n">${t.keys}</td><td class="n">${t.partitions.join(", ")}</td><td class="n">${t.tombstones}</td></tr>`).join("")}
+  </table></div></section>
+  <section class="card"><h2>Measured while the scenarios ran</h2><div class="scroll"><table>
+  <tr><th>fact</th><th class="n">value</th></tr>
+  ${Object.entries(facts).map(([k, v]) => `<tr><td class="mono">${esc(k)}</td><td class="n">${v}</td></tr>`).join("")}
+  </table></div></section></div>`;
+}
+
+async function events() {
+  const all = await get("events");
+  const names = [...new Set(all.map(e => e.topic))];
+  if (!names.includes(topic)) topic = names[0];
+  const seen = new Set();
+  const list = all.filter(e => e.topic === topic).map(e => ({...e, dup: seen.has(e.id) || !seen.add(e.id)}));
+  const dups = list.filter(e => e.dup).length;
+  const shown = params.get("only") === "redelivered" ? list.filter(e => e.dup) : list;
+  main.innerHTML = `<section class="card"><h2>Messages as stored in Kafka</h2>
+  <div class="tabs">${names.map(n => `<button data-topic="${n}" class="${n === topic ? "on" : ""}">${esc(n)}</button>`).join("")}</div>
+  <p>${list.length} messages, ${list.length - dups} unique event ids, ${dups} redelivered (highlighted). Key is the aggregate id, <code>id</code> and <code>eventType</code> are headers, value is the outbox payload.</p>
+  <div class="scroll"><table>
+  <tr><th class="n">partition</th><th class="n">offset</th><th>key</th><th>header id</th><th>header eventType</th><th>value</th></tr>
+  ${shown.map(e => `<tr class="${e.dup ? "dup" : ""}"><td class="n">${e.partition}</td><td class="n">${e.offset}</td><td class="mono">${esc(e.key)}</td><td class="mono">${esc(e.id)}</td><td>${esc(e.type)}</td><td class="mono">${esc(e.value)}</td></tr>`).join("")}
+  </table></div></section>`;
+  document.querySelectorAll(".tabs button").forEach(b => b.onclick = () => { topic = b.dataset.topic; render(); });
+}
+
+async function ordering() {
+  const list = await get("aggregates");
+  const ordered = list.filter(a => a.ordered).length;
+  const single = list.filter(a => a.partitions.length === 1).length;
+  const extra = list.reduce((a, o) => a + o.deliveries - o.applied, 0);
+  main.innerHTML = `
+  <div class="kpis">${kpi("orders", list.length)}${kpi("in one partition", single)}${kpi("sequence in order", ordered)}${kpi("redeliveries skipped", extra)}</div>
+  <section class="card"><h2>Events per order, in offset order, against the row in PostgreSQL</h2>
+  <p>The sequence is read from Kafka by key. Deliveries count every message the consumer received, applied counts the ones that passed deduplication on the <code>id</code> header.</p>
+  <div class="scroll"><table>
+  <tr><th>order</th><th>status in postgres</th><th class="n">version</th><th class="n">partition</th><th>event sequence on kafka</th><th class="n">messages</th><th class="n">deliveries</th><th class="n">applied</th><th>in order</th></tr>
+  ${list.map(a => `<tr class="${a.deliveries > a.applied ? "dup" : ""}"><td class="mono">${esc(a.order_id)}</td><td>${esc(a.status)}</td><td class="n">${a.version}</td><td class="n">${a.partitions.join(", ")}</td>
+  <td>${a.sequence.map(s => `<span class="chip">${esc(s)}</span>`).join("")}</td><td class="n">${a.messages}</td><td class="n">${a.deliveries}</td><td class="n">${a.applied}</td><td>${badge(a.ordered)}</td></tr>`).join("")}
+  </table></div></section>`;
+}
+
+async function dualwrite() {
+  const list = await get("dualwrite");
+  const text = {
+    "outbox": ["Outbox + Debezium", "order row and outbox row in one transaction, process killed before COMMIT"],
+    "db-first": ["Dual write, database first", "COMMIT the row, then publish to Kafka, process killed in between"],
+    "kafka-first": ["Dual write, Kafka first", "publish to Kafka, then INSERT the row, process killed in between"],
+  };
+  const ids = (label, xs) => `<p>${label}: <b>${xs.length}</b></p><div>${xs.map(x => `<span class="chip lost">${esc(x)}</span>`).join("") || '<span class="chip">none</span>'}</div>`;
+  main.innerHTML = `<div class="grid3">${list.map(v => {
+    const ok = v.rows_without_event.length + v.events_without_row.length === 0;
+    return `<section class="card"><h2>${text[v.variant][0]} ${badge(ok, "consistent", "inconsistent")}</h2><p>${text[v.variant][1]}</p>
+    <p>${v.attempts} orders attempted, ${v.crashes} crashes</p>
+    <div class="bar"><label>rows</label><div style="width:${v.rows * 4}px"></div><b>${v.rows}</b></div>
+    <div class="bar"><label>events</label><div class="ev" style="width:${v.events * 4}px"></div><b>${v.events}</b></div>
+    ${ids("rows without event", v.rows_without_event)}<br>${ids("events without row", v.events_without_row)}</section>`;
+  }).join("")}</div>
+  <section class="card"><h2>Why</h2><p>A database commit and a Kafka publish are two separate writes with no shared transaction. A crash between them leaves one side behind. With the outbox the only write is the database transaction, and Debezium turns committed outbox rows into events afterwards, so a crash yields either both or neither.</p></section>`;
+}
+
+async function render() {
+  renderNav();
+  main.innerHTML = '<p class="muted">reading PostgreSQL and Kafka</p>';
+  try {
+    await {proof, events, ordering, dualwrite}[tab]();
+  } catch (e) {
+    main.innerHTML = `<p class="err">${esc(e.message)}</p>`;
+  }
+}
+
+render();
+</script>
+</body>
+</html>
