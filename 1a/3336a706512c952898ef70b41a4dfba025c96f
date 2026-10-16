@@ -1,0 +1,102 @@
+tikv-vs-scylla-vs-foundationdb/architecture.svg
+  s_b6bbcda70c6e46::t_46170f7da0de62 1-67
+tikv-vs-scylla-vs-foundationdb/src/main/resources/index.html
+  s_b6bbcda70c6e46::t_f3099df7b1167a 1-172
+tikv-vs-scylla-vs-foundationdb/scripts/test-all.sh
+  s_b6bbcda70c6e46::t_3a97ef7db79bbc 1-103
+tikv-vs-scylla-vs-foundationdb/results.json
+  s_b6bbcda70c6e46::t_64f74b6a4992e8 1
+tikv-vs-scylla-vs-foundationdb/README.md
+  s_b6bbcda70c6e46::t_50ffb45d1fd1b6 1-119,121-149,151-159
+  s_b6bbcda70c6e46::t_48f7382e4f47e3 120,150
+tikv-vs-scylla-vs-foundationdb/.gitignore
+  s_b6bbcda70c6e46::t_93f148c61cb986 1-4
+tikv-vs-scylla-vs-foundationdb/Containerfile
+  s_b6bbcda70c6e46::t_3ca3a5c8141cfc 1-17
+tikv-vs-scylla-vs-foundationdb/Containerfile.tikv
+  s_b6bbcda70c6e46::t_c6d04194bd5b33 1-8
+tikv-vs-scylla-vs-foundationdb/podman-compose.yml
+  s_b6bbcda70c6e46::t_918e1a3e7f70a1 1-83
+tikv-vs-scylla-vs-foundationdb/pom.xml
+  s_b6bbcda70c6e46::t_0e68b0302a482a 1-66
+tikv-vs-scylla-vs-foundationdb/scripts/common.sh
+  s_b6bbcda70c6e46::t_c7788593b600de 1-142
+tikv-vs-scylla-vs-foundationdb/scripts/ports.env
+  s_b6bbcda70c6e46::t_0d7d9c63d4f83e 1-5
+tikv-vs-scylla-vs-foundationdb/scripts/setup.sh
+  s_b6bbcda70c6e46::t_7c284b0552587b 1-39
+tikv-vs-scylla-vs-foundationdb/scripts/sql-console.sh
+  s_b6bbcda70c6e46::t_ef18b55ae438f8 1-6
+tikv-vs-scylla-vs-foundationdb/scripts/start-all.sh
+  s_b6bbcda70c6e46::t_5ef75a31c86451 1-45
+tikv-vs-scylla-vs-foundationdb/scripts/status.sh
+  s_b6bbcda70c6e46::t_ff94d54af56b36 1-18
+tikv-vs-scylla-vs-foundationdb/scripts/stop-all.sh
+  s_b6bbcda70c6e46::t_7f50e6cd67c632 1-18
+tikv-vs-scylla-vs-foundationdb/scripts/ui.sh
+  s_b6bbcda70c6e46::t_9811da91535cc9 1-6
+tikv-vs-scylla-vs-foundationdb/src/main/java/bench/Bench.java
+  s_b6bbcda70c6e46::t_2eb1772be91a76 1-124
+tikv-vs-scylla-vs-foundationdb/src/main/java/bench/Dataset.java
+  s_b6bbcda70c6e46::t_f57b3de2772316 1-58
+tikv-vs-scylla-vs-foundationdb/src/main/java/bench/FdbStore.java
+  s_b6bbcda70c6e46::t_25319dc100dd08 1-87
+tikv-vs-scylla-vs-foundationdb/src/main/java/bench/Runner.java
+  s_b6bbcda70c6e46::t_a300171add1dc6 1-42
+tikv-vs-scylla-vs-foundationdb/src/main/java/bench/UiServer.java
+  s_b6bbcda70c6e46::t_5f28ed07ebe576 1-111
+tikv-vs-scylla-vs-foundationdb/src/main/java/bench/Verify.java
+  s_b6bbcda70c6e46::t_ceba150cb35492 1-70
+tikv-vs-scylla-vs-foundationdb/src/main/java/bench/ScyllaStore.java
+  s_a5d54a7364a623::t_cc4f99c27278f9 1-102
+tikv-vs-scylla-vs-foundationdb/src/main/java/bench/Settings.java
+  s_40db6253b713e1::t_423a21225922d2 1-34
+tikv-vs-scylla-vs-foundationdb/src/main/java/bench/Stats.java
+  s_a5d54a7364a623::t_9c8fce89560aaa 1-32
+tikv-vs-scylla-vs-foundationdb/src/main/java/bench/Store.java
+  s_a5d54a7364a623::t_e2091d3bd4e638 1-43
+tikv-vs-scylla-vs-foundationdb/src/main/java/bench/TikvStore.java
+  s_1ce9dac0290cef::t_46a923be77e89c 1-88
+tikv-vs-scylla-vs-foundationdb/tikv.toml
+  s_a5d54a7364a623::t_cb1bf55cfeab73 1-9
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1a3336a706512c952898ef70b41a4dfba025c96f",
+  "prompts": {},
+  "sessions": {
+    "s_1ce9dac0290cef": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-apoc-redpanda-iceberg-0fb897060c52d3f0",
+        "model": "unknown"
+      },
+      "human_author": "diegopacheco <diego.pacheco.it@gmail.com>"
+    },
+    "s_40db6253b713e1": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-apoc-exactly-once-58189ad49d0718a0",
+        "model": "unknown"
+      },
+      "human_author": "diegopacheco <diego.pacheco.it@gmail.com>"
+    },
+    "s_a5d54a7364a623": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-apoc-kv-bench-26cbb4a58037fb69",
+        "model": "unknown"
+      },
+      "human_author": "diegopacheco <diego.pacheco.it@gmail.com>"
+    },
+    "s_b6bbcda70c6e46": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c06d4699-89b6-4d61-b86f-bb3f56253de2",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "diegopacheco <diego.pacheco.it@gmail.com>"
+    }
+  }
+}
