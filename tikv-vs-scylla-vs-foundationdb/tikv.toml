@@ -1,0 +1,9 @@
+[memory]
+enable-heap-profiling = false
+
+[storage]
+reserve-space = "0MB"
+reserve-raft-space = "0MB"
+
+[storage.block-cache]
+capacity = "256MB"

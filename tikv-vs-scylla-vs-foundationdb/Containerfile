@@ -1,0 +1,17 @@
+FROM docker.io/library/maven:3.10.0-eclipse-temurin-25-noble AS build
+WORKDIR /build
+RUN curl -fsSL -o /libfdb_c.so "https://github.com/apple/foundationdb/releases/download/7.4.8/libfdb_c.$(uname -m).so" \
+    && curl -fsSL -o /libfdb_c.sha256 "https://github.com/apple/foundationdb/releases/download/7.4.8/libfdb_c.$(uname -m).so.sha256" \
+    && echo "$(cut -d' ' -f1 /libfdb_c.sha256)  /libfdb_c.so" | sha256sum -c -
+COPY pom.xml .
+RUN mvn -q -B package -DskipTests
+COPY src src
+RUN mvn -q -B package -DskipTests
+
+FROM docker.io/library/eclipse-temurin:25.0.4.1_1-jre-noble
+COPY --from=build /libfdb_c.so /usr/lib/libfdb_c.so
+COPY --from=build /build/target/lib /app/lib
+COPY --from=build /build/target/classes /app/classes
+WORKDIR /work
+ENTRYPOINT ["java", "-Xmx640m", "--enable-native-access=ALL-UNNAMED", "--sun-misc-unsafe-memory-access=allow", "-cp", "/app/classes:/app/lib/*"]
+CMD ["bench.UiServer"]

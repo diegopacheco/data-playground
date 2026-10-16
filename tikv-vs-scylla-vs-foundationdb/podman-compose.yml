@@ -1,0 +1,83 @@
+name: s6-bench
+
+services:
+  s6-pd:
+    image: docker.io/pingcap/pd:v8.5.8
+    container_name: s6-pd
+    command:
+      - --name=s6-pd
+      - --data-dir=/data
+      - --client-urls=http://0.0.0.0:2379
+      - --peer-urls=http://0.0.0.0:2380
+      - --advertise-client-urls=http://s6-pd:2379
+      - --advertise-peer-urls=http://s6-pd:2380
+      - --initial-cluster=s6-pd=http://s6-pd:2380
+    mem_limit: 512m
+    cpus: 1
+    ports:
+      - "${pd:-30500}:2379"
+    volumes:
+      - s6-pd-data:/data
+    networks:
+      - s6-net
+
+  s6-tikv:
+    image: localhost/s6-tikv:v8.5.8
+    container_name: s6-tikv
+    command:
+      - --addr=0.0.0.0:20160
+      - --advertise-addr=s6-tikv:20160
+      - --status-addr=0.0.0.0:20180
+      - --data-dir=/data
+      - --pd=s6-pd:2379
+      - --config=/tikv.toml
+    mem_limit: 1g
+    cpus: 2
+    depends_on:
+      - s6-pd
+    ports:
+      - "${tikv:-30501}:20180"
+    volumes:
+      - s6-tikv-data:/data
+      - ./tikv.toml:/tikv.toml:ro
+    networks:
+      - s6-net
+
+  s6-scylla:
+    image: docker.io/scylladb/scylla:2026.3.3
+    container_name: s6-scylla
+    command: --smp 2 --memory 750M --reserve-memory 128M --overprovisioned 1 --developer-mode 1
+    mem_limit: 1g
+    cpus: 2
+    ports:
+      - "${scylla:-30502}:9042"
+    volumes:
+      - s6-scylla-data:/var/lib/scylla
+    networks:
+      - s6-net
+
+  s6-foundationdb:
+    image: docker.io/foundationdb/foundationdb:7.4.8
+    container_name: s6-foundationdb
+    mem_limit: 1g
+    cpus: 2
+    ports:
+      - "${foundationdb:-30503}:4500"
+    volumes:
+      - s6-foundationdb-data:/var/fdb/data
+    networks:
+      - s6-net
+
+networks:
+  s6-net:
+    name: s6-net
+
+volumes:
+  s6-pd-data:
+    name: s6-pd-data
+  s6-tikv-data:
+    name: s6-tikv-data
+  s6-scylla-data:
+    name: s6-scylla-data
+  s6-foundationdb-data:
+    name: s6-foundationdb-data

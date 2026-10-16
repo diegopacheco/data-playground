@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TiKV vs ScyllaDB vs FoundationDB</title>
+<style>
+:root { --ink:#1d2330; --mute:#5a6275; --line:#dfe3ec; --bg:#f6f7fb; --card:#ffffff; --tikv:#2f6fed; --scylladb:#0f9d8a; --foundationdb:#8a4fd3; --ok:#18794e; --bad:#c0362c; }
+* { box-sizing:border-box; }
+body { margin:0; font:14px/1.45 -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; color:var(--ink); background:var(--bg); }
+header { background:var(--card); border-bottom:1px solid var(--line); padding:14px 28px; display:flex; align-items:baseline; gap:18px; flex-wrap:wrap; }
+h1 { font-size:20px; margin:0; }
+header span { color:var(--mute); }
+nav { display:flex; gap:6px; padding:12px 28px 0; }
+nav button { border:1px solid var(--line); border-bottom:none; background:#eceff6; padding:8px 18px; border-radius:8px 8px 0 0; font:inherit; cursor:pointer; color:var(--mute); }
+nav button.on { background:var(--card); color:var(--ink); font-weight:600; }
+main { padding:0 28px 28px; }
+section { display:none; background:var(--card); border:1px solid var(--line); border-radius:0 8px 8px 8px; padding:18px 20px; }
+section.on { display:block; }
+.note { background:#fff8e1; border:1px solid #f0dca0; border-radius:8px; padding:8px 12px; margin-bottom:14px; }
+.facts { display:grid; grid-template-columns:repeat(6, 1fr); gap:10px; margin-bottom:16px; }
+.fact { border:1px solid var(--line); border-radius:8px; padding:8px 12px; }
+.fact b { display:block; font-size:18px; }
+.fact span { color:var(--mute); font-size:12px; }
+.grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+h2 { font-size:15px; margin:0 0 8px; }
+table { border-collapse:collapse; width:100%; }
+th, td { text-align:right; padding:6px 8px; border-bottom:1px solid var(--line); white-space:nowrap; }
+th { color:var(--mute); font-weight:600; font-size:12px; }
+th:first-child, td:first-child { text-align:left; }
+td.bar { width:34%; text-align:left; }
+td.bar i { display:block; height:14px; border-radius:3px; }
+.dot { display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; }
+.tikv { background:var(--tikv); } .scylladb { background:var(--scylladb); } .foundationdb { background:var(--foundationdb); }
+.ok { color:var(--ok); font-weight:600; } .bad { color:var(--bad); font-weight:600; }
+.mono { font-family:ui-monospace, Menlo, monospace; font-size:12px; }
+.wide { margin-top:18px; }
+.wide td, .wide th { text-align:left; white-space:normal; }
+form { display:flex; gap:8px; align-items:center; margin-bottom:12px; flex-wrap:wrap; }
+input { font:inherit; padding:6px 8px; border:1px solid var(--line); border-radius:6px; }
+input.key { width:190px; font-family:ui-monospace, Menlo, monospace; }
+input.n { width:70px; }
+form button { font:inherit; padding:6px 14px; border:1px solid var(--tikv); background:var(--tikv); color:#fff; border-radius:6px; cursor:pointer; }
+.scroll { max-height:330px; overflow:auto; border:1px solid var(--line); border-radius:8px; }
+#verdict { margin:0 0 10px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>TiKV vs ScyllaDB vs FoundationDB</h1>
+  <span>point reads and ordered range scans, same dataset, same client, same limits</span>
+  <span id="when"></span>
+</header>
+<nav>
+  <button data-tab="bench" class="on">Benchmark</button>
+  <button data-tab="lookup">Live lookup</button>
+</nav>
+<main>
+<section id="bench" class="on">
+  <div class="note" id="note"></div>
+  <div class="facts" id="facts"></div>
+  <div class="grid">
+    <div><h2>Point read: one key, one value</h2><table id="point_read"></table></div>
+    <div><h2 id="scanTitle">Range scan</h2><table id="range_scan"></table></div>
+  </div>
+  <div class="wide"><h2>Load and correctness, checked before any timing</h2><table id="loads"></table></div>
+</section>
+<section id="lookup">
+  <div class="note">Every request on this tab reads the three stores now. The milliseconds shown here are single browser round trips through the UI server, not benchmark numbers.</div>
+  <form id="getForm">
+    <b>Point read</b>
+    <input class="key" id="key" value="key-000000004242">
+    <button>Get</button>
+  </form>
+  <form id="scanForm">
+    <b>Range scan</b>
+    <input class="key" id="start" value="key-000000000995">
+    <input class="n" id="n" type="number" min="1" max="1000" value="10">
+    <button>Scan</button>
+  </form>
+  <p id="verdict"></p>
+  <div class="scroll"><table id="rows" class="mono"></table></div>
+</section>
+</main>
+<script>
+const STORES = ["tikv", "scylladb", "foundationdb"];
+const fmt = (n, d) => Number(n).toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
+const dot = name => `<span class="dot ${name}"></span>${name}`;
+
+function showTab(name) {
+  document.querySelectorAll("nav button").forEach(b => b.classList.toggle("on", b.dataset.tab === name));
+  document.querySelectorAll("section").forEach(s => s.classList.toggle("on", s.id === name));
+}
+document.querySelectorAll("nav button").forEach(b => b.onclick = () => showTab(b.dataset.tab));
+
+function operationTable(data, operation) {
+  const rows = data.stores.map(s => ({ name: s.name, ...s.operations.find(o => o.operation === operation) }));
+  const top = Math.max(...rows.map(r => r.throughput));
+  document.getElementById(operation).innerHTML =
+    "<tr><th>store</th><th>ops/s</th><th></th><th>p50 ms</th><th>p95 ms</th><th>p99 ms</th><th>ops</th><th>errors</th></tr>" +
+    rows.map(r => `<tr><td>${dot(r.name)}</td><td><b>${fmt(r.throughput, 0)}</b></td>
+      <td class="bar"><i class="${r.name}" style="width:${(100 * r.throughput / top).toFixed(1)}%"></i></td>
+      <td>${fmt(r.p50_ms, 3)}</td><td>${fmt(r.p95_ms, 3)}</td><td>${fmt(r.p99_ms, 3)}</td><td>${fmt(r.ops, 0)}</td>
+      <td class="${r.errors ? "bad" : "ok"}">${r.errors}</td></tr>`).join("");
+}
+
+function renderResults(data) {
+  const s = data.setup;
+  document.getElementById("when").textContent = "measured " + data.generated_at.replace("T", " ").slice(0, 19) + " UTC";
+  document.getElementById("note").innerHTML = `<b>Limits:</b> ${s.note}. Each store container: ${s.store_limits}.`;
+  const facts = [[fmt(s.rows, 0), "rows loaded once per store"], [s.key_bytes + " + " + s.value_bytes, "key + value bytes"],
+    [s.concurrency, "client threads"], [fmt(s.point_reads, 0), "timed point reads in " + s.rounds + " rounds"],
+    [fmt(s.range_scans, 0), "timed scans of " + s.range_length + " keys"], [fmt(s.warmup_point_reads, 0) + " / " + fmt(s.warmup_range_scans, 0), "warm-up reads / scans"]];
+  document.getElementById("facts").innerHTML = facts.map(f => `<div class="fact"><b>${f[0]}</b><span>${f[1]}</span></div>`).join("");
+  document.getElementById("scanTitle").textContent = "Range scan: " + s.range_length + " consecutive keys in key order";
+  operationTable(data, "point_read");
+  operationTable(data, "range_scan");
+  document.getElementById("loads").innerHTML =
+    "<tr><th>store</th><th>version</th><th>API used</th><th>load s</th><th>rows/s</th><th>full ordered scan sha256</th><th>sampled keys</th><th>sampled ranges</th></tr>" +
+    data.stores.map(x => `<tr><td>${dot(x.name)}</td><td>${x.version}</td><td>${x.api}</td><td>${fmt(x.load_seconds, 2)}</td><td>${fmt(x.load_rows_per_second, 0)}</td>
+      <td class="mono ${x.full_scan_sha256 === data.dataset_sha256 ? "ok" : "bad"}">${x.full_scan_sha256.slice(0, 16)}… ${x.full_scan_sha256 === data.dataset_sha256 ? "= dataset file" : "differs"}</td>
+      <td class="${x.sample_keys_matching === s.sample_keys ? "ok" : "bad"}">${x.sample_keys_matching}/${s.sample_keys}</td>
+      <td class="${x.sample_ranges_matching === s.sample_ranges ? "ok" : "bad"}">${x.sample_ranges_matching}/${s.sample_ranges}</td></tr>`).join("");
+}
+
+async function ask(path) {
+  const begin = performance.now();
+  const answer = await fetch(path);
+  const text = await answer.text();
+  return { ok: answer.ok, text: text.trimEnd(), ms: performance.now() - begin };
+}
+
+function verdict(answers, what) {
+  const same = answers.every(a => a.ok && a.text === answers[0].text);
+  document.getElementById("verdict").innerHTML = `<span class="${same ? "ok" : "bad"}">${same ? "identical bytes" : "answers differ"}</span> for ${what} — ` +
+    answers.map((a, i) => `${dot(STORES[i])} ${a.ms.toFixed(1)} ms`).join(" &nbsp; ");
+}
+
+async function get(key) {
+  const answers = await Promise.all(STORES.map(s => ask(`/api/get?store=${s}&key=${encodeURIComponent(key)}`)));
+  verdict(answers, "key " + key);
+  document.getElementById("rows").innerHTML = "<tr><th>store</th><th>value</th></tr>" +
+    answers.map((a, i) => `<tr><td>${dot(STORES[i])}</td><td style="text-align:left" class="${a.ok ? "" : "bad"}">${a.text}</td></tr>`).join("");
+}
+
+async function scan(start, n) {
+  const answers = await Promise.all(STORES.map(s => ask(`/api/scan?store=${s}&start=${encodeURIComponent(start)}&n=${n}`)));
+  const lists = answers.map(a => a.ok && a.text ? a.text.split("\n") : []);
+  verdict(answers, `${lists[0].length} keys from ${start}`);
+  document.getElementById("rows").innerHTML = "<tr><th>#</th><th>key</th>" + STORES.map(s => `<th>${dot(s)}</th>`).join("") + "<th>same</th></tr>" +
+    lists[0].map((line, i) => {
+      const same = lists.every(l => l[i] === line);
+      return `<tr><td>${i + 1}</td><td>${line.split(",")[0]}</td>` + lists.map(l => `<td>${(l[i] || "").split(",")[1].slice(0, 22)}…</td>`).join("") +
+        `<td class="${same ? "ok" : "bad"}">${same ? "yes" : "no"}</td></tr>`;
+    }).join("");
+}
+
+document.getElementById("getForm").onsubmit = e => { e.preventDefault(); get(document.getElementById("key").value); };
+document.getElementById("scanForm").onsubmit = e => { e.preventDefault(); scan(document.getElementById("start").value, document.getElementById("n").value); };
+
+fetch("/api/results").then(r => r.json()).then(renderResults);
+const params = new URLSearchParams(location.search);
+if (params.get("tab")) showTab(params.get("tab"));
+if (params.get("key")) { document.getElementById("key").value = params.get("key"); get(params.get("key")); }
+if (params.get("start")) {
+  document.getElementById("start").value = params.get("start");
+  document.getElementById("n").value = params.get("n") || 10;
+  scan(params.get("start"), params.get("n") || 10);
+}
+</script>
+</body>
+</html>

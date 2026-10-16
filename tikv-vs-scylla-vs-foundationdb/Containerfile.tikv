@@ -1,0 +1,8 @@
+FROM docker.io/pingcap/tikv:v8.5.8 AS tikv
+
+FROM docker.io/foundationdb/foundationdb:7.4.8 AS strip
+COPY --from=tikv /tikv-server /tikv-server
+RUN strip --strip-debug /tikv-server
+
+FROM docker.io/pingcap/tikv:v8.5.8
+COPY --from=strip /tikv-server /tikv-server

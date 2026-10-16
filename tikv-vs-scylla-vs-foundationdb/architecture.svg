@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 520" width="1040" height="520">
+<defs>
+<style>@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700');text{font-family:Caveat,'Comic Sans MS',cursive;fill:#1d2330}.t{font-size:24px;font-weight:700}.s{font-size:18px}.l{font-size:16px;fill:#5a6275}</style>
+<filter id="w"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="3" seed="6"/><feDisplacementMap in="SourceGraphic" scale="3"/></filter>
+<marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#1d2330"/></marker>
+</defs>
+<rect width="1040" height="520" fill="#ffffff"/>
+<g filter="url(#w)" stroke="#1d2330" stroke-width="2">
+<rect x="30" y="30" width="220" height="100" rx="12" fill="#fff3c4"/>
+<rect x="30" y="215" width="220" height="110" rx="12" fill="#ffe0d6"/>
+<rect x="30" y="410" width="220" height="80" rx="12" fill="#f1f1f4"/>
+<rect x="350" y="30" width="270" height="140" rx="12" fill="#d7ecff"/>
+<rect x="350" y="250" width="270" height="70" rx="12" fill="#fde7c7"/>
+<rect x="350" y="400" width="270" height="100" rx="12" fill="#d7ecff"/>
+<rect x="740" y="30" width="270" height="130" rx="12" fill="#dff5e1"/>
+<rect x="740" y="200" width="270" height="110" rx="12" fill="#e6f7f7"/>
+<rect x="740" y="350" width="270" height="110" rx="12" fill="#f3e1ff"/>
+<path d="M250 80 L346 80" fill="none" marker-end="url(#a)"/>
+<path d="M140 130 L140 211" fill="none" marker-end="url(#a)"/>
+<path d="M620 75 L736 75" fill="none" marker-end="url(#a)"/>
+<path d="M620 120 L736 235" fill="none" marker-end="url(#a)"/>
+<path d="M600 170 L736 385" fill="none" marker-end="url(#a)"/>
+<path d="M440 170 L440 246" fill="none" marker-end="url(#a)"/>
+<path d="M440 320 L440 396" fill="none" marker-end="url(#a)"/>
+<path d="M250 300 L346 420" fill="none" marker-end="url(#a)"/>
+<path d="M250 455 L346 455" fill="none" marker-end="url(#a)"/>
+<path d="M620 440 L736 440" fill="none" marker-end="url(#a)"/>
+</g>
+<text class="t" x="50" y="62">data/dataset.csv</text>
+<text class="s" x="50" y="88">200,000 rows, made by awk</text>
+<text class="s" x="50" y="112">16 B key + 100 B value</text>
+<text class="t" x="50" y="247">test-all.sh</text>
+<text class="s" x="50" y="273">shasum + awk on the file</text>
+<text class="s" x="50" y="297">vs live API, fdbcli, cqlsh</text>
+<text class="t" x="50" y="444">browser</text>
+<text class="s" x="50" y="470">results + live lookup</text>
+<text class="t" x="370" y="62">s6-bench (Java 25)</text>
+<text class="s" x="370" y="88">16 threads, 1 GiB, 2 CPUs</text>
+<text class="s" x="370" y="112">load once, verify bytes,</text>
+<text class="s" x="370" y="136">warm up, then time</text>
+<text class="s" x="370" y="158">point reads + range scans</text>
+<text class="t" x="370" y="282">results.json</text>
+<text class="s" x="370" y="306">ops/s, p50, p95, p99, load</text>
+<text class="t" x="370" y="432">s6-ui (Java 25)</text>
+<text class="s" x="370" y="458">index.html + /api/results</text>
+<text class="s" x="370" y="482">/api/get /api/scan /api/digest</text>
+<text class="t" x="760" y="62">s6-pd + s6-tikv 8.5.8</text>
+<text class="s" x="760" y="88">raw KV API: get, scan</text>
+<text class="s" x="760" y="112">tikv 1 GiB, 2 CPUs</text>
+<text class="s" x="760" y="136">pd routes regions</text>
+<text class="t" x="760" y="232">s6-scylla 2026.3.3</text>
+<text class="s" x="760" y="258">CQL: bucket partition,</text>
+<text class="s" x="760" y="282">clustering-key range</text>
+<text class="s" x="760" y="304">1 GiB, 2 CPUs</text>
+<text class="t" x="760" y="382">s6-foundationdb 7.4.8</text>
+<text class="s" x="760" y="408">read transactions:</text>
+<text class="s" x="760" y="432">get, getRange</text>
+<text class="s" x="760" y="454">1 GiB, 2 CPUs</text>
+<text class="l" x="262" y="70">read</text>
+<text class="l" x="150" y="176">expected bytes</text>
+<text class="l" x="640" y="62">same ops</text>
+<text class="l" x="450" y="214">write</text>
+<text class="l" x="450" y="364">serve</text>
+<text class="l" x="232" y="372">curl</text>
+<text class="l" x="270" y="478">http</text>
+<text class="l" x="630" y="478">live reads, 3 stores</text>
+</svg>
