@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TimescaleDB vs QuestDB vs InfluxDB 3 Core</title>
+<style>
+:root{--bg:#f7f8fa;--card:#fff;--ink:#1d2330;--muted:#6b7385;--line:#e3e6ec;--accent:#2f6fde;--accent-soft:#e8f0fd;--ok:#1f8a4c;--bad:#c2412d;--ts:#d9a514;--tsc:#b0790a;--q:#c2337a;--i:#2f6fde}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+header{padding:20px 24px 8px}
+h1{margin:0;font-size:22px}
+header p{margin:4px 0 0;color:var(--muted)}
+nav{display:flex;gap:6px;padding:8px 24px 0;flex-wrap:wrap}
+nav button,.pick button{border:1px solid var(--line);background:#fff;border-radius:6px;padding:6px 12px;cursor:pointer;font:inherit}
+nav button.on,.pick button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+main{padding:12px 24px 32px;display:grid;gap:16px;grid-template-columns:repeat(6,1fr)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;min-width:0;grid-column:span 6}
+.half{grid-column:span 3}.third{grid-column:span 2}
+.card h2{margin:0 0 12px;font-size:15px}
+.card h3{margin:0 0 4px;font-size:14px}
+.kpis{display:flex;gap:12px;flex-wrap:wrap}
+.kpi{border:1px solid var(--line);border-radius:8px;padding:8px 12px;min-width:120px}
+.kpi span{display:block;color:var(--muted);font-size:12px}
+.kpi strong{font-size:18px;font-variant-numeric:tabular-nums}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{color:var(--muted);font-weight:600;font-size:12px}
+.scroll{overflow-x:auto}
+.bar{display:grid;grid-template-columns:190px 1fr 170px;gap:10px;align-items:center;margin:6px 0}
+.bar i{display:block;height:18px;border-radius:3px;min-width:2px}
+.bar em{font-style:normal;color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
+.dot{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px}
+code,pre{font-family:ui-monospace,Menlo,monospace;font-size:12px}
+pre{background:#f1f3f7;border-radius:8px;padding:10px;white-space:pre-wrap;word-break:break-word;margin:8px 0 0}
+.note{color:var(--muted);font-size:12px;margin:8px 0 0}
+.ok{color:var(--ok);font-weight:600}.bad{color:var(--bad);font-weight:600}
+.err{border:1px solid #f0c4bb;background:#fdf1ee;border-radius:8px;padding:10px;color:#7d2a1c;font-family:ui-monospace,Menlo,monospace;font-size:12px;white-space:pre-wrap;word-break:break-word}
+.pick{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.pick button{padding:4px 10px;font-size:12px}
+@media (max-width:900px){.half,.third{grid-column:span 6}main,nav,header{padding-left:16px;padding-right:16px}.bar{grid-template-columns:120px 1fr 120px}}
+</style>
+</head>
+<body>
+<header>
+<h1>TimescaleDB vs QuestDB vs InfluxDB 3 Core</h1>
+<p id="sub">Same sensor readings, same batch size, same client concurrency, same container limits.</p>
+</header>
+<nav id="nav"></nav>
+<main id="main"></main>
+<script>
+const TABS = {ingest: "Ingest and storage", queries: "Query latency", rollup: "Pre-computed downsampling", correct: "Correctness"};
+const QUERIES = {downsample_1h: "1-hour downsample, all devices, 4 days", downsample_1m: "1-minute downsample, all devices, 6 hours", last_value: "Last value per device", range_scan: "15-minute scan of one device"};
+const COLORS = {timescaledb_rowstore: "var(--ts)", timescaledb: "var(--tsc)", questdb: "var(--q)", influx3: "var(--i)"};
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+const num = v => Number(v).toLocaleString("en-US");
+const mb = v => (v / 1048576).toLocaleString("en-US", {maximumFractionDigits: 1}) + " MiB";
+const ms = v => v.toLocaleString("en-US", {maximumFractionDigits: 1}) + " ms";
+const params = new URLSearchParams(location.search);
+let data, tab = TABS[params.get("tab")] ? params.get("tab") : "ingest", device = params.get("device") || "d042";
+
+async function get(path) {
+  const r = await fetch(path);
+  const body = await r.json();
+  if (!r.ok) throw new Error(body.error || r.status);
+  return body;
+}
+
+function bars(rows, unit) {
+  const max = Math.max(...rows.map(r => r.value));
+  return rows.map(r => `<div class="bar"><span><span class="dot" style="background:${r.color}"></span>${esc(r.label)}</span>
+    <i style="width:${100 * r.value / max}%;background:${r.color}"></i><em>${unit(r.value)}${r.extra ? " | " + esc(r.extra) : ""}</em></div>`).join("");
+}
+
+function variants(name) {
+  const e = data.engines;
+  return [
+    {label: "TimescaleDB rowstore", color: COLORS.timescaledb_rowstore, q: e.timescaledb.queries_rowstore[name]},
+    {label: "TimescaleDB columnstore", color: COLORS.timescaledb, q: e.timescaledb.queries[name]},
+    {label: "QuestDB", color: COLORS.questdb, q: e.questdb.queries[name]},
+    {label: "InfluxDB 3 Core", color: COLORS.influx3, q: e.influx3.queries[name]},
+  ];
+}
+
+function ingest() {
+  const d = data.dataset, e = data.engines, list = ["timescaledb", "questdb", "influx3"];
+  return `<section class="card"><h2>Dataset and client</h2><div class="kpis">
+    <div class="kpi"><span>readings</span><strong>${num(d.points)}</strong></div>
+    <div class="kpi"><span>devices</span><strong>${d.devices}</strong></div>
+    <div class="kpi"><span>days at ${d.step_seconds}s interval</span><strong>${d.days}</strong></div>
+    <div class="kpi"><span>batch size</span><strong>${num(d.batch)}</strong></div>
+    <div class="kpi"><span>client threads</span><strong>${d.workers}</strong></div>
+    <div class="kpi"><span>seed</span><strong>${d.seed}</strong></div></div></section>
+  <section class="card half"><h2>Ingest throughput, rows per second until every row is queryable</h2>
+    ${bars(list.map(k => ({label: e[k].label, color: COLORS[k], value: e[k].ingest.rows_per_s, extra: e[k].ingest.seconds + " s"})), num)}
+    <p class="note">TimescaleDB: COPY into a hypertable. QuestDB: ILP over HTTP. InfluxDB 3 Core: line protocol on /api/v3/write_lp. Payloads are encoded before the clock starts.</p></section>
+  <section class="card half"><h2>Bytes on disk after load</h2>
+    ${bars([
+      {label: "TimescaleDB rowstore", color: COLORS.timescaledb_rowstore, value: e.timescaledb.disk.data},
+      {label: "TimescaleDB columnstore", color: COLORS.timescaledb, value: e.timescaledb.disk_columnstore.data, extra: "compressed in " + e.timescaledb.compress_seconds + " s"},
+      {label: "QuestDB", color: COLORS.questdb, value: e.questdb.disk.data},
+      {label: "InfluxDB 3 Core", color: COLORS.influx3, value: e.influx3.disk.data, extra: e.influx3.disk.parquet_files + " parquet files"},
+    ], mb)}
+    <p class="note">Table data only. TimescaleDB: hypertable_size with indexes. QuestDB: sum of table_partitions diskSize. InfluxDB 3 Core: Parquet files holding ${num(e.influx3.disk.parquet_rows)} of ${num(d.points)} readings, all persisted ${e.influx3.parquet_seconds} s after the load.</p></section>
+  <section class="card"><h2>Engines</h2><div class="scroll"><table>
+    <tr><th>engine</th><th>version</th><th>ingest seconds</th><th>rows/s</th><th>table data bytes</th><th>bytes per reading</th><th>WAL and other files</th></tr>
+    ${list.map(k => `<tr><td>${esc(e[k].label)}</td><td>${esc(e[k].version)}</td><td>${e[k].ingest.seconds}</td><td>${num(e[k].ingest.rows_per_s)}</td>
+      <td>${num(e[k].disk.data)}</td><td>${(e[k].disk.data / d.points).toFixed(1)}</td><td>${num(e[k].disk.wal)}</td></tr>`).join("")}
+    <tr><td>TimescaleDB columnstore</td><td>segmentby device, orderby ts DESC</td><td>-</td><td>-</td><td>${num(e.timescaledb.disk_columnstore.data)}</td><td>${(e.timescaledb.disk_columnstore.data / d.points).toFixed(1)}</td><td>${num(e.timescaledb.disk_columnstore.wal)}</td></tr>
+    </table></div></section>`;
+}
+
+function queries() {
+  const i = data.engines.influx3;
+  return Object.entries(QUERIES).map(([name, title]) => {
+    const v = variants(name);
+    return `<section class="card half"><h2>${esc(title)}</h2>
+      ${bars(v.map(x => ({label: x.label, color: x.color, value: x.q.median_ms, extra: "p95 " + ms(x.q.p95_ms) + (x.q.statements > 1 ? " | " + x.q.statements + " statements" : "")})), ms)}
+      <p class="note">${num(v[2].q.rows)} rows returned, median of ${data.dataset.runs} runs.</p>
+      <pre>${v.slice(1).map(x => esc(x.label + ": " + x.q.sql)).join("\n\n")}</pre></section>`;
+  }).join("") + `<section class="card"><h2>InfluxDB 3 Core: the same 1-hour downsample as one statement over 4 days</h2>
+    <pre>${esc(i.full_range_sql)}</pre><p class="note">Answer from the server with the default query-file-limit of 432:</p>
+    <div class="err">${esc(i.full_range_error)}</div>
+    <p class="note">The benchmark therefore sends one statement per day (4 statements) and adds their times. The last value query is limited to the final day for the same reason.</p></section>`;
+}
+
+function rollup() {
+  const e = data.engines;
+  return ["timescaledb", "questdb", "influx3"].map(k => {
+    const raw = e[k].queries.downsample_1h, pre = e[k].queries.rollup_1h;
+    return `<section class="card third"><h2>${esc(e[k].label)}</h2><p>${esc(e[k].rollup.kind)}</p>
+      <div class="kpis"><div class="kpi"><span>build</span><strong>${e[k].rollup.build_seconds} s</strong></div>
+      <div class="kpi"><span>read 1-hour rollup</span><strong>${ms(pre.median_ms)}</strong></div>
+      <div class="kpi"><span>vs raw 1-hour query</span><strong>${(raw.median_ms / pre.median_ms).toFixed(1)}x</strong></div></div>
+      <p class="note">raw ${ms(raw.median_ms)} median, rollup p95 ${ms(pre.p95_ms)}, ${num(pre.rows)} rows</p><pre>${esc(pre.sql)}</pre></section>`;
+  }).join("") + `<section class="card"><h2>Read the 1-hour rollup, median</h2>
+    ${bars(["timescaledb", "questdb", "influx3"].map(k => ({label: e[k].label, color: COLORS[k], value: e[k].queries.rollup_1h.median_ms, extra: "p95 " + ms(e[k].queries.rollup_1h.p95_ms)})), ms)}</section>
+  <section class="card"><h2>What InfluxDB 3 Core really offers</h2>
+    <p>Core has no continuous aggregate or materialized view. The rollup table <code>readings_1h</code> is written by a Python plugin (<code>app/plugins/rollup.py</code>) inside the processing engine, bound to a request trigger at <code>/api/v3/engine/rollup</code> and called once per day of data, because one statement over all 4 days is rejected:</p>
+    <div class="err">${esc(e.influx3.full_range_error)}</div></section>`;
+}
+
+function chart(series) {
+  const w = 1100, h = 260, pad = 40, all = Object.values(series).flat();
+  if (!all.length) return `<p class="note">no rows</p>`;
+  const x0 = Math.min(...all.map(r => r[0])), x1 = Math.max(...all.map(r => r[0]));
+  const y0 = Math.min(...all.map(r => r[2])), y1 = Math.max(...all.map(r => r[3]));
+  const x = v => pad + (w - 2 * pad) * (v - x0) / (x1 - x0), y = v => h - pad + (2 * pad - h) * (v - y0) / (y1 - y0);
+  const band = series.timescaledb.map(r => `${x(r[0])},${y(r[3])}`).join(" ") + " " + series.timescaledb.slice().reverse().map(r => `${x(r[0])},${y(r[2])}`).join(" ");
+  const widths = {timescaledb: 7, questdb: 4, influx3: 1.5};
+  const paths = Object.entries(series).map(([k, rows]) => `<polyline fill="none" stroke="${COLORS[k]}" stroke-width="${widths[k]}" points="${rows.map(r => `${x(r[0])},${y(r[1])}`).join(" ")}"/>`).join("");
+  return `<svg viewBox="0 0 ${w} ${h}" width="100%"><polygon points="${band}" fill="#eef1f6"/>${paths}
+    <text x="${pad}" y="${h - 12}" font-size="12" fill="#6b7385">${new Date(x0 * 1000).toISOString().slice(0, 16)}Z</text>
+    <text x="${w - pad}" y="${h - 12}" font-size="12" fill="#6b7385" text-anchor="end">${new Date(x1 * 1000).toISOString().slice(0, 16)}Z</text>
+    <text x="4" y="${y(y1) + 4}" font-size="12" fill="#6b7385">${y1}</text><text x="4" y="${y(y0) + 4}" font-size="12" fill="#6b7385">${y0}</text></svg>`;
+}
+
+function correct() {
+  const e = data.engines, list = ["timescaledb", "questdb", "influx3"];
+  const same = new Set(list.flatMap(k => [e[k].hourly_md5, e[k].rollup_md5])).size === 1;
+  return `<section class="card"><h2>1-hour downsample fingerprint: md5 over ${num(e.questdb.queries.downsample_1h.rows)} lines of device, bucket, avg, min, max at 6 decimals</h2>
+    <div class="scroll"><table><tr><th>engine</th><th>raw query</th><th>pre-computed rollup</th></tr>
+    ${list.map(k => `<tr><td>${esc(e[k].label)}</td><td><code>${e[k].hourly_md5}</code></td><td><code>${e[k].rollup_md5}</code></td></tr>`).join("")}</table></div>
+    <p class="${same ? "ok" : "bad"}">${same ? "All six results are identical." : "Results differ."}</p>
+    <p class="note">scripts/test-all.sh recomputes the same lines with awk from data/readings.csv and compares them with each engine.</p></section>
+  <section class="card"><h2>Live 1-hour rollup of device ${esc(device)} read from the three engines now: average line per engine over the min-max band</h2>
+    <div class="pick">${["d000", "d042", "d117", "d199"].map(d => `<button class="${d === device ? "on" : ""}" data-d="${d}">${d}</button>`).join("")}</div>
+    <div id="chart"><p class="note">loading</p></div>
+    <p class="note">${list.map(k => `<span class="dot" style="background:${COLORS[k]}"></span>${esc(e[k].label)}`).join(" &nbsp; ")} &nbsp; the three lines are drawn with different widths and sit on top of each other.</p>
+    <div class="scroll"><table id="live"></table></div></section>`;
+}
+
+async function live() {
+  const series = await get("/api/series?device=" + encodeURIComponent(device));
+  document.getElementById("chart").innerHTML = chart(series);
+  const rows = series.timescaledb.slice(0, 6);
+  document.getElementById("live").innerHTML = `<tr><th>bucket (UTC)</th><th>TimescaleDB avg</th><th>QuestDB avg</th><th>InfluxDB 3 Core avg</th><th>min</th><th>max</th></tr>` +
+    rows.map((r, n) => `<tr><td>${new Date(r[0] * 1000).toISOString().slice(0, 16)}</td><td>${r[1]}</td><td>${series.questdb[n][1]}</td><td>${series.influx3[n][1]}</td><td>${r[2]}</td><td>${r[3]}</td></tr>`).join("");
+}
+
+function render() {
+  document.getElementById("nav").innerHTML = Object.entries(TABS).map(([k, v]) => `<button class="${k === tab ? "on" : ""}" data-t="${k}">${v}</button>`).join("");
+  document.querySelectorAll("#nav button").forEach(b => b.onclick = () => { tab = b.dataset.t; render(); });
+  document.getElementById("main").innerHTML = {ingest, queries, rollup, correct}[tab]();
+  if (tab === "correct") {
+    document.querySelectorAll(".pick button").forEach(b => b.onclick = () => { device = b.dataset.d; render(); });
+    live().catch(e => document.getElementById("chart").innerHTML = `<p class="bad">${esc(e.message)}</p>`);
+  }
+}
+
+(async () => {
+  try {
+    data = await get("/api/results");
+    render();
+  } catch (e) {
+    document.getElementById("main").innerHTML = `<p class="bad">Failed to load: ${esc(e.message)}</p>`;
+  }
+})();
+</script>
+</body>
+</html>

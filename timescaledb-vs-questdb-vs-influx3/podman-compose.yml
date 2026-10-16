@@ -1,0 +1,66 @@
+services:
+  s7-timescaledb:
+    image: docker.io/timescale/timescaledb:2.30.2-pg18
+    container_name: s7-timescaledb
+    environment:
+      POSTGRES_USER: s7
+      POSTGRES_PASSWORD: s7password
+      POSTGRES_DB: s7
+    ports:
+      - "${timescaledb:-30600}:5432"
+    volumes:
+      - s7-timescaledb-data:/var/lib/postgresql
+    mem_limit: 768m
+    cpus: 2
+    networks:
+      - s7-net
+
+  s7-questdb:
+    image: docker.io/questdb/questdb:10.0.1
+    container_name: s7-questdb
+    environment:
+      QDB_TELEMETRY_ENABLED: "false"
+    ports:
+      - "${questdb:-30601}:9000"
+    volumes:
+      - s7-questdb-data:/var/lib/questdb
+    mem_limit: 768m
+    cpus: 2
+    networks:
+      - s7-net
+
+  s7-influx3:
+    image: docker.io/library/influxdb:3.11.6-core
+    container_name: s7-influx3
+    environment:
+      INFLUXDB3_NODE_ID: s7
+      INFLUXDB3_OBJECT_STORE: file
+      INFLUXDB3_DATA_DIR: /var/lib/influxdb3
+      INFLUXDB3_PLUGIN_DIR: /plugins
+      INFLUXDB3_WITHOUT_AUTH: "true"
+      INFLUXDB3_WAL_FLUSH_INTERVAL: 100ms
+      INFLUXDB3_FORCE_SNAPSHOT_MEM_SIZE: 192mb
+      INFLUXDB3_FORCE_SNAPSHOT_MAX_AGE: 5s
+      INFLUXDB3_EXEC_MEM_POOL_SIZE: 192mb
+      INFLUXDB3_FILE_CACHE_SIZE: 64mb
+    ports:
+      - "${influx3:-30602}:8181"
+    volumes:
+      - s7-influx3-data:/var/lib/influxdb3
+      - ./app/plugins:/plugins
+    mem_limit: 768m
+    cpus: 2
+    networks:
+      - s7-net
+
+networks:
+  s7-net:
+    name: s7-net
+
+volumes:
+  s7-timescaledb-data:
+    name: s7-timescaledb-data
+  s7-questdb-data:
+    name: s7-questdb-data
+  s7-influx3-data:
+    name: s7-influx3-data
