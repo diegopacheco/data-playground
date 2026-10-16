@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1060 520" width="1060" height="520">
+<defs>
+<style>@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700');text{font-family:Caveat,'Comic Sans MS',cursive;fill:#1d2330}.t{font-size:24px;font-weight:700}.s{font-size:18px}.l{font-size:16px;fill:#5a6275}</style>
+<filter id="w"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="3" seed="9"/><feDisplacementMap in="SourceGraphic" scale="3"/></filter>
+<marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#1d2330"/></marker>
+</defs>
+<rect width="1060" height="520" fill="#ffffff"/>
+<g filter="url(#w)" stroke="#1d2330" stroke-width="2">
+<rect x="30" y="30" width="230" height="130" rx="12" fill="#fff3c4"/>
+<rect x="30" y="200" width="230" height="110" rx="12" fill="#ffe0d6"/>
+<rect x="30" y="370" width="230" height="120" rx="12" fill="#f3e1ff"/>
+<rect x="370" y="140" width="250" height="240" rx="12" fill="#d7ecff"/>
+<rect x="760" y="30" width="270" height="130" rx="12" fill="#fff3c4"/>
+<rect x="760" y="195" width="270" height="130" rx="12" fill="#dff5e1"/>
+<rect x="760" y="360" width="270" height="130" rx="12" fill="#e6f7f7"/>
+<path d="M260 100 L366 190" fill="none" marker-end="url(#a)"/>
+<path d="M260 255 L366 255" fill="none" marker-end="url(#a)"/>
+<path d="M366 330 L264 420" fill="none" marker-end="url(#a)"/>
+<path d="M620 185 L756 100" fill="none" marker-end="url(#a)"/>
+<path d="M620 260 L756 260" fill="none" marker-end="url(#a)"/>
+<path d="M620 335 L756 420" fill="none" marker-end="url(#a)"/>
+</g>
+<text x="145" y="62" text-anchor="middle" class="t">dataset.py</text>
+<text x="145" y="88" text-anchor="middle" class="s">100k x 128 float32, seed 9</text>
+<text x="145" y="112" text-anchor="middle" class="s">200 gaussian clusters</text>
+<text x="145" y="136" text-anchor="middle" class="s">1000 queries, bucket 0..9</text>
+<text x="145" y="232" text-anchor="middle" class="t">numpy ground truth</text>
+<text x="145" y="258" text-anchor="middle" class="s">exact brute force top-10</text>
+<text x="145" y="282" text-anchor="middle" class="s">plain and bucket = 3</text>
+<text x="145" y="402" text-anchor="middle" class="t">server.py + index.html</text>
+<text x="145" y="428" text-anchor="middle" class="s">.run/results.json</text>
+<text x="145" y="452" text-anchor="middle" class="s">recall, p50/p95/p99, qps,</text>
+<text x="145" y="474" text-anchor="middle" class="s">build time, size, plans</text>
+<text x="495" y="174" text-anchor="middle" class="t">bench.py</text>
+<text x="495" y="202" text-anchor="middle" class="s">one client thread</text>
+<text x="495" y="228" text-anchor="middle" class="s">build HNSW: M 16,</text>
+<text x="495" y="252" text-anchor="middle" class="s">ef_construction 128, L2</text>
+<text x="495" y="280" text-anchor="middle" class="s">sweep search ef</text>
+<text x="495" y="304" text-anchor="middle" class="s">10, 40, 100, 200</text>
+<text x="495" y="332" text-anchor="middle" class="s">filtered case at ef 100</text>
+<text x="495" y="358" text-anchor="middle" class="l">recall vs truth, latency</text>
+<text x="895" y="62" text-anchor="middle" class="t">DuckDB 1.5.5 + vss</text>
+<text x="895" y="88" text-anchor="middle" class="s">embedded, in-process</text>
+<text x="895" y="112" text-anchor="middle" class="s">M, ef_construction</text>
+<text x="895" y="136" text-anchor="middle" class="s">SET hnsw_ef_search</text>
+<text x="895" y="227" text-anchor="middle" class="t">s9-postgres 18.6</text>
+<text x="895" y="253" text-anchor="middle" class="s">pgvector 0.8.6, SQL over TCP</text>
+<text x="895" y="277" text-anchor="middle" class="s">m, ef_construction</text>
+<text x="895" y="301" text-anchor="middle" class="s">SET hnsw.ef_search</text>
+<text x="895" y="392" text-anchor="middle" class="t">s9-qdrant 1.19.2</text>
+<text x="895" y="418" text-anchor="middle" class="s">REST + JSON over HTTP</text>
+<text x="895" y="442" text-anchor="middle" class="s">m, ef_construct</text>
+<text x="895" y="466" text-anchor="middle" class="s">params.hnsw_ef</text>
+<text x="660" y="104" text-anchor="middle" class="l">function call</text>
+<text x="690" y="250" text-anchor="middle" class="l">psycopg</text>
+<text x="690" y="402" text-anchor="middle" class="l">http.client</text>
+</svg>

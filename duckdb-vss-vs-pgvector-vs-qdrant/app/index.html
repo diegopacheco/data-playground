@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HNSW: DuckDB vss vs pgvector vs Qdrant</title>
+<style>
+:root{--bg:#f7f8fa;--card:#fff;--ink:#1d2330;--muted:#6b7385;--line:#e3e6ec;--accent:#2f6fde;--duckdb-vss:#b98900;--pgvector:#2f6fde;--qdrant:#c2255c}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+header{padding:20px 24px 8px}
+h1{margin:0;font-size:22px}
+header p{margin:4px 0 0;color:var(--muted)}
+main{padding:12px 24px 32px;display:grid;gap:16px;grid-template-columns:1fr 1fr}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;min-width:0}
+.card h2{margin:0 0 12px;font-size:15px}
+.wide{grid-column:1/-1}
+.kpis{display:flex;gap:12px;flex-wrap:wrap;padding:8px 24px 0}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 12px;min-width:110px}
+.kpi span{display:block;color:var(--muted);font-size:12px}
+.kpi strong{font-size:17px;font-variant-numeric:tabular-nums}
+.tabs{display:flex;gap:6px;padding:14px 24px 0}
+.tabs button{border:1px solid var(--line);background:#fff;border-radius:6px;padding:6px 14px;cursor:pointer;font:inherit}
+.tabs button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+td.text,th.text{text-align:left;white-space:normal}
+th{color:var(--muted);font-weight:600;font-size:12px}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px}
+.bar{display:inline-block;height:10px;border-radius:3px;vertical-align:middle;margin-right:6px}
+.scroll{overflow-x:auto}
+.legend{display:flex;gap:16px;margin-bottom:6px;font-size:12px}
+pre{margin:6px 0 14px;padding:10px;background:#f3f5f9;border:1px solid var(--line);border-radius:8px;font:12px/1.4 ui-monospace,Menlo,monospace;overflow-x:auto;max-height:230px}
+.note{color:var(--muted);font-size:12px;margin:8px 0 0}
+.err{color:#c2412d;padding:24px}
+@media (max-width:900px){main{grid-template-columns:1fr;padding:12px 16px}header,.kpis,.tabs{padding-left:16px;padding-right:16px}}
+</style>
+</head>
+<body>
+<header>
+<h1>HNSW recall and latency: DuckDB vss vs Postgres pgvector vs Qdrant</h1>
+<p id="sub">Same vectors, same metric, same M and ef_construction, same search ef sweep, exact numpy ground truth.</p>
+</header>
+<div class="kpis" id="kpis"></div>
+<div class="tabs" id="tabs"></div>
+<main id="main"></main>
+<script>
+const TABS = {sweep: "Recall and latency", filtered: "Filtered search", build: "Build, size and plans"};
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+const fix = (v, n) => Number(v).toFixed(n);
+const color = e => `var(--${e.name})`;
+const dot = e => `<span class="dot" style="background:${color(e)}"></span>${esc(e.label)}`;
+let data = null, tab = new URLSearchParams(location.search).get("tab") || "sweep";
+
+function chart(title, key, digits, low) {
+  const w = 560, h = 250, left = 52, right = 16, top = 12, bottom = 34, efs = data.settings.ef_search;
+  const all = data.engines.flatMap(e => e.sweep.map(s => s[key]));
+  const min = low ?? 0, max = Math.max(...all) * (low === undefined ? 1.15 : 1);
+  const x = i => left + (w - left - right) * i / (efs.length - 1);
+  const y = v => top + (h - top - bottom) * (1 - (v - min) / (max - min));
+  const grid = [0, 0.25, 0.5, 0.75, 1].map(t => {
+    const v = min + (max - min) * t;
+    return `<line x1="${left}" x2="${w - right}" y1="${y(v)}" y2="${y(v)}" stroke="#e3e6ec"/><text x="${left - 6}" y="${y(v) + 4}" text-anchor="end" font-size="11" fill="#6b7385">${fix(v, digits)}</text>`;
+  }).join("");
+  const ticks = efs.map((ef, i) => `<text x="${x(i)}" y="${h - 12}" text-anchor="middle" font-size="11" fill="#6b7385">ef ${ef}</text>`).join("");
+  const lines = data.engines.map(e => {
+    const pts = e.sweep.map((s, i) => `${x(i)},${y(s[key])}`);
+    return `<polyline points="${pts.join(" ")}" fill="none" stroke="${color(e)}" stroke-width="2.5"/>` +
+      e.sweep.map((s, i) => `<circle cx="${x(i)}" cy="${y(s[key])}" r="4" fill="${color(e)}"><title>${esc(e.label)} ef ${s.ef}: ${fix(s[key], digits + 1)}</title></circle>`).join("");
+  }).join("");
+  const legend = data.engines.map(e => `<span>${dot(e)}</span>`).join("");
+  return `<section class="card"><h2>${title}</h2><div class="legend">${legend}</div><svg viewBox="0 0 ${w} ${h}" width="100%">${grid}${ticks}${lines}</svg></section>`;
+}
+
+function sweep() {
+  const rows = data.engines.flatMap(e => e.sweep.map(s => `<tr><td>${dot(e)}</td><td>${s.ef}</td>
+    <td><span class="bar" style="width:${s.recall * 90}px;background:${color(e)}"></span>${fix(s.recall, 4)}</td>
+    <td>${fix(s.p50_ms, 3)}</td><td>${fix(s.p95_ms, 3)}</td><td>${fix(s.p99_ms, 3)}</td><td>${fix(s.qps, 0)}</td></tr>`)).join("");
+  return chart(`Recall@${data.settings.k} against exact top-${data.settings.k}`, "recall", 2, 0.7) + chart("p50 latency per query, ms, one client thread", "p50_ms", 2) +
+    `<section class="card wide"><h2>Every engine at every search ef, ${data.settings.queries} queries each</h2><div class="scroll"><table>
+    <tr><th>engine</th><th>search ef</th><th>recall@${data.settings.k}</th><th>p50 ms</th><th>p95 ms</th><th>p99 ms</th><th>queries/s</th></tr>${rows}</table></div>
+    <p class="note">Latency is the full client call: query serialization, the round trip for the two servers, and reading ${data.settings.k} ids back. DuckDB runs inside the measuring process.</p></section>`;
+}
+
+function filtered() {
+  const s = data.settings;
+  const rows = data.engines.flatMap(e => e.filtered.map(f => `<tr><td>${dot(e)}</td><td class="text">${esc(f.variant)}</td><td>${fix(f.returned, 2)} of ${s.k}</td>
+    <td><span class="bar" style="width:${f.recall * 90}px;background:${color(e)}"></span>${fix(f.recall, 4)}</td>
+    <td>${fix(f.p50_ms, 3)}</td><td>${fix(f.p95_ms, 3)}</td><td>${fix(f.p99_ms, 3)}</td><td>${fix(f.qps, 0)}</td></tr>`)).join("");
+  const plans = data.engines.flatMap(e => e.filtered.map(f => `<h2>${dot(e)} &middot; ${esc(f.variant)}</h2><pre>${esc(f.plan)}</pre>`)).join("");
+  return `<section class="card wide"><h2>Top-${s.k} nearest with bucket = ${s.bucket} (${s.filter_matches} of ${s.rows} rows match), search ef ${s.filtered_ef}, ${s.filtered_queries} queries</h2>
+    <div class="scroll"><table><tr><th>engine</th><th class="text">how the filter is applied</th><th>rows returned</th><th>recall@${s.k}</th><th>p50 ms</th><th>p95 ms</th><th>p99 ms</th><th>queries/s</th></tr>${rows}</table></div>
+    <p class="note">Ground truth is the exact top-${s.k} among the matching rows only. A row the engine did not return counts as a miss.</p></section>
+    <section class="card wide">${plans}</section>`;
+}
+
+function build() {
+  const rows = data.engines.map(e => `<tr><td>${dot(e)}</td><td class="text">${esc(e.version)}</td><td>${fix(e.build_seconds, 2)}</td><td>${fix(e.index_bytes / 1048576, 1)}</td>
+    <td>${e.indexed_rows}</td><td class="text">${esc(e.state)}</td><td class="text">${esc(e.index_size_source)}</td></tr>`).join("");
+  const names = data.engines.map(e => `<tr><td>${dot(e)}</td><td class="text">${esc(e.parameters.m)} = ${data.settings.m}</td><td class="text">${esc(e.parameters.ef_construction)} = ${data.settings.ef_construction}</td>
+    <td class="text">${esc(e.parameters.ef_search)}</td><td class="text">${esc(e.deployment)}</td></tr>`).join("");
+  const plans = data.engines.map(e => `<h2>${dot(e)}</h2><pre>${esc(e.plan)}</pre>`).join("");
+  return `<section class="card wide"><h2>Index build</h2><div class="scroll"><table>
+    <tr><th>engine</th><th class="text">version</th><th>build s</th><th>index MiB</th><th>indexed rows</th><th class="text">state</th><th class="text">size measured with</th></tr>${rows}</table></div></section>
+    <section class="card wide"><h2>Parameter names</h2><div class="scroll"><table>
+    <tr><th>engine</th><th class="text">graph degree</th><th class="text">build beam</th><th class="text">search beam</th><th class="text">deployment</th></tr>${names}</table></div></section>
+    <section class="card wide"><h2>Proof that the HNSW index answers the query</h2>${plans}</section>`;
+}
+
+function render() {
+  const s = data.settings;
+  document.getElementById("sub").textContent += " Measured at " + data.measured_at + ".";
+  document.getElementById("kpis").innerHTML = [["vectors", s.rows.toLocaleString("en-US")], ["dimensions", s.dim], ["clusters", s.clusters], ["metric", s.metric], ["M", s.m], ["ef_construction", s.ef_construction], ["top k", s.k], ["queries", s.queries]]
+    .map(([k, v]) => `<div class="kpi"><span>${k}</span><strong>${esc(v)}</strong></div>`).join("");
+  show(TABS[tab] ? tab : "sweep");
+}
+
+function show(name) {
+  tab = name;
+  document.getElementById("tabs").innerHTML = Object.entries(TABS).map(([k, v]) => `<button class="${k === tab ? "on" : ""}" data-tab="${k}">${v}</button>`).join("");
+  document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => show(b.dataset.tab));
+  document.getElementById("main").innerHTML = {sweep, filtered, build}[tab]();
+}
+
+fetch("/api/results").then(r => r.json()).then(body => {
+  if (body.error) throw new Error(body.error);
+  data = body;
+  render();
+}).catch(e => document.getElementById("main").innerHTML = `<p class="err">${esc(e.message)}</p>`);
+</script>
+</body>
+</html>

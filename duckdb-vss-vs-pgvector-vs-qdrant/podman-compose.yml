@@ -1,0 +1,45 @@
+name: s9-hnsw-bench
+
+services:
+  s9-postgres:
+    image: docker.io/pgvector/pgvector:0.8.6-pg18-trixie
+    container_name: s9-postgres
+    environment:
+      POSTGRES_DB: bench
+      POSTGRES_USER: bench
+      POSTGRES_PASSWORD: bench
+    command: ["postgres", "-c", "shared_buffers=256MB", "-c", "max_connections=20"]
+    shm_size: 512m
+    mem_limit: 896m
+    cpus: 2
+    ports:
+      - "${postgres:-30800}:5432"
+    volumes:
+      - s9-pgdata:/var/lib/postgresql
+    networks:
+      - s9-net
+
+  s9-qdrant:
+    image: docker.io/qdrant/qdrant:v1.19.2
+    container_name: s9-qdrant
+    environment:
+      QDRANT__TELEMETRY_DISABLED: "true"
+      QDRANT__LOG_LEVEL: WARN
+    mem_limit: 896m
+    cpus: 2
+    ports:
+      - "${qdrant:-30801}:6333"
+    volumes:
+      - s9-qdrant-data:/qdrant/storage
+    networks:
+      - s9-net
+
+networks:
+  s9-net:
+    name: s9-net
+
+volumes:
+  s9-pgdata:
+    name: s9-pgdata
+  s9-qdrant-data:
+    name: s9-qdrant-data
