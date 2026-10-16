@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 500" width="1100" height="500">
+<defs>
+<style>@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700');text{font-family:Caveat,'Comic Sans MS',cursive;fill:#1d2330}.t{font-size:24px;font-weight:700}.s{font-size:18px}.l{font-size:16px;fill:#5a6275}</style>
+<filter id="w"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="3" seed="4"/><feDisplacementMap in="SourceGraphic" scale="3"/></filter>
+<marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#1d2330"/></marker>
+</defs>
+<rect width="1100" height="500" fill="#ffffff"/>
+<g filter="url(#w)" stroke="#1d2330" stroke-width="2">
+<rect x="30" y="40" width="160" height="90" rx="12" fill="#ffe0d6"/>
+<rect x="270" y="30" width="240" height="110" rx="12" fill="#f3e1ff"/>
+<rect x="30" y="250" width="160" height="200" rx="12" fill="#fff3c4"/>
+<rect x="270" y="250" width="240" height="200" rx="12" fill="#d7ecff"/>
+<rect x="620" y="30" width="230" height="200" rx="12" fill="#dff5e1"/>
+<rect x="930" y="30" width="150" height="200" rx="12" fill="#fff3c4"/>
+<rect x="620" y="320" width="230" height="130" rx="12" fill="#e6f7f7"/>
+<path d="M190 85 L266 85" fill="none" marker-end="url(#a)"/>
+<path d="M390 140 L390 246" fill="none" marker-end="url(#a)"/>
+<path d="M190 350 L266 350" fill="none" marker-end="url(#a)"/>
+<path d="M510 300 L616 190" fill="none" marker-end="url(#a)"/>
+<path d="M510 390 L616 390" fill="none" marker-end="url(#a)"/>
+<path d="M510 70 L616 70" fill="none" marker-end="url(#a)"/>
+<path d="M930 130 L854 130" fill="none" marker-end="url(#a)"/>
+</g>
+<text x="110" y="80" text-anchor="middle" class="t">browser</text>
+<text x="110" y="106" text-anchor="middle" class="s">index.html</text>
+<text x="390" y="62" text-anchor="middle" class="t">app/server.py</text>
+<text x="390" y="88" text-anchor="middle" class="s">runs one SQL text as 5 users</text>
+<text x="390" y="112" text-anchor="middle" class="s">Python 3.14, standard library</text>
+<text x="110" y="282" text-anchor="middle" class="t">X-Trino-User</text>
+<text x="110" y="312" text-anchor="middle" class="s">alice: admin</text>
+<text x="110" y="336" text-anchor="middle" class="s">bruno: analyst</text>
+<text x="110" y="360" text-anchor="middle" class="s">rita: regional BR</text>
+<text x="110" y="384" text-anchor="middle" class="s">sam: support</text>
+<text x="110" y="408" text-anchor="middle" class="s">mallory: unknown</text>
+<text x="110" y="434" text-anchor="middle" class="l">no password</text>
+<text x="390" y="282" text-anchor="middle" class="t">s5-trino 483</text>
+<text x="390" y="310" text-anchor="middle" class="s">access-control.name=opa</text>
+<text x="390" y="336" text-anchor="middle" class="s">applies masks and row filters</text>
+<text x="390" y="362" text-anchor="middle" class="s">before the query runs</text>
+<text x="390" y="394" text-anchor="middle" class="s">catalog postgres (PostgreSQL)</text>
+<text x="390" y="418" text-anchor="middle" class="s">catalog scratch (memory)</text>
+<text x="735" y="62" text-anchor="middle" class="t">s5-opa 1.21.2</text>
+<text x="735" y="90" text-anchor="middle" class="s">package trino</text>
+<text x="735" y="116" text-anchor="middle" class="s">allow</text>
+<text x="735" y="140" text-anchor="middle" class="s">rowFilters</text>
+<text x="735" y="164" text-anchor="middle" class="s">batchColumnMasks</text>
+<text x="735" y="190" text-anchor="middle" class="s">data.pii: users, roles</text>
+<text x="735" y="214" text-anchor="middle" class="l">decision log on console</text>
+<text x="1005" y="62" text-anchor="middle" class="t">opa/policy</text>
+<text x="1005" y="90" text-anchor="middle" class="s">trino.rego</text>
+<text x="1005" y="114" text-anchor="middle" class="s">pii/data.json</text>
+<text x="1005" y="160" text-anchor="middle" class="s">reload-policy.sh</text>
+<text x="1005" y="184" text-anchor="middle" class="l">PUT /v1/policies</text>
+<text x="1005" y="206" text-anchor="middle" class="l">PUT /v1/data/pii</text>
+<text x="735" y="352" text-anchor="middle" class="t">s5-postgres 18.6</text>
+<text x="735" y="380" text-anchor="middle" class="s">customers (40 rows, raw PII)</text>
+<text x="735" y="406" text-anchor="middle" class="s">orders (120 rows)</text>
+<text x="735" y="434" text-anchor="middle" class="l">never masked at rest</text>
+<text x="228" y="74" text-anchor="middle" class="l">/api</text>
+<text x="398" y="198" class="l">POST /v1/statement</text>
+<text x="563" y="56" text-anchor="middle" class="l">decision log</text>
+<text x="563" y="92" text-anchor="middle" class="l">PUT data</text>
+<text x="578" y="275" class="l">every check</text>
+<text x="563" y="380" text-anchor="middle" class="l">JDBC</text>
+</svg>

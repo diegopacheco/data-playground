@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PII Masking with Trino and OPA</title>
+<style>
+:root{--bg:#f7f8fa;--card:#fff;--ink:#1d2330;--muted:#6b7385;--line:#e3e6ec;--accent:#2f6fde;--accent-soft:#e8f0fd;--ok:#1f8a4c;--ok-soft:#e4f5ea;--bad:#c2412d;--bad-soft:#fde9e5;--off:#6b7385;--off-soft:#eef0f4}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+header{padding:16px 24px 4px}
+h1{margin:0;font-size:22px}
+header p{margin:4px 0 0;color:var(--muted)}
+.users{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.user{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:4px 10px;font-size:12px}
+.user b{font-size:13px}
+nav{display:flex;flex-wrap:wrap;gap:6px;padding:10px 24px 0}
+button{border:1px solid var(--line);background:#fff;border-radius:6px;padding:5px 10px;cursor:pointer;font:inherit;font-size:12px;color:var(--ink)}
+button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+nav button{font-size:13px;padding:7px 14px}
+main{padding:12px 24px 32px;display:grid;gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;min-width:0}
+.card h2{margin:0 0 8px;font-size:14px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.row{display:flex;flex-wrap:wrap;gap:6px}
+.two{display:grid;gap:12px;grid-template-columns:1fr 1fr}
+pre{margin:0;background:#f2f4f8;border-radius:8px;padding:8px 10px;font:12px/1.5 ui-monospace,Menlo,monospace;white-space:pre-wrap;word-break:break-word}
+.note{color:var(--muted);font-size:12px;margin-top:6px}
+table{border-collapse:collapse;width:100%}
+th,td{padding:4px 8px;border-bottom:1px solid var(--line);text-align:left;font:12px/1.4 ui-monospace,Menlo,monospace;white-space:nowrap}
+th{color:var(--muted);font-weight:600}
+td.null{color:var(--muted);font-style:italic}
+.matrix td{white-space:normal;vertical-align:top;word-break:break-word}
+.matrix td:first-child{font-family:inherit;font-weight:600;white-space:nowrap}
+.pick{cursor:pointer}
+.pick.on td{background:var(--accent-soft)}
+.scroll{overflow-x:auto}
+.tag{border-radius:999px;padding:1px 8px;font:600 11px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;white-space:nowrap}
+.tag.ok{background:var(--ok-soft);color:var(--ok)}
+.tag.bad{background:var(--bad-soft);color:var(--bad)}
+.tag.off{background:var(--off-soft);color:var(--off)}
+.tag.admin{background:var(--accent-soft);color:var(--accent)}
+.err{color:var(--bad)}
+@media (max-width:900px){.two{grid-template-columns:1fr}main,header,nav{padding-left:16px;padding-right:16px}}
+</style>
+</head>
+<body>
+<header>
+<h1>PII masking in Trino decided by Open Policy Agent</h1>
+<p>The same SQL text runs as five users. Trino asks OPA for every query; masks and row filters come from Rego and a data document kept outside Trino.</p>
+<div class="users" id="users"></div>
+</header>
+<nav id="nav"></nav>
+<main id="main"></main>
+<script>
+const TABS = {compare: "Same SQL, five users", matrix: "Ways around the mask", policy: "Policy change, no restart", decisions: "OPA decision log"};
+const params = new URLSearchParams(location.search);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+const main = document.getElementById("main");
+let users = [], cases = [], tab = TABS[params.get("tab")] ? params.get("tab") : "compare";
+let currentCase = params.get("case") || "columns", currentUser = params.get("user") || "rita";
+
+async function get(path) {
+  const r = await fetch(path);
+  const body = await r.json();
+  if (!r.ok) throw new Error(body.error || r.status);
+  return body;
+}
+
+function grid(result) {
+  if (result.error) return `<div class="err">${esc(result.error)}</div>`;
+  return `<div class="scroll"><table><tr>${result.columns.map(c => `<th>${esc(c)}</th>`).join("")}</tr>` +
+    result.rows.map(r => `<tr>${r.map(v => v === null ? `<td class="null">NULL</td>` : `<td>${esc(v)}</td>`).join("")}</tr>`).join("") + `</table></div>`;
+}
+
+function tag(user, result) {
+  if (result.error) return `<span class="tag off">denied</span>`;
+  if (user === "alice") return `<span class="tag admin">admin baseline</span>`;
+  return result.same_as_admin ? `<span class="tag bad">same as admin</span>` : `<span class="tag ok">differs from admin</span>`;
+}
+
+function role(user) {
+  const u = users.find(x => x.user === user);
+  return u.role ? u.role + (u.country ? " " + u.country : "") : "not in the data document";
+}
+
+function statement(c) {
+  const lines = c.prepare.concat([c.sql]).join(";\n");
+  return `<pre>${esc(lines)}</pre>` + (c.reader ? `<div class="note">Each user runs the first statements as {user}; the last one is read back as ${esc(c.reader)} to show what was stored.</div>` : "");
+}
+
+async function compare() {
+  main.innerHTML = `<section class="card"><div class="row">${cases.map(c => `<button data-c="${c.case}" class="${c.case === currentCase ? "on" : ""}">${esc(c.title)}</button>`).join("")}</div><div id="sql" style="margin-top:8px"></div></section><div id="out"></div>`;
+  main.querySelectorAll("button").forEach(b => b.onclick = () => { currentCase = b.dataset.c; compare(); });
+  const c = await get("/api/compare?case=" + currentCase);
+  document.getElementById("sql").innerHTML = statement(c);
+  document.getElementById("out").outerHTML = Object.entries(c.results).map(([user, result]) =>
+    `<section class="card"><h2>${esc(user)} <span class="note" style="margin:0">${esc(role(user))}</span> ${tag(user, result)}</h2>${grid(result)}</section>`).join("");
+}
+
+function brief(result) {
+  if (result.error) return esc(result.error.replace(/^line \d+:\d+: /, "").replace(/ \[.*| is stale.*/, ""));
+  return result.rows.length ? result.rows[0].map(v => v === null ? "NULL" : esc(v)).join(" | ") : "no rows";
+}
+
+async function matrix() {
+  main.innerHTML = `<section class="card">running every attempt as every user</section>`;
+  const all = await Promise.all(cases.filter(c => c.case !== "columns").map(c => get("/api/compare?case=" + c.case)));
+  const denied = users.map(u => u.user).filter(n => all.every(r => r.results[n].error));
+  const names = users.map(u => u.user).filter(n => !denied.includes(n));
+  main.innerHTML = `<section class="card"><h2>First row each user gets back, per attempt</h2><div class="scroll"><table class="matrix"><tr><th>attempt</th>${names.map(n => `<th>${esc(n)}, ${esc(role(n))}</th>`).join("")}</tr>` +
+    all.map(r => `<tr><td title="${esc(r.sql)}">${esc(r.title)}</td>` + names.map(n => `<td>${tag(n, r.results[n])}<br>${brief(r.results[n])}</td>`).join("") + `</tr>`).join("") + `</table></div>
+    <div class="note">A red tag means the user received exactly what the admin received. Denied on every attempt and left out of the table: ${esc(denied.join(", ") || "nobody")}.</div></section>`;
+}
+
+async function policy() {
+  main.innerHTML = `<section class="card">running the query, changing the OPA data document, running it again, restoring</section>`;
+  const p = await get("/api/policy-change");
+  const same = p.trino_started_before === p.trino_started_after;
+  main.innerHTML = `<section class="card"><h2>Query run three times as ${esc(p.user)}</h2><pre>${esc(p.sql)}</pre>
+    <div class="note">Change pushed to OPA with PUT /v1/data/pii: <code>${esc(p.change)}</code></div>
+    <div class="note">Trino container started at ${esc(p.trino_started_before)} before and ${esc(p.trino_started_after)} after
+    <span class="tag ${same ? "ok" : "bad"}">${same ? "Trino not restarted" : "Trino restarted"}</span></div></section>
+    <section class="card"><h2>1. Before the change</h2>${grid(p.before)}</section>
+    <section class="card"><h2>2. After the change, next query</h2>${grid(p.after)}</section>
+    <section class="card"><h2>3. After restoring the file content</h2>${grid(p.restored)}</section>`;
+}
+
+function target(action) {
+  const r = action.resource || {};
+  if (action.filterResources) return action.filterResources.length + " columns of " + action.filterResources[0].column.tableName;
+  if (r.table) return r.table.catalogName + "." + r.table.schemaName + "." + r.table.tableName + (r.table.columns ? " [" + r.table.columns.join(", ") + "]" : "");
+  if (r.catalog) return r.catalog.name;
+  return "";
+}
+
+function pretty(v, depth, pad) {
+  if (Array.isArray(v) && v.length) return "[\n" + v.map(x => pad + "  " + JSON.stringify(x)).join(",\n") + "\n" + pad + "]";
+  if (v && typeof v === "object" && !Array.isArray(v) && depth < 3)
+    return "{\n" + Object.entries(v).map(([k, x]) => pad + "  " + JSON.stringify(k) + ": " + pretty(x, depth + 1, pad + "  ")).join(",\n") + "\n" + pad + "}";
+  return JSON.stringify(v);
+}
+
+async function decisions() {
+  main.innerHTML = `<section class="card"><div class="row">${users.map(u => `<button data-u="${u.user}" class="${u.user === currentUser ? "on" : ""}">${esc(u.user)}</button>`).join("")}</div><div id="body" class="note">running</div></section>`;
+  main.querySelectorAll("button").forEach(b => b.onclick = () => { currentUser = b.dataset.u; decisions(); });
+  const d = await get("/api/decisions?user=" + currentUser);
+  const first = d.decisions.findIndex(x => x.path === "trino/rowFilters");
+  const show = i => {
+    document.querySelectorAll(".pick").forEach((el, n) => el.classList.toggle("on", n === i));
+    document.getElementById("json").textContent = pretty(d.decisions[i], 0, "");
+  };
+  document.getElementById("body").outerHTML = `<pre style="margin-top:8px">${esc(d.sql)}</pre>` + grid(d.result) +
+    `<div class="note">${d.decisions.length} OPA decisions carry the query id ${esc(d.result.query_id || "none: the query was rejected before it got an id")}.</div>`;
+  if (!d.decisions.length) return;
+  main.insertAdjacentHTML("beforeend", `<div class="two"><section class="card"><h2>Decisions for this query</h2><div class="scroll"><table>
+    <tr><th>#</th><th>path</th><th>operation</th><th>resource</th><th>result</th></tr>` +
+    d.decisions.map((x, i) => `<tr class="pick"><td>${i + 1}</td><td>${esc(x.path)}</td><td>${esc(x.input.action.operation)}</td><td style="white-space:normal;word-break:break-all">${esc(target(x.input.action))}</td><td>${esc(typeof x.result === "boolean" ? x.result : (x.result || []).length + " entries")}</td></tr>`).join("") +
+    `</table></div></section><section class="card"><h2>Input Trino sent and result OPA returned</h2><pre id="json"></pre></section></div>`);
+  document.querySelectorAll(".pick").forEach((el, i) => el.onclick = () => show(i));
+  show(first < 0 ? 0 : first);
+}
+
+function render() {
+  document.getElementById("nav").innerHTML = Object.entries(TABS).map(([k, v]) => `<button data-t="${k}" class="${k === tab ? "on" : ""}">${v}</button>`).join("");
+  document.querySelectorAll("#nav button").forEach(b => b.onclick = () => { tab = b.dataset.t; render(); });
+  ({compare, matrix, policy, decisions})[tab]().catch(e => main.innerHTML = `<p class="err">Failed to load: ${esc(e.message)}</p>`);
+}
+
+(async () => {
+  try {
+    [users, cases] = await Promise.all([get("/api/users"), get("/api/cases")]);
+    document.getElementById("users").innerHTML = users.map(u => `<span class="user"><b>${esc(u.user)}</b> ${esc(role(u.user))}</span>`).join("");
+    render();
+  } catch (e) {
+    main.innerHTML = `<p class="err">Failed to load: ${esc(e.message)}</p>`;
+  }
+})();
+</script>
+</body>
+</html>

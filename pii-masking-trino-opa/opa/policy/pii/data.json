@@ -1,0 +1,47 @@
+{
+  "users": {
+    "alice": {"role": "admin"},
+    "bruno": {"role": "analyst"},
+    "rita": {"role": "regional_analyst", "country": "BR"},
+    "sam": {"role": "support"}
+  },
+  "roles": {
+    "admin": {
+      "unrestricted": true
+    },
+    "analyst": {
+      "read": ["postgres.public", "scratch.default"],
+      "write": ["scratch.default"],
+      "masks": {
+        "postgres.public.customers": {
+          "email": "email",
+          "national_id": "last4",
+          "credit_card": "last4",
+          "phone": "null"
+        }
+      }
+    },
+    "regional_analyst": {
+      "read": ["postgres.public", "scratch.default"],
+      "write": ["scratch.default"],
+      "masks": {
+        "postgres.public.customers": {
+          "email": "email",
+          "national_id": "last4",
+          "credit_card": "last4",
+          "phone": "null"
+        }
+      },
+      "row_filter": {
+        "postgres.public.customers": "country",
+        "postgres.public.orders": "country"
+      }
+    },
+    "support": {
+      "read": ["postgres.public"],
+      "hidden_columns": {
+        "postgres.public.customers": ["national_id", "credit_card", "balance"]
+      }
+    }
+  }
+}

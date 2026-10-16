@@ -1,0 +1,56 @@
+name: s5-pii-masking-trino-opa
+
+services:
+  s5-postgres:
+    image: docker.io/library/postgres:18.6
+    container_name: s5-postgres
+    mem_limit: 512m
+    environment:
+      POSTGRES_USER: s5
+      POSTGRES_PASSWORD: s5password
+      POSTGRES_DB: crm
+    ports:
+      - "${postgres:-30400}:5432"
+    volumes:
+      - s5-postgres-data:/var/lib/postgresql
+      - ./data:/data:ro,Z
+      - ./sql:/sql:ro,Z
+    networks:
+      - s5-net
+
+  s5-opa:
+    image: docker.io/openpolicyagent/opa:1.21.2
+    container_name: s5-opa
+    mem_limit: 256m
+    command: ["run", "--server", "--addr", ":8181", "--set", "decision_logs.console=true", "/s5/policy"]
+    ports:
+      - "${opa:-30401}:8181"
+    volumes:
+      - ./opa:/s5:ro,Z
+    networks:
+      - s5-net
+
+  s5-trino:
+    image: docker.io/trinodb/trino:483
+    container_name: s5-trino
+    mem_limit: 2g
+    ports:
+      - "${trino:-30402}:8080"
+    volumes:
+      - ./trino/jvm.config:/etc/trino/jvm.config:ro,Z
+      - ./trino/config.properties:/etc/trino/config.properties:ro,Z
+      - ./trino/access-control.properties:/etc/trino/access-control.properties:ro,Z
+      - ./trino/catalog:/etc/trino/catalog:ro,Z
+    networks:
+      - s5-net
+    depends_on:
+      - s5-postgres
+      - s5-opa
+
+networks:
+  s5-net:
+    name: s5-net
+
+volumes:
+  s5-postgres-data:
+    name: s5-postgres-data
