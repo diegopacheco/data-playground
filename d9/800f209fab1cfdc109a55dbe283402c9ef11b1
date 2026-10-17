@@ -1,0 +1,81 @@
+ducklake-duckdb/README.md
+  s_9121753c4a3d76::t_3bd0b452c4e652 1-128
+ducklake-duckdb/app/client.py
+  s_9121753c4a3d76::t_1cee19cc604250 1-17
+ducklake-duckdb/architecture.svg
+  s_9121753c4a3d76::t_fefcc322f7485e 1-52
+ducklake-duckdb/data/orders.csv
+  s_9121753c4a3d76::t_3db525e787070a 1-201
+ducklake-duckdb/scripts/common.sh
+  s_9121753c4a3d76::t_78b652ba9bc197 1-91
+ducklake-duckdb/scripts/setup.sh
+  s_9121753c4a3d76::t_6ec0a176a7a2f9 1-24
+ducklake-duckdb/scripts/sql-console.sh
+  s_9121753c4a3d76::t_b6c2462221ff42 1-6
+ducklake-duckdb/scripts/status.sh
+  s_9121753c4a3d76::t_ee4f40bcf31815 1-18
+ducklake-duckdb/scripts/stop-all.sh
+  s_9121753c4a3d76::t_38dbb7697f6172 1-23
+ducklake-duckdb/scripts/test-all.sh
+  s_9121753c4a3d76::t_e554e473f4319b 1-79
+ducklake-duckdb/scripts/ui.sh
+  s_9121753c4a3d76::t_821077c178a8a7 1-6
+ducklake-duckdb/.gitignore
+  s_d4fa7fe7deab26::t_79e52790ba387b 1-3
+ducklake-duckdb/app/index.html
+  s_d4fa7fe7deab26::t_20623fd4320c94 1-179
+ducklake-duckdb/app/lake.py
+  s_005e9183aa102c::t_a7538ba2c45a5b 1-47
+ducklake-duckdb/app/pipeline.py
+  s_d4fa7fe7deab26::t_e91893d93b03e4 1-32
+ducklake-duckdb/app/server.py
+  s_d4fa7fe7deab26::t_80d271ceb40856 1-109
+ducklake-duckdb/podman-compose.yml
+  s_bd1df6142ebef5::t_37082de3b2f3ee 1-39
+ducklake-duckdb/requirements.txt
+  s_d4fa7fe7deab26::t_bdb2619513a769 1
+ducklake-duckdb/scripts/ports.env
+  s_d4fa7fe7deab26::t_412191c2dbb19e 1-4
+ducklake-duckdb/scripts/start-all.sh
+  s_d4fa7fe7deab26::t_e0bd9a4a870ad1 1-36
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d9800f209fab1cfdc109a55dbe283402c9ef11b1",
+  "prompts": {},
+  "sessions": {
+    "s_005e9183aa102c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a5d41f58ba02e14f5",
+        "model": "unknown"
+      },
+      "human_author": "diegopacheco <diego.pacheco.it@gmail.com>"
+    },
+    "s_9121753c4a3d76": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "39b421dc-22e8-4dc0-93df-749df3c5cb41",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "diegopacheco <diego.pacheco.it@gmail.com>"
+    },
+    "s_bd1df6142ebef5": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-ae178458f2ec636a1",
+        "model": "unknown"
+      },
+      "human_author": "diegopacheco <diego.pacheco.it@gmail.com>"
+    },
+    "s_d4fa7fe7deab26": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-a93584135baf8bda1",
+        "model": "unknown"
+      },
+      "human_author": "diegopacheco <diego.pacheco.it@gmail.com>"
+    }
+  }
+}
