@@ -1,0 +1,39 @@
+services:
+  i10-postgres:
+    image: docker.io/library/postgres:18.6
+    container_name: i10-postgres
+    environment:
+      POSTGRES_USER: i10
+      POSTGRES_PASSWORD: i10password
+      POSTGRES_DB: i10catalog
+    ports:
+      - "${postgres:-21000}:5432"
+    volumes:
+      - i10-postgres-data:/var/lib/postgresql
+    networks:
+      - i10-net
+
+  i10-minio:
+    image: docker.io/pgsty/minio:RELEASE.2026-08-04T00-00-00Z
+    container_name: i10-minio
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: i10admin
+      MINIO_ROOT_PASSWORD: i10password
+    ports:
+      - "${minio:-21001}:9000"
+      - "${console:-21002}:9001"
+    volumes:
+      - i10-minio-data:/data
+    networks:
+      - i10-net
+
+networks:
+  i10-net:
+    name: i10-net
+
+volumes:
+  i10-postgres-data:
+    name: i10-postgres-data
+  i10-minio-data:
+    name: i10-minio-data
