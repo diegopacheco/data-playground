@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="500" viewBox="0 0 1200 500">
+  <defs>
+    <style>@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&amp;display=swap'); text { font-family: 'Caveat', 'Comic Sans MS', cursive; fill: #1f2933; }</style>
+    <filter id="wobble"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="3"/></filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1f2933"/></marker>
+  </defs>
+  <rect width="1200" height="500" fill="#ffffff"/>
+  <g filter="url(#wobble)" stroke="#1f2933" stroke-width="2">
+    <rect x="20" y="115" width="220" height="170" rx="10" fill="#fff3bf"/>
+    <rect x="300" y="105" width="300" height="200" rx="10" fill="#d0ebff"/>
+    <rect x="680" y="105" width="220" height="95" rx="10" fill="#d3f9d8"/>
+    <rect x="680" y="255" width="220" height="95" rx="10" fill="#e5dbff"/>
+    <rect x="680" y="400" width="220" height="70" rx="10" fill="#f1f3f5"/>
+    <rect x="960" y="255" width="220" height="95" rx="10" fill="#fcc2d7"/>
+    <rect x="300" y="390" width="300" height="80" rx="10" fill="#fcc2d7"/>
+    <rect x="20" y="390" width="220" height="80" rx="10" fill="#ffd8a8"/>
+    <line x1="240" y1="200" x2="298" y2="200" marker-end="url(#arrow)"/>
+    <line x1="600" y1="150" x2="678" y2="150" marker-end="url(#arrow)"/>
+    <line x1="790" y1="200" x2="790" y2="253" marker-end="url(#arrow)"/>
+    <line x1="958" y1="302" x2="902" y2="302" marker-end="url(#arrow)"/>
+    <line x1="790" y1="350" x2="790" y2="398" marker-end="url(#arrow)"/>
+    <line x1="580" y1="305" x2="678" y2="420" marker-end="url(#arrow)"/>
+    <line x1="450" y1="388" x2="450" y2="307" marker-end="url(#arrow)"/>
+    <line x1="320" y1="305" x2="220" y2="388" marker-end="url(#arrow)"/>
+  </g>
+  <text x="600" y="42" font-size="32" font-weight="700" text-anchor="middle">feast-feature-store</text>
+  <text x="600" y="72" font-size="20" text-anchor="middle">Feast 0.66 over Parquet (DuckDB offline store) and Redis 8.10 (online store): point-in-time training data and fresh online features</text>
+  <text x="130" y="148" font-size="24" text-anchor="middle">offline Parquet</text>
+  <text x="130" y="175" font-size="17" text-anchor="middle">driver_hourly (168 h x 20)</text>
+  <text x="130" y="198" font-size="17" text-anchor="middle">driver_daily (14 d x 20)</text>
+  <text x="130" y="221" font-size="17" text-anchor="middle">labels (300 training rows)</text>
+  <text x="130" y="252" font-size="16" text-anchor="middle">seeded, anchored to now</text>
+  <text x="450" y="140" font-size="24" text-anchor="middle">r16-app (Python 3.14)</text>
+  <text x="450" y="168" font-size="17" text-anchor="middle">Feast SDK: apply, materialize_incremental</text>
+  <text x="450" y="192" font-size="17" text-anchor="middle">get_historical_features (PIT + TTL)</text>
+  <text x="450" y="216" font-size="17" text-anchor="middle">get_online_features, push</text>
+  <text x="450" y="240" font-size="17" text-anchor="middle">naive join for the leakage check</text>
+  <text x="450" y="270" font-size="16" text-anchor="middle">stdlib http.server REST API</text>
+  <text x="790" y="140" font-size="24" text-anchor="middle">r16-redis 8.10</text>
+  <text x="790" y="166" font-size="17" text-anchor="middle">online store, one hash</text>
+  <text x="790" y="188" font-size="17" text-anchor="middle">per driver</text>
+  <text x="639" y="140" font-size="15" text-anchor="middle">write</text>
+  <text x="790" y="290" font-size="24" text-anchor="middle">r16-feature-server</text>
+  <text x="790" y="316" font-size="17" text-anchor="middle">feast serve (HTTP)</text>
+  <text x="790" y="338" font-size="17" text-anchor="middle">/get-online-features</text>
+  <text x="790" y="430" font-size="22" text-anchor="middle">registry.db</text>
+  <text x="790" y="454" font-size="16" text-anchor="middle">file registry on /data</text>
+  <text x="1070" y="292" font-size="22" text-anchor="middle">model service</text>
+  <text x="1070" y="318" font-size="17" text-anchor="middle">or curl on :28102</text>
+  <text x="450" y="422" font-size="22" text-anchor="middle">Browser UI :28101</text>
+  <text x="450" y="448" font-size="17" text-anchor="middle">Point-in-time, Online serving, Definitions</text>
+  <text x="130" y="422" font-size="22" text-anchor="middle">training set</text>
+  <text x="130" y="448" font-size="17" text-anchor="middle">300 rows, no future values</text>
+</svg>

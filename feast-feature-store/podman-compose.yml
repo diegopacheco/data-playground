@@ -1,0 +1,50 @@
+name: r16-feast-feature-store
+
+services:
+  r16-redis:
+    image: docker.io/library/redis:8.10.2-alpine
+    container_name: r16-redis
+    command: ["redis-server", "--save", "", "--appendonly", "no", "--maxmemory", "96mb"]
+    mem_limit: 128m
+    ports:
+      - "${redis:-28100}:6379"
+    networks:
+      - r16-net
+
+  r16-app:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: r16-feast-feature-store:latest
+    container_name: r16-app
+    environment:
+      UI_PORT: "8080"
+      REDIS_HOST: r16-redis
+      FEATURE_SERVER_URL: http://r16-feature-server:6566
+    mem_limit: 768m
+    ports:
+      - "${ui:-28101}:8080"
+    volumes:
+      - ./data:/data
+    networks:
+      - r16-net
+    depends_on:
+      - r16-redis
+
+  r16-feature-server:
+    image: r16-feast-feature-store:latest
+    container_name: r16-feature-server
+    command: ["feast", "-c", "/app/repo", "serve", "-h", "0.0.0.0", "-p", "6566", "--workers", "1"]
+    mem_limit: 512m
+    ports:
+      - "${featureserver:-28102}:6566"
+    volumes:
+      - ./data:/data
+    networks:
+      - r16-net
+    depends_on:
+      - r16-app
+
+networks:
+  r16-net:
+    name: r16-net

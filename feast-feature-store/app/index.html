@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Feast Feature Store</title>
+<style>
+:root{--bg:#f7f8fa;--card:#fff;--ink:#1d2330;--muted:#667085;--line:#e4e7ec;--accent:#3b6fd8;--good:#1f9d63;--bad:#d64545;--warn:#c98a12;--soft:#eef3fd}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+header{background:var(--card);border-bottom:1px solid var(--line);padding:16px 24px}
+h1{margin:0;font-size:20px}
+header p{margin:4px 0 0;color:var(--muted)}
+nav{display:flex;gap:4px;margin-top:12px}
+nav button{border:1px solid var(--line);background:var(--bg);padding:7px 14px;border-radius:8px;cursor:pointer;font:inherit;color:var(--ink)}
+nav button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+main{padding:20px 24px;max-width:1280px;margin:0 auto}
+section{display:none}section.on{display:block}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.tile b{display:block;font-size:24px}
+.tile span{color:var(--muted);font-size:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:16px}
+.card h2{margin:0 0 8px;font-size:15px}
+.card p.note{margin:0 0 10px;color:var(--muted)}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{color:var(--muted);font-weight:600;background:#fafbfc;position:sticky;top:0}
+tr.sel td{background:var(--soft)}
+tbody tr{cursor:pointer}
+.scroll{max-height:380px;overflow:auto;border:1px solid var(--line);border-radius:8px}
+.badge{display:inline-block;padding:1px 8px;border-radius:10px;font-size:12px;font-weight:600}
+.ok{background:#e3f6ec;color:var(--good)}.no{background:#fde8e8;color:var(--bad)}.mid{background:#fdf3de;color:var(--warn)}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+select,input,button.act{font:inherit;padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink)}
+button.act{background:var(--accent);color:#fff;border-color:var(--accent);cursor:pointer}
+svg text{font-size:11px;fill:var(--muted)}
+.legend{display:flex;gap:16px;color:var(--muted);font-size:12px;margin-top:6px;flex-wrap:wrap}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+.bars div{display:flex;align-items:center;gap:8px;margin:4px 0}
+.bars i{display:block;height:16px;border-radius:4px}
+.bars em{font-style:normal;width:170px;color:var(--muted)}
+code{background:#f1f3f6;padding:1px 5px;border-radius:4px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:900px){.grid2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+<h1>Feast feature store: point-in-time training data and fresh online features</h1>
+<p id="sub">loading</p>
+<nav>
+<button data-tab="pit" class="on">Point-in-time</button>
+<button data-tab="online">Online serving</button>
+<button data-tab="defs">Definitions</button>
+</nav>
+</header>
+<main>
+<section id="pit" class="on">
+<div class="tiles" id="pitTiles"></div>
+<div class="card">
+<h2>Driver timeline</h2>
+<p class="note">Dots are hourly <code>conv_rate</code> updates in the offline Parquet source. Vertical lines are training labels. Pick a label row below: green is the value Feast joined (latest update at or before the label, within the 24 h TTL), red dashed is what a naive latest value join would use.</p>
+<div class="row"><label>Driver <select id="drv"></select></label></div>
+<svg id="tl" viewBox="0 0 1200 260" width="100%" height="260"></svg>
+<div class="legend"><span><i class="dot" style="background:#3b6fd8"></i>hourly update</span><span><i class="dot" style="background:#98a2b3"></i>label time</span><span><i class="dot" style="background:#1f9d63"></i>Feast point-in-time value</span><span><i class="dot" style="background:#d64545"></i>naive latest value (future)</span><span><i class="dot" style="background:#fdf3de;border:1px solid #c98a12"></i>TTL window</span></div>
+</div>
+<div class="card">
+<h2>Training rows from get_historical_features</h2>
+<p class="note">Every row of the entity dataframe (labels) with the features Feast joined as of the label time, next to the naive join.</p>
+<div class="scroll"><table><thead><tr><th>request</th><th>driver</th><th>label time (UTC)</th><th>accepted</th><th>PIT conv_rate</th><th>observed at</th><th>rating</th><th>naive conv_rate</th><th>naive observed at</th><th>naive join</th></tr></thead><tbody id="trows"></tbody></table></div>
+</div>
+</section>
+<section id="online">
+<div class="tiles" id="onTiles"></div>
+<div class="card">
+<h2>Online features from Redis</h2>
+<p class="note">Read with <code>get_online_features(feature_service=driver_model_v1)</code>. Age is now minus the feature event timestamp. Drivers whose last update is older than the view TTL were never materialized, so they have no value in Redis.</p>
+<div class="scroll" style="max-height:none"><table><thead><tr><th>driver</th><th>conv_rate</th><th>acc_rate</th><th>trips_today</th><th>hourly age</th><th>hourly (TTL 24 h)</th><th>rating</th><th>lifetime_trips</th><th>daily age</th><th>daily (TTL 7 d)</th></tr></thead><tbody id="orows"></tbody></table></div>
+</div>
+<div class="grid2">
+<div class="card">
+<h2>Push a fresh value</h2>
+<p class="note">Writes one row through the <code>driver_hourly_push</code> push source straight into the online store, no batch job. The Parquet offline data is not touched.</p>
+<div class="row"><label>Driver <select id="pdrv"></select></label><label>conv_rate <input id="pconv" type="number" step="0.01" min="0" max="1" value="0.42" style="width:90px"></label><button class="act" id="pushBtn">Push</button></div>
+<div id="pushOut" class="note"></div>
+</div>
+<div class="card">
+<h2>Online lookup latency</h2>
+<p class="note">Single entity lookups of all 7 features, in process SDK vs the Feast HTTP feature server.</p>
+<div class="row"><button class="act" id="latBtn">Run 200 lookups</button><span id="latNote" class="note"></span></div>
+<div class="bars" id="latBars"></div>
+</div>
+</div>
+</section>
+<section id="defs">
+<div class="grid2">
+<div class="card"><h2>Feature views</h2><div id="fvs"></div></div>
+<div class="card"><h2>Entities, services and materialization</h2><div id="ents"></div></div>
+</div>
+<div class="card"><h2>REST API</h2>
+<table><tbody>
+<tr><td><code>GET /api/state</code></td><td>anchor time, materialization window per view, pushes</td></tr>
+<tr><td><code>POST /api/bootstrap</code></td><td>regenerate Parquet, apply, materialize_incremental, rebuild training set</td></tr>
+<tr><td><code>GET /api/training</code></td><td>point-in-time training rows, naive join and leakage counts</td></tr>
+<tr><td><code>GET /api/online?driver_ids=1001,1002</code></td><td>online features with status, age and TTL</td></tr>
+<tr><td><code>POST /api/push</code></td><td>push a fresh hourly row to the online store</td></tr>
+<tr><td><code>GET /api/latency?n=200</code></td><td>SDK and feature server lookup percentiles</td></tr>
+<tr><td><code>GET /api/definitions</code></td><td>entities, feature views and services from the Feast registry</td></tr>
+<tr><td><code>GET /api/timeline?driver_id=1001</code></td><td>hourly updates and label times of one driver</td></tr>
+</tbody></table></div>
+</section>
+</main>
+<script>
+const $ = s => document.querySelector(s);
+const get = p => fetch(p).then(r => r.json());
+const post = (p, b) => fetch(p, {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(b)}).then(r => r.json());
+const fmt = e => e == null ? "-" : new Date(e * 1000).toISOString().slice(5, 16).replace("T", " ");
+const age = s => s == null ? "-" : s < 3600 ? Math.round(s / 60) + " min" : s < 172800 ? (s / 3600).toFixed(1) + " h" : (s / 86400).toFixed(1) + " d";
+const num = v => v == null ? "-" : v;
+let training = [], selected = null;
+
+document.querySelectorAll("nav button").forEach(b => b.onclick = () => {
+  document.querySelectorAll("nav button,section").forEach(x => x.classList.remove("on"));
+  b.classList.add("on"); $("#" + b.dataset.tab).classList.add("on");
+  if (b.dataset.tab === "online") loadOnline();
+});
+
+function tiles(el, items) {
+  el.innerHTML = items.map(([v, l]) => `<div class="tile"><b>${v}</b><span>${l}</span></div>`).join("");
+}
+
+async function loadState() {
+  const s = await get("/api/state");
+  $("#sub").textContent = `Feast 0.66.0, DuckDB offline store over Parquet, Redis online store. Data anchored at ${s.anchor.slice(0, 16)} UTC, materialized at ${s.materialized_at.slice(0, 19)} UTC in ${s.materialize_seconds} s.`;
+  return s;
+}
+
+async function loadTraining() {
+  const t = await get("/api/training");
+  training = t.rows;
+  const m = t.summary;
+  tiles($("#pitTiles"), [[m.labels, "training labels"], [m.pit_future_values, "future values in Feast PIT join"], [m.naive_future_values, "labels leaking future data with a naive join"], [m.naive_differs, "rows where naive conv_rate differs"], [m.hourly_null_by_ttl, "hourly features null (older than 24 h TTL)"], [m.daily_null_by_ttl, "daily features null (older than 7 d TTL)"]]);
+  const ids = [...new Set(training.map(r => r.driver_id))].sort();
+  $("#drv").innerHTML = ids.map(d => `<option>${d}</option>`).join("");
+  $("#pdrv").innerHTML = ids.map(d => `<option>${d}</option>`).join("");
+  $("#drv").value = 1017;
+  $("#pdrv").value = 1017;
+  $("#drv").onchange = () => { selected = null; drawDriver(); };
+  drawDriver();
+}
+
+function rowsHtml(rows) {
+  return rows.map(r => `<tr data-id="${r.request_id}" class="${selected === r.request_id ? "sel" : ""}"><td>${r.request_id}</td><td>${r.driver_id}</td><td>${r.event_timestamp.slice(0, 19).replace("T", " ")}</td><td>${r.trip_accepted}</td><td>${num(r.conv_rate)}</td><td>${fmt(r.hourly_observed_at)}</td><td>${num(r.rating)}</td><td>${r.naive_conv_rate}</td><td>${fmt(r.naive_observed_at)}</td><td>${r.naive_leaks ? '<span class="badge no">future leak</span>' : '<span class="badge ok">ok</span>'}</td></tr>`).join("");
+}
+
+async function drawDriver() {
+  const d = +$("#drv").value;
+  const tl = await get("/api/timeline?driver_id=" + d);
+  const rows = training.filter(r => r.driver_id === d);
+  if (selected == null && rows.length) selected = (rows.find(r => r.conv_rate == null) || rows[Math.floor(rows.length / 2)]).request_id;
+  $("#trows").innerHTML = rowsHtml(rows);
+  document.querySelectorAll("#trows tr").forEach(tr => tr.onclick = () => { selected = +tr.dataset.id; drawDriver(); });
+  const sr = $("#trows tr.sel");
+  if (sr) sr.parentElement.parentElement.parentElement.scrollTop = sr.offsetTop - 40;
+  const W = 1200, H = 260, L = 50, R = 20, T = 15, B = 35;
+  const end = Math.max(...training.map(r => r.naive_observed_at)) + 3600, start = end - 7 * 86400;
+  const x = e => L + (e - start) / (end - start) * (W - L - R);
+  const y = v => T + (1 - v) * (H - T - B);
+  let s = "";
+  for (let v = 0; v <= 1; v += 0.25) s += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="#eef0f3"/><text x="${L - 8}" y="${y(v) + 4}" text-anchor="end">${v.toFixed(2)}</text>`;
+  for (let e = Math.ceil(start / 86400) * 86400; e < end; e += 86400) s += `<line x1="${x(e)}" x2="${x(e)}" y1="${T}" y2="${H - B}" stroke="#f1f3f6"/><text x="${x(e)}" y="${H - 15}" text-anchor="middle">${new Date(e * 1000).toISOString().slice(5, 10)}</text>`;
+  const sel = rows.find(r => r.request_id === selected);
+  if (sel) s += `<rect x="${x(sel.label_epoch - 86400)}" y="${T}" width="${x(sel.label_epoch) - x(sel.label_epoch - 86400)}" height="${H - T - B}" fill="#fdf3de" opacity=".7"/>`;
+  tl.labels.forEach(l => s += `<line x1="${x(l.epoch)}" x2="${x(l.epoch)}" y1="${T}" y2="${H - B}" stroke="${l.request_id === selected ? "#475467" : "#d0d5dd"}" stroke-width="${l.request_id === selected ? 2 : 1}"/>`);
+  s += `<polyline fill="none" stroke="#b9cbf2" points="${tl.updates.map(u => x(u.epoch) + "," + y(u.conv_rate)).join(" ")}"/>`;
+  tl.updates.forEach(u => s += `<circle cx="${x(u.epoch)}" cy="${y(u.conv_rate)}" r="2.6" fill="#3b6fd8"/>`);
+  if (sel) {
+    if (sel.conv_rate != null) s += `<circle cx="${x(sel.hourly_observed_at)}" cy="${y(sel.conv_rate)}" r="7" fill="none" stroke="#1f9d63" stroke-width="3"/><line x1="${x(sel.hourly_observed_at)}" y1="${y(sel.conv_rate)}" x2="${x(sel.label_epoch)}" y2="${y(sel.conv_rate)}" stroke="#1f9d63" stroke-width="2"/>`;
+    s += `<circle cx="${x(sel.naive_observed_at)}" cy="${y(sel.naive_conv_rate)}" r="7" fill="none" stroke="#d64545" stroke-width="3"/><line x1="${x(sel.naive_observed_at)}" y1="${y(sel.naive_conv_rate)}" x2="${x(sel.label_epoch)}" y2="${y(sel.naive_conv_rate)}" stroke="#d64545" stroke-width="2" stroke-dasharray="5 4"/>`;
+    s += `<text x="${Math.min(x(sel.label_epoch) + 6, W - 260)}" y="${T + 12}" style="fill:#1d2330">request ${sel.request_id}: PIT ${sel.conv_rate ?? "null (TTL)"}, naive ${sel.naive_conv_rate}</text>`;
+  }
+  $("#tl").innerHTML = s;
+}
+
+function status(f) {
+  return f.found ? '<span class="badge ok">fresh</span>' : '<span class="badge no">not in Redis</span>';
+}
+
+async function loadOnline() {
+  const o = await get("/api/online");
+  const present = o.rows.filter(r => r.features.driver_hourly__conv_rate.found).length;
+  const dpresent = o.rows.filter(r => r.features.driver_daily__rating.found).length;
+  tiles($("#onTiles"), [[o.rows.length, "drivers requested"], [present, "with fresh hourly features"], [dpresent, "with fresh daily features"], [o.latency_ms + " ms", "this 20 entity lookup"]]);
+  $("#orows").innerHTML = o.rows.map(r => {
+    const f = r.features, h = f.driver_hourly__conv_rate, d = f.driver_daily__rating;
+    return `<tr><td>${r.driver_id}</td><td>${num(h.value)}</td><td>${num(f.driver_hourly__acc_rate.value)}</td><td>${num(f.driver_hourly__trips_today.value)}</td><td>${age(h.age_seconds)}</td><td>${status(h)}</td><td>${num(d.value)}</td><td>${num(f.driver_daily__lifetime_trips.value)}</td><td>${age(d.age_seconds)}</td><td>${status(d)}</td></tr>`;
+  }).join("");
+}
+
+$("#pushBtn").onclick = async () => {
+  const p = await post("/api/push", {driver_id: +$("#pdrv").value, conv_rate: +$("#pconv").value, acc_rate: 0.9, trips_today: 1});
+  $("#pushOut").textContent = p.error ? p.error : `pushed driver ${p.driver_id} conv_rate ${p.conv_rate} at ${p.event_timestamp}`;
+  loadOnline();
+};
+
+$("#latBtn").onclick = async () => {
+  $("#latNote").textContent = "running";
+  const l = await get("/api/latency?n=200");
+  $("#latNote").textContent = `${l.requests} requests, ${l.entities_per_request} entity each`;
+  const max = Math.max(l.sdk_ms.p99, l.feature_server_ms.p99);
+  const bar = (label, v, c) => `<div><em>${label}</em><i style="width:${Math.max(4, v / max * 320)}px;background:${c}"></i>${v} ms</div>`;
+  $("#latBars").innerHTML = ["p50", "p95", "p99"].map(p => bar("SDK " + p, l.sdk_ms[p], "#3b6fd8") + bar("feature server " + p, l.feature_server_ms[p], "#8fb0ec")).join("");
+};
+
+async function loadDefs(s) {
+  const d = await get("/api/definitions");
+  $("#fvs").innerHTML = d.feature_views.map(v => `<p><b>${v.name}</b> <span class="badge mid">TTL ${age(v.ttl_seconds)}</span><br><span class="note">${v.description}</span><br>batch source <code>${v.source}</code>${v.push_source ? `, push source <code>${v.push_source}</code>` : ""}</p><table><tbody>${v.features.map(f => `<tr><td>${f.name}</td><td>${f.dtype}</td></tr>`).join("")}</tbody></table>`).join("");
+  $("#ents").innerHTML = `<p>Project <code>${d.project}</code>, offline store ${d.offline_store}, online store ${d.online_store}</p>` +
+    d.entities.map(e => `<p>Entity <b>${e.name}</b> join key <code>${e.join_key}</code>: ${e.description}</p>`).join("") +
+    d.feature_services.map(f => `<p>Feature service <b>${f.name}</b>: ${f.views.join(", ")}</p>`).join("") +
+    `<table><thead><tr><th>view</th><th>materialized from</th><th>to</th></tr></thead><tbody>${Object.entries(s.windows).map(([k, w]) => `<tr><td>${k}</td><td>${w.start.slice(0, 19)}</td><td>${w.end.slice(0, 19)}</td></tr>`).join("")}</tbody></table>`;
+}
+
+loadState().then(s => { loadTraining(); loadDefs(s); });
+</script>
+</body>
+</html>
