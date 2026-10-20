@@ -1,0 +1,30 @@
+name: i18-flink-cdc-postgres-iceberg
+
+x-podman:
+  in_pod: false
+
+services:
+  postgres:
+    image: docker.io/library/postgres:18.6
+    container_name: i18-postgres
+    ports:
+      - "21832:5432"
+    environment:
+      POSTGRES_USER: cdc
+      POSTGRES_PASSWORD: cdc
+      POSTGRES_DB: shop
+    command: ["postgres", "-c", "wal_level=logical", "-c", "max_replication_slots=8", "-c", "max_wal_senders=8", "-c", "shared_buffers=64MB"]
+    volumes:
+      - i18-pgdata:/var/lib/postgresql
+      - ./data:/data:ro
+      - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - i18-net
+
+networks:
+  i18-net:
+    name: i18-net
+
+volumes:
+  i18-pgdata:
+    name: i18-pgdata

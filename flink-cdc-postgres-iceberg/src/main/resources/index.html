@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Postgres CDC to Iceberg</title>
+<style>
+  :root { --bg:#f7f8fa; --card:#fff; --ink:#1f2933; --muted:#6b7280; --line:#e5e7eb; --pg:#336791; --ice:#0e9f9a; --ok:#15803d; --bad:#b91c1c; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:14px/1.45 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  header { padding:20px 28px; background:var(--card); border-bottom:1px solid var(--line); display:flex; gap:16px; align-items:center; flex-wrap:wrap; }
+  h1 { font-size:20px; margin:0; flex:1; }
+  h2 { font-size:15px; margin:0 0 12px; }
+  main { padding:20px 28px; display:grid; gap:18px; max-width:1200px; margin:0 auto; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px 18px; }
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  @media (max-width:800px) { .grid2 { grid-template-columns:1fr; } }
+  table { width:100%; border-collapse:collapse; font-variant-numeric:tabular-nums; }
+  th, td { padding:6px 8px; border-bottom:1px solid var(--line); text-align:right; }
+  th:first-child, td:first-child { text-align:left; }
+  th { color:var(--muted); font-weight:600; font-size:12px; text-transform:uppercase; }
+  td.diff { background:#fee2e2; }
+  .badge { padding:4px 10px; border-radius:999px; font-weight:600; font-size:13px; }
+  .badge.ok { background:#dcfce7; color:var(--ok); }
+  .badge.bad { background:#fee2e2; color:var(--bad); }
+  button { border:1px solid var(--line); background:#fff; border-radius:8px; padding:7px 12px; cursor:pointer; font:inherit; }
+  button.primary { background:var(--ice); color:#fff; border-color:var(--ice); }
+  .pg { color:var(--pg); } .ice { color:var(--ice); }
+  .stats { display:flex; gap:24px; flex-wrap:wrap; }
+  .stat b { display:block; font-size:22px; }
+  .stat span { color:var(--muted); font-size:12px; }
+  .muted { color:var(--muted); }
+  svg text { font-size:11px; fill:var(--muted); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Postgres <span class="muted">-&gt; Flink CDC -&gt;</span> Iceberg</h1>
+  <span id="sync" class="badge">loading</span>
+  <button class="primary" onclick="act('changes')">Apply changes.sql</button>
+  <button onclick="act('reset')">Reset to CSV</button>
+  <button onclick="load()">Refresh</button>
+</header>
+<main>
+  <div class="card stats" id="stats"></div>
+  <div class="grid2">
+    <div class="card"><h2 class="pg">Postgres (source)</h2><table id="pg"></table></div>
+    <div class="card"><h2 class="ice">Iceberg (Flink batch SQL)</h2><table id="ice"></table></div>
+  </div>
+  <div class="card"><h2>Revenue per category</h2><svg id="chart" width="100%" height="260"></svg></div>
+  <div class="card"><h2>Iceberg snapshots</h2><table id="snaps"></table></div>
+  <div class="card muted" id="msg">auto refresh every 5 seconds</div>
+</main>
+<script>
+const money = v => Number(v).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+
+function statsTable(id, rows, other) {
+  const idx = Object.fromEntries(other.map(r => [r.category, r]));
+  const cell = (r, k, f) => {
+    const o = idx[r.category];
+    const diff = !o || o[k] !== r[k];
+    return `<td class="${diff ? 'diff' : ''}">${f ? f(r[k]) : r[k]}</td>`;
+  };
+  document.getElementById(id).innerHTML =
+    '<tr><th>Category</th><th>Orders</th><th>Quantity</th><th>Revenue</th></tr>' +
+    rows.map(r => `<tr><td>${r.category}</td>${cell(r,'orders')}${cell(r,'quantity')}${cell(r,'revenue',money)}</tr>`).join('');
+}
+
+function chart(pg, ice) {
+  const svg = document.getElementById('chart');
+  const cats = [...new Set([...pg, ...ice].map(r => r.category))].sort();
+  const val = (arr, c) => (arr.find(r => r.category === c) || {revenue:0}).revenue;
+  const max = Math.max(1, ...cats.map(c => Math.max(val(pg,c), val(ice,c))));
+  const w = svg.clientWidth || 900, h = 260, left = 20, bottom = 30, top = 20;
+  const slot = (w - left * 2) / Math.max(1, cats.length), bw = Math.min(40, slot / 3);
+  let out = '';
+  cats.forEach((c, i) => {
+    const x = left + i * slot + slot / 2;
+    [[val(pg,c), '#336791', -bw - 2], [val(ice,c), '#0e9f9a', 2]].forEach(([v, col, dx]) => {
+      const bh = (h - top - bottom) * v / max;
+      out += `<rect x="${x + dx}" y="${h - bottom - bh}" width="${bw}" height="${bh}" fill="${col}" rx="3"><title>${c}: ${money(v)}</title></rect>`;
+      out += `<text x="${x + dx + bw / 2}" y="${h - bottom - bh - 4}" text-anchor="middle">${Math.round(v)}</text>`;
+    });
+    out += `<text x="${x}" y="${h - 10}" text-anchor="middle">${c}</text>`;
+  });
+  out += `<rect x="${w - 170}" y="4" width="10" height="10" fill="#336791"/><text x="${w - 155}" y="13">Postgres</text>`;
+  out += `<rect x="${w - 95}" y="4" width="10" height="10" fill="#0e9f9a"/><text x="${w - 80}" y="13">Iceberg</text>`;
+  svg.innerHTML = out;
+}
+
+function snapshots(list) {
+  document.getElementById('snaps').innerHTML =
+    '<tr><th>Snapshot id</th><th>Committed at</th><th>Operation</th><th>Added rows</th><th>Added eq deletes</th><th>Total rows (files)</th><th>Total eq deletes</th></tr>' +
+    list.slice().reverse().slice(0, 12).map(s => `<tr><td>${s.snapshot_id}</td><td>${s.committed_at}</td><td>${s.operation}</td><td>${s['added-records']}</td><td>${s['added-equality-deletes']}</td><td>${s['total-records']}</td><td>${s['total-equality-deletes']}</td></tr>`).join('');
+}
+
+async function load() {
+  try {
+    const d = await (await fetch('/api/compare')).json();
+    if (d.error) throw new Error(d.error);
+    const sync = document.getElementById('sync');
+    sync.textContent = d.in_sync ? 'in sync' : 'catching up';
+    sync.className = 'badge ' + (d.in_sync ? 'ok' : 'bad');
+    document.getElementById('stats').innerHTML = [
+      ['Postgres rows', d.postgres.rows, 'pg'], ['Iceberg rows', d.iceberg.rows, 'ice'],
+      ['Only in Postgres', d.rows_only_in_postgres, ''], ['Only in Iceberg', d.rows_only_in_iceberg, ''],
+      ['Iceberg snapshots', d.snapshots.length, 'ice']
+    ].map(([l, v, c]) => `<div class="stat"><b class="${c}">${v}</b><span>${l}</span></div>`).join('');
+    statsTable('pg', d.postgres.categories, d.iceberg.categories);
+    statsTable('ice', d.iceberg.categories, d.postgres.categories);
+    chart(d.postgres.categories, d.iceberg.categories);
+    snapshots(d.snapshots);
+    document.getElementById('msg').textContent = 'last refresh ' + new Date().toLocaleTimeString() + ', auto refresh every 5 seconds';
+  } catch (e) {
+    document.getElementById('msg').textContent = 'error: ' + e.message;
+  }
+}
+
+async function act(name) {
+  const r = await (await fetch('/api/' + name, {method:'POST'})).json();
+  document.getElementById('msg').textContent = r.error ? 'error: ' + r.error : 'applied ' + r.applied + ', waiting for the next checkpoint';
+  setTimeout(load, 500);
+}
+
+load();
+setInterval(load, 5000);
+</script>
+</body>
+</html>
