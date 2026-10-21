@@ -1,0 +1,10 @@
+.run/
+target/
+project/target/
+project/project/
+.bsp/
+.metals/
+.bloop/
+lake/
+results/
+ui/dist/

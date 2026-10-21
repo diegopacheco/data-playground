@@ -1,0 +1,22 @@
+name: i3-hudi-spark-cow-mor
+
+services:
+  ui:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: localhost/i3-hudi-ui:latest
+    container_name: i3-hudi-ui
+    environment:
+      UI_PORT: "20380"
+      RESULTS_FILE: /results/results.json
+    ports:
+      - "20380:20380"
+    volumes:
+      - ./results:/results:ro
+    networks:
+      - i3-net
+
+networks:
+  i3-net:
+    name: i3-net

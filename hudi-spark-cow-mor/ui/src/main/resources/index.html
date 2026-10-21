@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hudi COW vs MOR</title>
+<style>
+:root{--bg:#f7f8fa;--card:#fff;--ink:#1f2937;--muted:#6b7280;--line:#e5e7eb;--cow:#2563eb;--mor:#ea580c;--ro:#f59e0b;--ok:#15803d;--bad:#b91c1c}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{padding:24px 32px;background:var(--card);border-bottom:1px solid var(--line)}
+h1{margin:0 0 4px;font-size:22px}
+h2{font-size:15px;margin:0 0 12px}
+.sub{color:var(--muted)}
+main{padding:24px 32px;display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(420px,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px}
+.wide{grid-column:1/-1}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.kpi{border:1px solid var(--line);border-radius:8px;padding:12px}
+.kpi b{display:block;font-size:20px}
+.kpi span{color:var(--muted);font-size:12px}
+.legend{display:flex;gap:14px;margin-bottom:6px;font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:middle}
+svg text{font-size:11px;fill:var(--muted)}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:right}
+th:first-child,td:first-child{text-align:left}
+th{color:var(--muted);font-weight:600}
+.ok{color:var(--ok);font-weight:600}
+.bad{color:var(--bad);font-weight:600}
+.err{padding:32px;color:var(--bad)}
+@media (max-width:520px){main{padding:16px;grid-template-columns:1fr}header{padding:16px}}
+</style>
+</head>
+<body>
+<header>
+<h1>Apache Hudi: Copy-On-Write vs Merge-On-Read</h1>
+<div class="sub" id="meta">loading results</div>
+</header>
+<main id="app"></main>
+<script>
+const COLORS = {cow: "var(--cow)", mor: "var(--mor)", ro: "var(--ro)"};
+const el = (tag, attrs, html) => { const e = document.createElement(tag); Object.assign(e, attrs || {}); if (html !== undefined) e.innerHTML = html; return e; };
+const mb = b => (b / 1048576).toFixed(1);
+const fmt = n => n.toLocaleString("en-US");
+
+function card(title, wide) {
+  const c = el("section", {className: "card" + (wide ? " wide" : "")});
+  c.appendChild(el("h2", {}, title));
+  document.getElementById("app").appendChild(c);
+  return c;
+}
+
+function legend(series) {
+  return el("div", {className: "legend"}, series.map(s => `<span><i style="background:${s.color}"></i>${s.name}</span>`).join(""));
+}
+
+function bars(title, unit, steps, series) {
+  const c = card(title);
+  c.appendChild(legend(series));
+  const w = 520, h = 240, left = 48, bottom = 28, top = 14;
+  const max = Math.max(1, ...series.flatMap(s => s.values.filter(v => v != null)));
+  const groupW = (w - left) / steps.length, barW = Math.min(26, (groupW - 12) / series.length);
+  let svg = `<svg viewBox="0 0 ${w} ${h}" width="100%" role="img" aria-label="${title}">`;
+  for (let i = 0; i <= 4; i++) {
+    const y = top + (h - top - bottom) * (1 - i / 4);
+    svg += `<line x1="${left}" x2="${w}" y1="${y}" y2="${y}" stroke="#eef0f3"/><text x="${left - 6}" y="${y + 4}" text-anchor="end">${Math.round(max * i / 4)}</text>`;
+  }
+  steps.forEach((step, i) => {
+    const gx = left + i * groupW + (groupW - barW * series.length) / 2;
+    series.forEach((s, j) => {
+      const v = s.values[i];
+      if (v == null) return;
+      const bh = (h - top - bottom) * v / max, x = gx + j * barW, y = h - bottom - bh;
+      svg += `<rect x="${x}" y="${y}" width="${barW - 2}" height="${bh}" rx="2" fill="${s.color}"><title>${s.name} ${step}: ${v} ${unit}</title></rect>`;
+    });
+    svg += `<text x="${left + i * groupW + groupW / 2}" y="${h - 10}" text-anchor="middle">${step}</text>`;
+  });
+  c.insertAdjacentHTML("beforeend", svg + `</svg><div class="sub">${unit}</div>`);
+}
+
+function valuesFor(rows, steps, pick) {
+  return steps.map(s => { const r = rows.find(x => x.step === s); return r ? pick(r) : null; });
+}
+
+function stepsTable(d) {
+  const c = card("Measurements per step", true);
+  let html = "<table><tr><th>table</th><th>step</th><th>write ms</th><th>snapshot ms</th><th>read-optimized ms</th><th>snapshot rows</th><th>RO rows</th><th>base files</th><th>log files</th><th>data MB</th><th>total MB</th></tr>";
+  ["cow", "mor"].forEach(t => d.tables[t].forEach(r => {
+    html += `<tr><td>${t.toUpperCase()}</td><td>${r.step}</td><td>${fmt(r.writeMs)}</td><td>${fmt(r.snapshotMs)}</td><td>${r.readOptimizedMs == null ? "-" : fmt(r.readOptimizedMs)}</td><td>${fmt(r.snapshotRows)}</td><td>${r.readOptimizedRows == null ? "-" : fmt(r.readOptimizedRows)}</td><td>${r.storage.baseFiles}</td><td>${r.storage.logFiles}</td><td>${mb(r.storage.dataBytes)}</td><td>${mb(r.storage.totalBytes)}</td></tr>`;
+  }));
+  c.insertAdjacentHTML("beforeend", html + "</table>");
+}
+
+function aggregatesTable(d) {
+  const c = card("Per-category aggregates", true);
+  const names = Object.keys(d.aggregates);
+  const base = d.aggregates.cow_snapshot;
+  let html = "<table><tr><th>category</th>" + names.map(n => `<th>${n.replaceAll("_", " ")}</th>`).join("") + "</tr>";
+  base.forEach((b, i) => {
+    html += `<tr><td>${b.category}</td>` + names.map(n => {
+      const r = d.aggregates[n][i], same = r.orders === b.orders && r.quantity === b.quantity && r.revenue === b.revenue;
+      return `<td class="${same ? "" : "bad"}">${fmt(r.orders)} / ${fmt(r.quantity)} / ${r.revenue}</td>`;
+    }).join("") + "</tr>";
+  });
+  html += "</table><div class=\"sub\">orders / quantity / revenue. Red cells differ from the COW snapshot.</div><h2 style=\"margin-top:16px\">Checks</h2><table>";
+  Object.entries(d.checks).forEach(([k, v]) => { html += `<tr><td>${k.replaceAll("_", " ")}</td><td class="${v ? "ok" : "bad"}">${v ? "PASS" : "FAIL"}</td></tr>`; });
+  c.insertAdjacentHTML("beforeend", html + "</table>");
+}
+
+function kpis(d) {
+  const c = card("Summary", true);
+  const sum = (rows, f) => rows.filter(r => r.step.startsWith("upsert")).reduce((a, r) => a + f(r), 0);
+  const last = t => d.tables[t][d.tables[t].length - 1];
+  const beforeCompaction = d.tables.mor.find(r => r.step === "upsert " + d.batchUpdates.length);
+  const items = [
+    [fmt(sum(d.tables.cow, r => r.writeMs)) + " ms", "COW total upsert time"],
+    [fmt(sum(d.tables.mor, r => r.writeMs)) + " ms", "MOR total upsert time"],
+    [fmt(beforeCompaction.snapshotMs) + " ms", "MOR snapshot read before compaction"],
+    [fmt(last("cow").snapshotMs) + " ms", "COW snapshot read after last upsert"],
+    [mb(last("cow").storage.dataBytes) + " MB", "COW data size, final"],
+    [mb(last("mor").storage.dataBytes) + " MB", "MOR data size, after compaction"]
+  ];
+  const k = el("div", {className: "kpis"});
+  items.forEach(([v, l]) => k.appendChild(el("div", {className: "kpi"}, `<b>${v}</b><span>${l}</span>`)));
+  c.appendChild(k);
+}
+
+async function load() {
+  const res = await fetch("/api/results");
+  const d = await res.json();
+  if (!res.ok) throw new Error(d.error || res.statusText);
+  const v = d.versions;
+  document.getElementById("meta").textContent = `Hudi ${v.hudi} | Spark ${v.spark} | Scala ${v.scala} | Java ${v.java} | ${fmt(d.rows)} orders | ${d.batchUpdates.length} upsert batches of ${d.batchUpdates.map(fmt).join(", ")} rows`;
+  const steps = d.tables.mor.map(r => r.step);
+  kpis(d);
+  bars("Write / upsert / compaction time", "milliseconds", steps, [
+    {name: "COW", color: COLORS.cow, values: valuesFor(d.tables.cow, steps, r => r.writeMs)},
+    {name: "MOR", color: COLORS.mor, values: valuesFor(d.tables.mor, steps, r => r.writeMs)}
+  ]);
+  bars("Read time (aggregation query)", "milliseconds", steps, [
+    {name: "COW snapshot", color: COLORS.cow, values: valuesFor(d.tables.cow, steps, r => r.snapshotMs)},
+    {name: "MOR snapshot", color: COLORS.mor, values: valuesFor(d.tables.mor, steps, r => r.snapshotMs)},
+    {name: "MOR read-optimized", color: COLORS.ro, values: valuesFor(d.tables.mor, steps, r => r.readOptimizedMs)}
+  ]);
+  bars("Data files (base + log)", "files", steps, [
+    {name: "COW base", color: COLORS.cow, values: valuesFor(d.tables.cow, steps, r => r.storage.baseFiles)},
+    {name: "MOR base", color: COLORS.mor, values: valuesFor(d.tables.mor, steps, r => r.storage.baseFiles)},
+    {name: "MOR log", color: COLORS.ro, values: valuesFor(d.tables.mor, steps, r => r.storage.logFiles)}
+  ]);
+  bars("Data size on disk", "MB (parquet base + log files)", steps, [
+    {name: "COW", color: COLORS.cow, values: valuesFor(d.tables.cow, steps, r => +mb(r.storage.dataBytes))},
+    {name: "MOR", color: COLORS.mor, values: valuesFor(d.tables.mor, steps, r => +mb(r.storage.dataBytes))}
+  ]);
+  stepsTable(d);
+  aggregatesTable(d);
+}
+
+load().catch(e => { document.getElementById("app").appendChild(el("div", {className: "err wide"}, "Could not load results: " + e.message)); document.getElementById("meta").textContent = ""; });
+</script>
+</body>
+</html>

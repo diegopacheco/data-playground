@@ -1,0 +1,12 @@
+FROM docker.io/sbtscala/scala-sbt:eclipse-temurin-25.0.4_7_1.13.0_3.9.0 AS build
+WORKDIR /app
+COPY build.sbt ./
+COPY project/build.properties project/
+COPY ui ui
+RUN rm -rf ui/dist && sbt -batch ui/dist
+FROM docker.io/library/eclipse-temurin:25-jre
+WORKDIR /app
+COPY --from=build /app/ui/dist /app/lib
+ENV UI_PORT=20380 RESULTS_FILE=/results/results.json
+EXPOSE 20380
+CMD ["java", "-Xmx128m", "-cp", "/app/lib/*", "UiServer"]

@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+set -euo pipefail
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/common.sh"
+
+log "setup started"
+
+require podman
+require podman-compose
+
+if [ ! -d "$HOME/.sdkman/candidates/java/$JAVA_SDK" ] && [ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]; then
+  set +u
+  source "$HOME/.sdkman/bin/sdkman-init.sh"
+  sdk install java "$JAVA_SDK" </dev/null
+  set -u
+  export JAVA_HOME="$HOME/.sdkman/candidates/java/$JAVA_SDK"
+  export PATH="$JAVA_HOME/bin:$PATH"
+fi
+
+require java
+require sbt
+require python3
+sbt -batch compile >"$LOGS/setup-compile.log" 2>&1 || fail "sbt compile failed, see $LOGS/setup-compile.log"
+log "scala build compiled"
+
+mkdir -p "$RESULTS_DIR"
+podman-compose build >"$LOGS/setup-build.log" 2>&1 || fail "ui image build failed, see $LOGS/setup-build.log"
+log "ui image built"
+
+log "setup done"
