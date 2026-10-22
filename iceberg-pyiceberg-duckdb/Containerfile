@@ -1,0 +1,8 @@
+FROM docker.io/library/python:3.14.7-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt && python -c "import duckdb; c=duckdb.connect(); [c.execute(f'INSTALL {e}') for e in ('httpfs','avro','iceberg')]"
+COPY data data
+COPY app app
+ENV PYTHONUNBUFFERED=1 PYTHONPATH=/app/app
+CMD ["python", "app/server.py"]

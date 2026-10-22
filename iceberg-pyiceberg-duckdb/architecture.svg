@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 450" width="1040" height="450">
+<defs>
+<style>@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700');text{font-family:Caveat,'Comic Sans MS',cursive;fill:#1d2330}.t{font-size:24px;font-weight:700}.s{font-size:18px}.l{font-size:17px;fill:#3b4a66}</style>
+<filter id="w"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="3" seed="6"/><feDisplacementMap in="SourceGraphic" scale="3"/></filter>
+<marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#1d2330"/></marker>
+</defs>
+<rect width="1040" height="450" fill="#ffffff"/>
+<g filter="url(#w)" stroke="#1d2330" stroke-width="2">
+<rect x="20" y="60" width="160" height="110" rx="12" fill="#fff3c4"/>
+<rect x="240" y="40" width="250" height="150" rx="12" fill="#d7ecff"/>
+<rect x="570" y="40" width="250" height="150" rx="12" fill="#f3e1ff"/>
+<rect x="240" y="270" width="250" height="150" rx="12" fill="#dff5e1"/>
+<rect x="570" y="270" width="250" height="150" rx="12" fill="#ffe0d6"/>
+<rect x="870" y="290" width="150" height="110" rx="12" fill="#e8ecf3"/>
+<path d="M180 115 L236 115" fill="none" marker-end="url(#a)"/>
+<path d="M490 115 L566 115" fill="none" marker-end="url(#a)"/>
+<path d="M365 190 L365 266" fill="none" marker-end="url(#a)"/>
+<path d="M600 190 L494 268" fill="none" marker-end="url(#a)" stroke-dasharray="6 5"/>
+<path d="M695 270 L695 194" fill="none" marker-end="url(#a)"/>
+<path d="M570 360 L494 360" fill="none" marker-end="url(#a)"/>
+<path d="M820 345 L866 345" fill="none" marker-end="url(#a)"/>
+</g>
+<text x="100" y="105" text-anchor="middle" class="t">data/</text>
+<text x="100" y="135" text-anchor="middle" class="s">orders.csv</text>
+<text x="100" y="157" text-anchor="middle" class="s">200 rows</text>
+<text x="365" y="75" text-anchor="middle" class="t">i6-pipeline</text>
+<text x="365" y="102" text-anchor="middle" class="s">Python 3.14 + PyIceberg</text>
+<text x="365" y="126" text-anchor="middle" class="s">append 150, append 50</text>
+<text x="365" y="150" text-anchor="middle" class="s">delete qty=1</text>
+<text x="365" y="174" text-anchor="middle" class="s">overwrite books</text>
+<text x="695" y="75" text-anchor="middle" class="t">i6-rest</text>
+<text x="695" y="102" text-anchor="middle" class="s">Iceberg REST catalog</text>
+<text x="695" y="126" text-anchor="middle" class="s">shop.orders</text>
+<text x="695" y="150" text-anchor="middle" class="s">commits snapshots</text>
+<text x="695" y="174" text-anchor="middle" class="s">S3FileIO</text>
+<text x="365" y="305" text-anchor="middle" class="t">i6-minio (S3)</text>
+<text x="365" y="332" text-anchor="middle" class="s">s3://warehouse/shop/orders</text>
+<text x="365" y="356" text-anchor="middle" class="s">metadata/*.json *.avro</text>
+<text x="365" y="380" text-anchor="middle" class="s">data/category=*/*.parquet</text>
+<text x="695" y="305" text-anchor="middle" class="t">i6-ui</text>
+<text x="695" y="332" text-anchor="middle" class="s">DuckDB iceberg extension</text>
+<text x="695" y="356" text-anchor="middle" class="s">ATTACH REST, AT VERSION</text>
+<text x="695" y="380" text-anchor="middle" class="s">PyIceberg scan to compare</text>
+<text x="695" y="404" text-anchor="middle" class="s">/api JSON</text>
+<text x="945" y="335" text-anchor="middle" class="t">browser</text>
+<text x="945" y="362" text-anchor="middle" class="s">index.html</text>
+<text x="945" y="384" text-anchor="middle" class="s">snapshot list</text>
+<text x="528" y="105" text-anchor="middle" class="l">commit</text>
+<text x="300" y="235" text-anchor="middle" class="l">parquet</text>
+<text x="580" y="240" text-anchor="middle" class="l">metadata</text>
+<text x="745" y="235" text-anchor="middle" class="l">load table</text>
+<text x="532" y="350" text-anchor="middle" class="l">read</text>
+</svg>

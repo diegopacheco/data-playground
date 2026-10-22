@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Iceberg Snapshots</title>
+<style>
+:root { --bg: #f7f8fb; --card: #ffffff; --ink: #1d2433; --muted: #5d6780; --line: #e3e7ef; --accent: #2f6fdb; --ok: #1f8a4c; --bad: #c0392b; --soft: #eef3fd; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.5 -apple-system, "Segoe UI", Roboto, sans-serif; }
+header { padding: 20px 24px 8px; }
+h1 { margin: 0; font-size: 22px; }
+header p { margin: 4px 0 0; color: var(--muted); }
+main { display: grid; grid-template-columns: minmax(320px, 440px) 1fr; gap: 16px; padding: 16px 24px 32px; }
+@media (max-width: 900px) { main { grid-template-columns: 1fr; padding: 12px 16px; } }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px; min-width: 0; }
+h2 { margin: 0 0 12px; font-size: 15px; }
+.snap { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; cursor: pointer; }
+.snap:hover { border-color: var(--accent); }
+.snap.sel { border-color: var(--accent); background: var(--soft); }
+.snap .top { display: flex; justify-content: space-between; gap: 8px; font-weight: 600; }
+.snap .meta { color: var(--muted); font-size: 12px; word-break: break-all; }
+.tag { display: inline-block; padding: 0 8px; border-radius: 10px; font-size: 12px; background: var(--soft); color: var(--accent); }
+.tag.cur { background: #e6f5ec; color: var(--ok); }
+table { border-collapse: collapse; width: 100%; }
+th, td { text-align: right; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+th:first-child, td:first-child { text-align: left; }
+th { color: var(--muted); font-weight: 600; font-size: 12px; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 1100px) { .grid { grid-template-columns: 1fr; } }
+pre { background: var(--soft); padding: 10px; border-radius: 8px; overflow-x: auto; font-size: 12px; }
+.match { font-weight: 600; }
+.match.ok { color: var(--ok); }
+.match.bad { color: var(--bad); }
+svg text { font-size: 11px; fill: var(--muted); }
+.scroll { overflow-x: auto; }
+</style>
+</head>
+<body>
+<header>
+<h1>Iceberg table shop.orders</h1>
+<p>Written by PyIceberg through the Iceberg REST catalog on MinIO, read back by DuckDB with the iceberg extension. Pick a snapshot to time travel.</p>
+</header>
+<main>
+<section class="card">
+<h2>Snapshots</h2>
+<div id="snaps">loading</div>
+</section>
+<section class="card">
+<h2 id="title">Per category aggregates</h2>
+<div id="match" class="match"></div>
+<pre id="sql"></pre>
+<div id="chart" class="scroll"></div>
+<div class="grid">
+<div><h2>DuckDB</h2><div id="duckdb" class="scroll"></div></div>
+<div><h2>PyIceberg</h2><div id="pyiceberg" class="scroll"></div></div>
+</div>
+</section>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const fmt = n => n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+let snapshots = [];
+
+function table(rows) {
+  const body = rows.map(r => `<tr><td>${r.category}</td><td>${r.total_orders}</td><td>${r.total_quantity}</td><td>${fmt(r.total_revenue)}</td></tr>`).join("");
+  const t = rows.reduce((a, r) => ({ o: a.o + r.total_orders, q: a.q + r.total_quantity, r: a.r + r.total_revenue }), { o: 0, q: 0, r: 0 });
+  return `<table><tr><th>category</th><th>orders</th><th>quantity</th><th>revenue</th></tr>${body}<tr><th>total</th><th>${t.o}</th><th>${t.q}</th><th>${fmt(t.r)}</th></tr></table>`;
+}
+
+function chart(rows) {
+  const w = 560, bar = 22, gap = 8, left = 90, h = rows.length * (bar + gap);
+  const max = Math.max(...rows.map(r => r.total_revenue), 1);
+  const bars = rows.map((r, i) => {
+    const y = i * (bar + gap), len = (w - left - 90) * r.total_revenue / max;
+    return `<text x="0" y="${y + 15}">${r.category}</text><rect x="${left}" y="${y}" width="${len}" height="${bar}" rx="4" fill="#2f6fdb" opacity="0.8"></rect><text x="${left + len + 6}" y="${y + 15}">${fmt(r.total_revenue)}</text>`;
+  }).join("");
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">${bars}</svg>`;
+}
+
+function renderSnapshots(selected) {
+  $("snaps").innerHTML = snapshots.map((s, i) => `
+    <div class="snap ${s.snapshot_id === selected ? "sel" : ""}" data-id="${s.snapshot_id}">
+      <div class="top"><span>#${i + 1} ${s.step || "-"}</span><span><span class="tag">${s.operation}</span> ${s.current ? '<span class="tag cur">current</span>' : ""}</span></div>
+      <div class="meta">id ${s.snapshot_id} | seq ${s.sequence_number} | duckdb seq ${s.duckdb_sequence_number ?? "missing"}</div>
+      <div class="meta">records ${s.total_records} | added ${s.added_records} | deleted ${s.deleted_records} | ${new Date(s.timestamp_ms).toISOString()}</div>
+    </div>`).join("");
+  document.querySelectorAll(".snap").forEach(el => el.onclick = () => load(el.dataset.id));
+}
+
+async function load(id) {
+  renderSnapshots(id);
+  $("match").textContent = "querying";
+  const res = await fetch(`/api/aggregates?snapshot=${id}`).then(r => r.json());
+  if (res.error) { $("match").textContent = res.error; $("match").className = "match bad"; return; }
+  const s = snapshots.find(x => x.snapshot_id === id);
+  $("title").textContent = `Per category aggregates at snapshot ${s ? s.step : id}`;
+  $("sql").textContent = res.sql;
+  $("match").textContent = res.match ? "DuckDB and PyIceberg results match" : "DuckDB and PyIceberg results differ";
+  $("match").className = "match " + (res.match ? "ok" : "bad");
+  $("chart").innerHTML = chart(res.duckdb);
+  $("duckdb").innerHTML = table(res.duckdb);
+  $("pyiceberg").innerHTML = table(res.pyiceberg);
+}
+
+async function init() {
+  const res = await fetch("/api/snapshots").then(r => r.json());
+  if (res.error) { $("snaps").textContent = res.error; return; }
+  snapshots = res;
+  const wanted = new URLSearchParams(location.search).get("snapshot");
+  const current = snapshots.find(s => s.snapshot_id === wanted) || snapshots.find(s => s.current) || snapshots[snapshots.length - 1];
+  load(current.snapshot_id);
+}
+
+init();
+</script>
+</body>
+</html>

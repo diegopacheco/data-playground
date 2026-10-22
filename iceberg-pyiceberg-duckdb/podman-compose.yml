@@ -1,0 +1,73 @@
+services:
+  i6-minio:
+    image: docker.io/pgsty/minio:RELEASE.2026-08-04T00-00-00Z
+    container_name: i6-minio
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: i6admin
+      MINIO_ROOT_PASSWORD: i6password
+    ports:
+      - "${minio:-20600}:9000"
+      - "${console:-20601}:9001"
+    volumes:
+      - i6-minio-data:/data
+    networks:
+      - i6-net
+
+  i6-rest:
+    image: docker.io/apache/iceberg-rest-fixture:1.10.1
+    container_name: i6-rest
+    environment:
+      JAVA_TOOL_OPTIONS: -Xmx256m
+      AWS_ACCESS_KEY_ID: i6admin
+      AWS_SECRET_ACCESS_KEY: i6password
+      AWS_REGION: us-east-1
+      CATALOG_WAREHOUSE: s3://warehouse/
+      CATALOG_IO__IMPL: org.apache.iceberg.aws.s3.S3FileIO
+      CATALOG_S3_ENDPOINT: http://i6-minio:9000
+      CATALOG_S3_PATH__STYLE__ACCESS: "true"
+    ports:
+      - "${rest:-20602}:8181"
+    networks:
+      - i6-net
+    depends_on:
+      - i6-minio
+
+  i6-pipeline:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: i6-iceberg-pyiceberg-duckdb:latest
+    container_name: i6-pipeline
+    command: ["python", "app/pipeline.py"]
+    environment:
+      REST_URI: http://i6-rest:8181
+      S3_ENDPOINT: http://i6-minio:9000
+    networks:
+      - i6-net
+
+  i6-ui:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: i6-iceberg-pyiceberg-duckdb:latest
+    container_name: i6-ui
+    restart: unless-stopped
+    environment:
+      REST_URI: http://i6-rest:8181
+      S3_ENDPOINT: http://i6-minio:9000
+      UI_PORT: "${ui:-20603}"
+    ports:
+      - "${ui:-20603}:${ui:-20603}"
+    networks:
+      - i6-net
+    depends_on:
+      - i6-rest
+
+networks:
+  i6-net:
+    name: i6-net
+
+volumes:
+  i6-minio-data:
+    name: i6-minio-data
