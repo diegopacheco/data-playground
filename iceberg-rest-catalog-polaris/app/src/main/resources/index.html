@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Polaris Shared Catalog</title>
+<style>
+:root{--bg:#f7f8fa;--card:#fff;--ink:#1d2330;--muted:#6b7385;--line:#e3e6ec;--spark:#e8743b;--trino:#2f7ed8;--ok:#1f9d55;--bad:#d64545;--chip:#eef1f6}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+header{padding:24px 32px 8px}
+h1{margin:0;font-size:22px}
+header p{margin:4px 0 0;color:var(--muted)}
+main{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(420px,100%),1fr));gap:16px;padding:16px 32px 32px}
+section{overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+section.wide{grid-column:1/-1}
+h2{margin:0 0 10px;font-size:15px}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.03em}
+td.num,th.num{text-align:right}
+.spark{color:var(--spark);font-weight:600}
+.trino{color:var(--trino);font-weight:600}
+.ok{color:var(--ok);font-weight:600}
+.bad{color:var(--bad);font-weight:600}
+.chip{display:inline-block;background:var(--chip);border-radius:12px;padding:2px 10px;margin:2px 4px 2px 0;font-size:12px}
+.kv{display:grid;grid-template-columns:140px 1fr;gap:6px 12px}
+.kv div:nth-child(odd){color:var(--muted)}
+.legend span{margin-right:14px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:middle}
+#status{font-size:13px}
+button{border:1px solid var(--line);background:#fff;border-radius:6px;padding:4px 12px;cursor:pointer}
+</style>
+</head>
+<body>
+<header>
+<h1>Apache Polaris as a shared Iceberg REST catalog</h1>
+<p>Spark wrote <code>polaris.sales.orders</code>, Trino aggregated it and inserted rows, Spark read them back. Both engines resolve the table through the same Polaris catalog. <button id="reload">Reload</button> <span id="status"></span></p>
+</header>
+<main>
+<section class="wide">
+<h2>Revenue per category: Spark vs Trino (live queries)</h2>
+<div class="legend"><span><i style="background:var(--spark)"></i>Spark</span><span><i style="background:var(--trino)"></i>Trino</span></div>
+<svg id="chart" width="100%" height="220"></svg>
+<table id="compare"></table>
+</section>
+<section class="wide">
+<h2>Rows inserted by Trino, read by Spark</h2>
+<table id="rows"></table>
+</section>
+<section class="wide">
+<h2>Table snapshots</h2>
+<table id="snapshots"></table>
+</section>
+<section>
+<h2>Polaris catalog (Iceberg REST API)</h2>
+<div class="kv" id="catalog"></div>
+</section>
+<section>
+<h2>Polaris access control (management API)</h2>
+<div class="kv" id="rbac"></div>
+</section>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const fmt = n => Number(n).toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2});
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+const chips = xs => xs.length ? xs.map(x => `<span class="chip">${esc(x)}</span>`).join("") : "-";
+
+async function get(path) {
+  const r = await fetch(path);
+  const body = await r.json();
+  if (!r.ok) throw new Error(body.error || path);
+  return body;
+}
+
+function table(el, head, rows) {
+  el.innerHTML = `<tr>${head.map(h => `<th class="${h.num ? "num" : ""}">${h.label}</th>`).join("")}</tr>` +
+    rows.map(r => `<tr>${r.map((c, i) => `<td class="${head[i].num ? "num" : ""}">${c}</td>`).join("")}</tr>`).join("");
+}
+
+function compare(spark, trino) {
+  const byCat = Object.fromEntries(trino.map(r => [r.category, r]));
+  table($("compare"), [
+    {label: "Category"}, {label: "Spark orders", num: 1}, {label: "Trino orders", num: 1},
+    {label: "Spark revenue", num: 1}, {label: "Trino revenue", num: 1}, {label: "Match"}
+  ], spark.map(s => {
+    const t = byCat[s.category] || {};
+    const same = t.orders === s.orders && t.quantity === s.quantity && Math.abs(t.revenue - s.revenue) < 0.005;
+    return [esc(s.category), s.orders, t.orders ?? "-", fmt(s.revenue), t.revenue === undefined ? "-" : fmt(t.revenue),
+      same ? '<span class="ok">same</span>' : '<span class="bad">differs</span>'];
+  }));
+  chart(spark, byCat);
+}
+
+function chart(spark, byCat) {
+  const svg = $("chart");
+  const w = svg.clientWidth || 800, h = 220, pad = 30, band = (w - pad * 2) / spark.length;
+  const max = Math.max(...spark.map(s => s.revenue), ...Object.values(byCat).map(t => t.revenue));
+  const bar = (x, v, color) => {
+    const bh = (h - 50) * v / max;
+    return `<rect x="${x}" y="${h - 30 - bh}" width="${band * 0.32}" height="${bh}" rx="3" fill="${color}"/>`;
+  };
+  svg.innerHTML = spark.map((s, i) => {
+    const x = pad + i * band + band * 0.14;
+    const t = byCat[s.category];
+    return bar(x, s.revenue, "var(--spark)") + (t ? bar(x + band * 0.36, t.revenue, "var(--trino)") : "") +
+      `<text x="${x + band * 0.34}" y="${h - 10}" text-anchor="middle" font-size="12" fill="#6b7385">${esc(s.category)}</text>`;
+  }).join("");
+}
+
+function rows(data) {
+  table($("rows"), [{label: "Id"}, {label: "Product"}, {label: "Category"}, {label: "Qty", num: 1}, {label: "Price", num: 1}, {label: "Ts"}],
+    data.map(r => [r.order_id, esc(r.product), esc(r.category), r.quantity, fmt(r.price), esc(r.ts)]));
+}
+
+function snapshots(data) {
+  table($("snapshots"), [{label: "Engine"}, {label: "Operation"}, {label: "Added", num: 1}, {label: "Total", num: 1}, {label: "Committed"}, {label: "Snapshot id"}],
+    data.map(s => [`<span class="${s.engine}">${esc(s.engine)}</span>`, esc(s.operation), s.added_records, s.total_records, esc(s.committed_at), esc(s.snapshot_id)]));
+}
+
+function polaris(p) {
+  const cat = p.catalogs.catalogs[0] || {};
+  const storage = cat.storageConfigInfo || {};
+  $("catalog").innerHTML = [
+    ["Catalogs", chips(p.catalogs.catalogs.map(c => `${c.name} (${c.type})`))],
+    ["Base location", esc((cat.properties || {})["default-base-location"] || "-")],
+    ["Storage", esc(`${storage.storageType || "-"} path-style=${storage.pathStyleAccess} sts-unavailable=${storage.stsUnavailable}`)],
+    ["Namespaces", chips(p.namespaces.namespaces.map(n => n.join(".")))],
+    ["Tables", chips(p.tables.identifiers.map(t => [...t.namespace, t.name].join(".")))]
+  ].map(([k, v]) => `<div>${k}</div><div>${v}</div>`).join("");
+  $("rbac").innerHTML = [
+    ["Principals", chips(p.principals.principals.map(x => x.name))],
+    ["i9_engine roles", chips(p.principalRoles.roles.map(r => r.name))],
+    ["Catalog roles", chips(p.catalogRoles.roles.map(r => r.name))],
+    ["Grants", chips(p.grants.grants.map(g => `${g.type}: ${g.privilege}`))]
+  ].map(([k, v]) => `<div>${k}</div><div>${v}</div>`).join("");
+}
+
+async function load() {
+  $("status").textContent = "loading...";
+  try {
+    const [spark, trino, trinoRows, snaps, p] = await Promise.all([
+      get("/api/spark/aggregates"), get("/api/trino/aggregates"), get("/api/spark/trino-rows"), get("/api/snapshots"), get("/api/polaris")
+    ]);
+    compare(spark, trino);
+    rows(trinoRows);
+    snapshots(snaps);
+    polaris(p);
+    $("status").textContent = "loaded " + new Date().toLocaleTimeString();
+  } catch (e) {
+    $("status").innerHTML = `<span class="bad">${esc(e.message)}</span>`;
+  }
+}
+
+$("reload").onclick = load;
+load();
+</script>
+</body>
+</html>

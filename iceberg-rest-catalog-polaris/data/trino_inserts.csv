@@ -1,0 +1,7 @@
+order_id,customer,product,category,quantity,price,ts
+5001,Trino Writer,Graph Theory Primer,books,3,24.50,2026-02-01T09:00:00Z
+5002,Trino Writer,Trail Running Shoes,sports,1,119.90,2026-02-01T09:15:00Z
+5003,Trino Writer,Noise Cancelling Headphones,electronics,2,149.99,2026-02-01T09:30:00Z
+5004,Trino Writer,Wool Scarf,clothing,4,18.75,2026-02-01T09:45:00Z
+5005,Trino Writer,Ceramic Vase,home,1,39.00,2026-02-01T10:00:00Z
+5006,Trino Writer,Puzzle Cube,toys,5,9.99,2026-02-01T10:15:00Z

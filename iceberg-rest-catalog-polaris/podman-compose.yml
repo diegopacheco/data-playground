@@ -1,0 +1,62 @@
+name: i9-polaris
+
+services:
+  i9-minio:
+    image: docker.io/pgsty/minio:RELEASE.2026-08-04T00-00-00Z
+    container_name: i9-minio
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: i9admin
+      MINIO_ROOT_PASSWORD: i9password
+    ports:
+      - "${minio:-20900}:9000"
+      - "${console:-20901}:9001"
+    networks:
+      - i9-net
+
+  i9-bucket:
+    image: docker.io/pgsty/minio:RELEASE.2026-08-04T00-00-00Z
+    container_name: i9-bucket
+    depends_on:
+      - i9-minio
+    restart: on-failure
+    entrypoint: ["/bin/sh", "-c"]
+    command: ["mc alias set lake http://i9-minio:9000 i9admin i9password && mc mb --ignore-existing lake/i9-warehouse"]
+    networks:
+      - i9-net
+
+  i9-polaris:
+    image: docker.io/apache/polaris:1.7.0
+    container_name: i9-polaris
+    depends_on:
+      - i9-minio
+    environment:
+      AWS_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: i9admin
+      AWS_SECRET_ACCESS_KEY: i9password
+      POLARIS_BOOTSTRAP_CREDENTIALS: POLARIS,root,i9s3cr3t
+      polaris.realm-context.realms: POLARIS
+      quarkus.otel.sdk.disabled: "true"
+      JAVA_OPTS_APPEND: "-Xms128m -Xmx384m"
+    ports:
+      - "${polaris:-20902}:8181"
+      - "${health:-20903}:8182"
+    networks:
+      - i9-net
+
+  i9-trino:
+    image: docker.io/trinodb/trino:483
+    container_name: i9-trino
+    environment:
+      POLARIS_CREDENTIAL: "${POLARIS_CREDENTIAL:-unset}"
+    ports:
+      - "${trino:-20904}:8080"
+    volumes:
+      - ./trino/jvm.config:/etc/trino/jvm.config:ro,Z
+      - ./trino/catalog:/etc/trino/catalog:ro,Z
+    networks:
+      - i9-net
+
+networks:
+  i9-net:
+    name: i9-net
