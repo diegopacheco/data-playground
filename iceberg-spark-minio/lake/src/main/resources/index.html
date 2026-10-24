@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Iceberg Lake Snapshots</title>
+<style>
+  :root {
+    color-scheme: light;
+    --surface: #f6f6f4;
+    --card: #ffffff;
+    --border: #e4e3de;
+    --grid: #ecebe6;
+    --text-primary: #0b0b0b;
+    --text-secondary: #52514e;
+    --text-muted: #85847f;
+    --series-1: #2a78d6;
+    --series-2: #eb6834;
+    --accent: #2a78d6;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--surface); color: var(--text-primary); font: 14px/1.5 -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 1080px; margin: 0 auto; padding: 24px 16px 48px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  h2 { font-size: 15px; margin: 0 0 12px; }
+  .sub { color: var(--text-secondary); margin: 0 0 20px; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 18px; margin-bottom: 18px; overflow-x: auto; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 18px; }
+  .tile { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+  .tile .k { color: var(--text-secondary); font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+  .tile .v { font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+  th { color: var(--text-secondary); font-weight: 600; font-size: 12px; }
+  td.num, th.num { text-align: right; }
+  .tag { display: inline-block; padding: 1px 8px; border-radius: 99px; font-size: 12px; border: 1px solid var(--border); color: var(--text-secondary); }
+  .legend { display: flex; gap: 18px; color: var(--text-secondary); margin-bottom: 8px; flex-wrap: wrap; }
+  .legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; background: var(--c); vertical-align: -1px; }
+  svg text { fill: var(--text-secondary); font-size: 12px; }
+  #tip { position: fixed; pointer-events: none; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; box-shadow: 0 4px 14px rgba(0,0,0,.08); font-size: 12px; display: none; }
+  .err { color: #b3261e; }
+  .schema { display: flex; flex-wrap: wrap; gap: 8px; }
+  .schema .tag b { color: var(--text-primary); font-weight: 600; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Iceberg orders table on MinIO</h1>
+  <p class="sub">Snapshots of <code>lake.sales.orders</code> from the REST catalog, and revenue by category read with <code>VERSION AS OF</code> at the first and latest snapshot.</p>
+  <div class="tiles" id="tiles"></div>
+  <div class="card">
+    <h2>Snapshots</h2>
+    <table id="snapshots"></table>
+  </div>
+  <div class="card">
+    <h2>Revenue by category: first vs latest snapshot</h2>
+    <div class="legend"><span style="--c: var(--series-1)">First snapshot</span><span style="--c: var(--series-2)">Latest snapshot</span></div>
+    <svg id="chart" width="100%" height="300" role="img" aria-label="Revenue by category at first and latest snapshot"></svg>
+    <table id="revenue"></table>
+  </div>
+  <div class="card">
+    <h2>Current schema</h2>
+    <div class="schema" id="schema"></div>
+  </div>
+  <div id="tip"></div>
+</main>
+<script>
+const money = v => Number(v).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const get = url => fetch(url).then(r => r.json().then(j => { if (!r.ok) throw new Error(j.error || r.status); return j; }));
+const tip = document.getElementById("tip");
+
+function showTip(e, html) {
+  tip.innerHTML = html;
+  tip.style.display = "block";
+  tip.style.left = Math.min(e.clientX + 12, innerWidth - 200) + "px";
+  tip.style.top = (e.clientY + 12) + "px";
+}
+
+function renderTiles(snaps, first, latest) {
+  const sum = rows => rows.reduce((a, r) => a + Number(r.revenue), 0);
+  const tiles = [
+    ["Snapshots", snaps.length],
+    ["Rows latest", snaps[snaps.length - 1].total_records],
+    ["Revenue first", money(sum(first.rows))],
+    ["Revenue latest", money(sum(latest.rows))]
+  ];
+  document.getElementById("tiles").innerHTML = tiles.map(([k, v]) => `<div class="tile"><div class="k">${k}</div><div class="v">${v}</div></div>`).join("");
+}
+
+function renderSnapshots(snaps) {
+  const last = snaps.length - 1;
+  document.getElementById("snapshots").innerHTML =
+    `<tr><th>#</th><th>Snapshot id</th><th>Parent id</th><th>Operation</th><th>Committed at (UTC)</th><th class="num">Added</th><th class="num">Total</th><th></th></tr>` +
+    snaps.map((s, i) => `<tr><td>${i + 1}</td><td>${s.snapshot_id}</td><td>${s.parent_id ?? "-"}</td><td>${s.operation}</td><td>${s.committed_at}</td><td class="num">${s.added_records}</td><td class="num">${s.total_records}</td><td>${i === 0 ? '<span class="tag">first</span>' : ""}${i === last ? ' <span class="tag">latest</span>' : ""}</td></tr>`).join("");
+}
+
+function renderRevenue(first, latest) {
+  const byCat = {};
+  first.rows.forEach(r => byCat[r.category] = { first: r, latest: null });
+  latest.rows.forEach(r => (byCat[r.category] = byCat[r.category] || { first: null }).latest = r);
+  const cats = Object.keys(byCat).sort();
+  const val = (r, k) => r ? Number(r[k]) : 0;
+  document.getElementById("revenue").innerHTML =
+    `<tr><th>Category</th><th class="num">Orders first</th><th class="num">Revenue first</th><th class="num">Orders latest</th><th class="num">Revenue latest</th><th class="num">Growth</th></tr>` +
+    cats.map(c => { const d = byCat[c]; return `<tr><td>${c}</td><td class="num">${val(d.first, "orders")}</td><td class="num">${money(val(d.first, "revenue"))}</td><td class="num">${val(d.latest, "orders")}</td><td class="num">${money(val(d.latest, "revenue"))}</td><td class="num">+${money(val(d.latest, "revenue") - val(d.first, "revenue"))}</td></tr>`; }).join("");
+  drawChart(cats, byCat, val);
+}
+
+function drawChart(cats, byCat, val) {
+  const svg = document.getElementById("chart");
+  const W = Math.max(svg.clientWidth, 480), H = 300, L = 64, R = 12, T = 12, B = 32;
+  const max = Math.max(...cats.map(c => val(byCat[c].latest, "revenue")), ...cats.map(c => val(byCat[c].first, "revenue")));
+  const step = Math.pow(10, Math.floor(Math.log10(max)));
+  const top = Math.ceil(max / step) * step;
+  const y = v => T + (H - T - B) * (1 - v / top);
+  const band = (W - L - R) / cats.length, bw = Math.min(28, band / 3);
+  let out = "";
+  for (let i = 0; i <= 4; i++) {
+    const v = top * i / 4;
+    out += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--grid)"/><text x="${L - 8}" y="${y(v) + 4}" text-anchor="end">${Math.round(v).toLocaleString("en-US")}</text>`;
+  }
+  const bar = (x, v, color, label, c) => {
+    const h = H - B - y(v), r = Math.min(4, h);
+    const d = `M${x},${H - B} V${y(v) + r} Q${x},${y(v)} ${x + r},${y(v)} H${x + bw - r} Q${x + bw},${y(v)} ${x + bw},${y(v) + r} V${H - B} Z`;
+    return `<path d="${d}" fill="${color}"/><rect x="${x - 2}" y="${T}" width="${bw + 4}" height="${H - T - B}" fill="transparent" data-tip="<b>${c}</b><br>${label}: ${money(v)}"/>`;
+  };
+  cats.forEach((c, i) => {
+    const cx = L + band * i + band / 2;
+    out += bar(cx - bw - 1, val(byCat[c].first, "revenue"), "var(--series-1)", "First snapshot", c);
+    out += bar(cx + 1, val(byCat[c].latest, "revenue"), "var(--series-2)", "Latest snapshot", c);
+    out += `<text x="${cx}" y="${H - 10}" text-anchor="middle">${c}</text>`;
+  });
+  out += `<line x1="${L}" x2="${W - R}" y1="${H - B}" y2="${H - B}" stroke="var(--text-muted)"/>`;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  svg.innerHTML = out;
+  svg.querySelectorAll("[data-tip]").forEach(el => {
+    el.addEventListener("mousemove", e => showTip(e, el.dataset.tip));
+    el.addEventListener("mouseleave", () => tip.style.display = "none");
+  });
+}
+
+function renderSchema(fields) {
+  document.getElementById("schema").innerHTML = fields.map(f => `<span class="tag"><b>${f.name}</b> ${f.type}</span>`).join("");
+}
+
+async function load() {
+  try {
+    const [snaps, first, latest, schema] = await Promise.all([get("/api/snapshots"), get("/api/revenue?snapshot=first"), get("/api/revenue?snapshot=latest"), get("/api/schema")]);
+    renderTiles(snaps, first, latest);
+    renderSnapshots(snaps);
+    renderRevenue(first, latest);
+    renderSchema(schema);
+  } catch (e) {
+    document.querySelector("main").insertAdjacentHTML("beforeend", `<p class="err">Could not load lake data: ${e.message}. Run ./scripts/test-all.sh to build the table.</p>`);
+  }
+}
+load();
+</script>
+</body>
+</html>
