@@ -1,0 +1,61 @@
+id,category,text
+1,astronomy,The Moon orbits the Earth roughly every twenty seven days and always shows the same face
+2,astronomy,Jupiter is the largest planet of the solar system and has a giant red storm
+3,astronomy,A light year is the distance light travels through vacuum in one year
+4,astronomy,Saturn is surrounded by bright rings made of ice and rock fragments
+5,astronomy,A solar eclipse happens when the Moon passes between the Sun and the Earth
+6,astronomy,Mars has a thin atmosphere of carbon dioxide and rusty red soil
+7,astronomy,Comets grow a glowing tail of gas and dust when they approach the Sun
+8,astronomy,The Milky Way is a barred spiral galaxy with hundreds of billions of stars
+9,astronomy,A black hole has gravity so strong that not even light can escape it
+10,astronomy,Polaris the north star stays almost fixed above the northern horizon
+11,cooking,Sourdough bread rises thanks to a starter of wild yeast fed with flour and water
+12,cooking,A classic risotto is stirred slowly while warm broth is added one ladle at a time
+13,cooking,Caramelized onions need low heat and patience to turn sweet and brown
+14,cooking,Fresh pasta dough is made from flour and eggs and rests before rolling
+15,cooking,A sharp chef knife makes chopping vegetables faster and safer
+16,cooking,Searing a steak in a hot cast iron pan creates a brown crust
+17,cooking,Homemade tomato sauce simmers with garlic basil and olive oil
+18,cooking,Whisking egg whites into stiff peaks gives a meringue its volume
+19,cooking,Slow cooked beef stew becomes tender after hours in the oven
+20,cooking,Toasting spices in a dry pan releases their aroma before grinding
+21,gardening,Tomato plants need full sun and regular watering at the roots
+22,gardening,Compost turns kitchen scraps and dry leaves into rich soil
+23,gardening,Pruning rose bushes in late winter encourages new blooms
+24,gardening,Mulch keeps moisture in the soil and stops weeds from sprouting
+25,gardening,Raised beds drain well and warm up early in spring
+26,gardening,Bees and butterflies pollinate flowers and fruit trees in the garden
+27,gardening,Seedlings should be hardened off outdoors before transplanting
+28,gardening,Lavender prefers dry sandy soil and plenty of sunshine
+29,gardening,Earthworms loosen the soil and help roots reach air and water
+30,gardening,Aphids on young shoots can be washed off with soapy water
+31,cycling,A road bike has thin tires and a light frame built for speed on asphalt
+32,cycling,Cleaning and oiling the chain keeps bicycle gears shifting smoothly
+33,cycling,Mountain bikes use wide knobby tires and suspension for rough trails
+34,cycling,A helmet protects the rider head in a bicycle crash
+35,cycling,Climbing a steep hill is easier in a low gear with a steady cadence
+36,cycling,Tire pressure affects grip and rolling resistance on a bike
+37,cycling,Riding in a group lets cyclists save energy by drafting behind each other
+38,cycling,Disc brakes stop a bicycle reliably even in the rain
+39,cycling,A proper saddle height prevents knee pain on long rides
+40,cycling,Bike lights and reflective clothing make night riding safer
+41,music,A piano has eighty eight keys that strike strings with felt hammers
+42,music,The violin is played with a bow drawn across four strings
+43,music,A drum kit combines a snare a bass drum and cymbals to keep the rhythm
+44,music,Jazz musicians improvise melodies over a sequence of chords
+45,music,An orchestra conductor sets the tempo and cues each section
+46,music,An acoustic guitar amplifies string vibration through a hollow wooden body
+47,music,A metronome clicks at a steady beat to help musicians practice timing
+48,music,A choir blends soprano alto tenor and bass voices in harmony
+49,music,Sheet music uses notes on a staff to show pitch and duration
+50,music,A synthesizer shapes electronic sound waves with filters and oscillators
+51,databases,A primary key uniquely identifies each row in a relational table
+52,databases,An index speeds up lookups at the cost of slower writes
+53,databases,A transaction groups several statements so they commit or roll back together
+54,databases,Replication copies data from a primary server to standby replicas
+55,databases,A columnar file format stores values of each column together for fast analytics
+56,databases,Partitioning splits a large table into smaller pieces by a key such as date
+57,databases,A write ahead log records changes before they are applied to data files
+58,databases,Query planners estimate costs to choose between a scan and an index lookup
+59,databases,A snapshot gives readers a consistent view of a table at one point in time
+60,databases,Vacuum reclaims space left behind by deleted and updated rows

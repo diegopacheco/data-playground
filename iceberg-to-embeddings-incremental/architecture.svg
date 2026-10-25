@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 520" width="1000" height="520">
+<defs>
+<style>@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700');text{font-family:Caveat,'Comic Sans MS',cursive;fill:#1d2330}.t{font-size:24px;font-weight:700}.s{font-size:18px}.l{font-size:16px;fill:#5a6275}</style>
+<filter id="w"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="3" seed="8"/><feDisplacementMap in="SourceGraphic" scale="3"/></filter>
+<marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#1d2330"/></marker>
+</defs>
+<rect width="1000" height="520" fill="#ffffff"/>
+<g filter="url(#w)" stroke="#1d2330" stroke-width="2">
+<rect x="30" y="40" width="160" height="90" rx="12" fill="#fff3c4"/>
+<rect x="30" y="205" width="160" height="100" rx="12" fill="#f3e1ff"/>
+<rect x="30" y="395" width="160" height="80" rx="12" fill="#ffe0d6"/>
+<rect x="260" y="30" width="270" height="110" rx="12" fill="#d7ecff"/>
+<rect x="260" y="190" width="270" height="130" rx="12" fill="#d7ecff"/>
+<rect x="260" y="380" width="270" height="110" rx="12" fill="#f3e1ff"/>
+<rect x="660" y="30" width="310" height="80" rx="12" fill="#dff5e1"/>
+<rect x="660" y="150" width="310" height="130" rx="12" fill="#e6f7f7"/>
+<rect x="660" y="330" width="310" height="160" rx="12" fill="#dff5e1"/>
+<path d="M190 85 L256 85" fill="none" marker-end="url(#a)"/>
+<path d="M530 60 L656 60" fill="none" marker-end="url(#a)"/>
+<path d="M530 115 L656 175" fill="none" marker-end="url(#a)"/>
+<path d="M395 140 L395 186" fill="none" marker-end="url(#a)"/>
+<path d="M260 255 L194 255" fill="none" marker-end="url(#a)"/>
+<path d="M656 235 L534 235" fill="none" marker-end="url(#a)"/>
+<path d="M530 300 L656 365" fill="none" marker-end="url(#a)"/>
+<path d="M190 435 L256 435" fill="none" marker-end="url(#a)"/>
+<path d="M530 435 L656 435" fill="none" marker-end="url(#a)"/>
+</g>
+<text x="110" y="78" text-anchor="middle" class="t">data/</text>
+<text x="110" y="104" text-anchor="middle" class="s">round1..4 csv files</text>
+<text x="110" y="240" text-anchor="middle" class="t">bge-small-en</text>
+<text x="110" y="266" text-anchor="middle" class="s">fastembed, local ONNX</text>
+<text x="110" y="290" text-anchor="middle" class="l">counts every call</text>
+<text x="110" y="430" text-anchor="middle" class="t">browser</text>
+<text x="110" y="456" text-anchor="middle" class="s">index.html</text>
+<text x="395" y="62" text-anchor="middle" class="t">pipeline.py</text>
+<text x="395" y="88" text-anchor="middle" class="s">PyIceberg 0.12.0</text>
+<text x="395" y="112" text-anchor="middle" class="s">append, upsert, delete, no-op</text>
+<text x="395" y="132" text-anchor="middle" class="l">one sync after every change</text>
+<text x="395" y="222" text-anchor="middle" class="t">sync.py + diff.py</text>
+<text x="395" y="248" text-anchor="middle" class="s">watermark to current snapshot</text>
+<text x="395" y="272" text-anchor="middle" class="s">append scan or file changelog</text>
+<text x="395" y="296" text-anchor="middle" class="s">embed inserted + updated only</text>
+<text x="395" y="412" text-anchor="middle" class="t">server.py + verify.py</text>
+<text x="395" y="438" text-anchor="middle" class="s">rounds, semantic search</text>
+<text x="395" y="462" text-anchor="middle" class="s">full re-embed comparison</text>
+<text x="815" y="62" text-anchor="middle" class="t">s8-rest</text>
+<text x="815" y="90" text-anchor="middle" class="s">Iceberg REST catalog 1.10.1</text>
+<text x="815" y="182" text-anchor="middle" class="t">s8-minio (S3)</text>
+<text x="815" y="208" text-anchor="middle" class="s">s3://warehouse/library/documents</text>
+<text x="815" y="232" text-anchor="middle" class="s">one parquet file per category</text>
+<text x="815" y="256" text-anchor="middle" class="s">manifests list added and deleted files</text>
+<text x="815" y="362" text-anchor="middle" class="t">s8-postgres + pgvector 0.8.6</text>
+<text x="815" y="390" text-anchor="middle" class="s">documents: id, text, vector(384)</text>
+<text x="815" y="414" text-anchor="middle" class="s">sync_state: watermark snapshot id</text>
+<text x="815" y="438" text-anchor="middle" class="s">sync_rounds: counters per round</text>
+<text x="815" y="472" text-anchor="middle" class="l">vectors and watermark in one transaction</text>
+</svg>

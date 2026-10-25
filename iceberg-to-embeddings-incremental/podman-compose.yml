@@ -1,0 +1,65 @@
+name: s8-iceberg-embeddings
+
+services:
+  s8-minio:
+    image: docker.io/pgsty/minio:RELEASE.2026-08-04T00-00-00Z
+    container_name: s8-minio
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: s8admin
+      MINIO_ROOT_PASSWORD: s8password
+    mem_limit: 384m
+    ports:
+      - "${minio:-30700}:9000"
+      - "${console:-30701}:9001"
+    volumes:
+      - s8-minio-data:/data
+    networks:
+      - s8-net
+
+  s8-rest:
+    image: docker.io/apache/iceberg-rest-fixture:1.10.1
+    container_name: s8-rest
+    environment:
+      JAVA_TOOL_OPTIONS: -Xmx256m
+      AWS_ACCESS_KEY_ID: s8admin
+      AWS_SECRET_ACCESS_KEY: s8password
+      AWS_REGION: us-east-1
+      CATALOG_WAREHOUSE: s3://warehouse/
+      CATALOG_IO__IMPL: org.apache.iceberg.aws.s3.S3FileIO
+      CATALOG_S3_ENDPOINT: http://s8-minio:9000
+      CATALOG_S3_PATH__STYLE__ACCESS: "true"
+    mem_limit: 512m
+    ports:
+      - "${rest:-30702}:8181"
+    networks:
+      - s8-net
+    depends_on:
+      - s8-minio
+
+  s8-postgres:
+    image: docker.io/pgvector/pgvector:0.8.6-pg18-trixie
+    container_name: s8-postgres
+    environment:
+      POSTGRES_DB: vectors
+      POSTGRES_USER: s8
+      POSTGRES_PASSWORD: s8password
+    command: ["postgres", "-c", "shared_buffers=64MB", "-c", "max_connections=40"]
+    shm_size: 128m
+    mem_limit: 384m
+    ports:
+      - "${postgres:-30703}:5432"
+    volumes:
+      - s8-postgres-data:/var/lib/postgresql
+    networks:
+      - s8-net
+
+networks:
+  s8-net:
+    name: s8-net
+
+volumes:
+  s8-minio-data:
+    name: s8-minio-data
+  s8-postgres-data:
+    name: s8-postgres-data
