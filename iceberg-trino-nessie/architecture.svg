@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1110 530" width="1110" height="530">
+<defs>
+<style>@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700');text{font-family:Caveat,'Comic Sans MS',cursive;fill:#1d2330}.t{font-size:24px;font-weight:700}.s{font-size:18px}</style>
+<filter id="w"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="3" seed="4"/><feDisplacementMap in="SourceGraphic" scale="3"/></filter>
+<marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#1d2330"/></marker>
+</defs>
+<rect width="1110" height="530" fill="#ffffff"/>
+<g filter="url(#w)" stroke="#1d2330" stroke-width="2">
+<rect x="30" y="50" width="140" height="100" rx="12" fill="#fff3c4"/>
+<rect x="230" y="40" width="240" height="130" rx="12" fill="#d7ecff"/>
+<rect x="600" y="40" width="230" height="130" rx="12" fill="#dff5e1"/>
+<rect x="230" y="300" width="240" height="130" rx="12" fill="#f3e1ff"/>
+<rect x="600" y="300" width="230" height="130" rx="12" fill="#ffe0d6"/>
+<rect x="920" y="160" width="160" height="150" rx="12" fill="#e8e8e8"/>
+<path d="M170 100 L226 100" fill="none" marker-end="url(#a)"/>
+<path d="M470 90 L596 90" fill="none" marker-end="url(#a)"/>
+<path d="M350 170 L350 296" fill="none" marker-end="url(#a)"/>
+<path d="M600 170 L474 300" fill="none" marker-end="url(#a)"/>
+<path d="M715 300 L715 174" fill="none" marker-end="url(#a)"/>
+<path d="M600 365 L474 365" fill="none" marker-end="url(#a)"/>
+<path d="M830 120 L916 200" fill="none" marker-end="url(#a)"/>
+<path d="M350 430 L350 480 L1000 480 L1000 314" fill="none" marker-end="url(#a)" stroke-dasharray="6 5"/>
+</g>
+<text x="100" y="92" text-anchor="middle" class="t">data/</text>
+<text x="100" y="118" text-anchor="middle" class="s">orders.csv</text>
+<text x="100" y="138" text-anchor="middle" class="s">dev_inserts.csv</text>
+<text x="350" y="75" text-anchor="middle" class="t">pipeline.py</text>
+<text x="350" y="102" text-anchor="middle" class="s">load main, tag initial</text>
+<text x="350" y="124" text-anchor="middle" class="s">branch dev, change dev</text>
+<text x="350" y="146" text-anchor="middle" class="s">merge dev, tag merged</text>
+<text x="715" y="75" text-anchor="middle" class="t">Trino 483 (1G heap)</text>
+<text x="715" y="102" text-anchor="middle" class="s">Iceberg connector</text>
+<text x="715" y="124" text-anchor="middle" class="s">catalogs main, dev,</text>
+<text x="715" y="146" text-anchor="middle" class="s">initial, merged</text>
+<text x="350" y="335" text-anchor="middle" class="t">Nessie 0.108.8</text>
+<text x="350" y="362" text-anchor="middle" class="s">Iceberg REST /iceberg/ref</text>
+<text x="350" y="384" text-anchor="middle" class="s">branches, tags, commits</text>
+<text x="350" y="406" text-anchor="middle" class="s">API v2 /api/v2/trees</text>
+<text x="715" y="335" text-anchor="middle" class="t">UI server.py</text>
+<text x="715" y="362" text-anchor="middle" class="s">/api/summary</text>
+<text x="715" y="384" text-anchor="middle" class="s">index.html revenue</text>
+<text x="715" y="406" text-anchor="middle" class="s">A vs B + commit log</text>
+<text x="1000" y="200" text-anchor="middle" class="t">MinIO</text>
+<text x="1000" y="228" text-anchor="middle" class="s">bucket lake</text>
+<text x="1000" y="250" text-anchor="middle" class="s">Parquet data</text>
+<text x="1000" y="272" text-anchor="middle" class="s">Iceberg metadata</text>
+<text x="533" y="80" text-anchor="middle" class="s">SQL</text>
+<text x="340" y="240" text-anchor="end" class="s">create branch / tag, merge</text>
+<text x="590" y="214" text-anchor="start" class="s">Iceberg REST</text>
+<text x="725" y="240" text-anchor="start" class="s">SQL</text>
+<text x="537" y="355" text-anchor="middle" class="s">refs + log</text>
+<text x="880" y="140" text-anchor="start" class="s">S3</text>
+<text x="675" y="505" text-anchor="middle" class="s">Nessie reads and writes table metadata in S3</text>
+</svg>

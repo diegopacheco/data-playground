@@ -1,0 +1,7 @@
+order_id,customer,product,category,quantity,price,ts
+2001,Liam Smith,Garden Hose,garden,2,34.90,2026-02-01T09:00:00Z
+2002,Olivia Jones,Pruning Shears,garden,1,22.50,2026-02-01T10:15:00Z
+2003,Emma Brown,Raised Planter,garden,3,79.99,2026-02-01T11:30:00Z
+2004,Noah Wilson,Wireless Earbuds,electronics,1,129.00,2026-02-01T12:45:00Z
+2005,Sofia Rossi,Yoga Mat,sports,2,25.00,2026-02-01T14:00:00Z
+2006,Maria Garcia,Cookbook,books,4,18.75,2026-02-01T15:20:00Z

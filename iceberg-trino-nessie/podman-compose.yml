@@ -1,0 +1,79 @@
+services:
+  i4-minio:
+    image: docker.io/pgsty/minio:RELEASE.2026-08-04T00-00-00Z
+    container_name: i4-minio
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: i4admin
+      MINIO_ROOT_PASSWORD: i4password
+    ports:
+      - "${minio:-20400}:9000"
+      - "${console:-20401}:9001"
+    volumes:
+      - i4-minio-data:/data
+    networks:
+      - i4-net
+
+  i4-nessie:
+    image: ghcr.io/projectnessie/nessie:0.108.8
+    container_name: i4-nessie
+    environment:
+      JAVA_OPTS_APPEND: "-Xms128m -Xmx384m"
+    ports:
+      - "${nessie:-20402}:19120"
+    volumes:
+      - ./nessie/application.properties:/deployments/config/application.properties:ro,Z
+    networks:
+      - i4-net
+    depends_on:
+      - i4-minio
+
+  i4-trino:
+    image: docker.io/trinodb/trino:483
+    container_name: i4-trino
+    ports:
+      - "${trino:-20403}:8080"
+    volumes:
+      - ./trino/jvm.config:/etc/trino/jvm.config:ro,Z
+      - ./trino/catalog:/etc/trino/catalog:ro,Z
+    networks:
+      - i4-net
+    depends_on:
+      - i4-nessie
+
+  i4-pipeline:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: i4-iceberg-trino-nessie:latest
+    container_name: i4-pipeline
+    command: ["python", "app/pipeline.py"]
+    environment:
+      TRINO_URL: http://i4-trino:8080
+      NESSIE_URL: http://i4-nessie:19120
+    networks:
+      - i4-net
+
+  i4-ui:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: i4-iceberg-trino-nessie:latest
+    container_name: i4-ui
+    restart: unless-stopped
+    environment:
+      TRINO_URL: http://i4-trino:8080
+      NESSIE_URL: http://i4-nessie:19120
+      UI_PORT: "${ui:-20404}"
+    ports:
+      - "${ui:-20404}:${ui:-20404}"
+    networks:
+      - i4-net
+
+networks:
+  i4-net:
+    name: i4-net
+
+volumes:
+  i4-minio-data:
+    name: i4-minio-data
