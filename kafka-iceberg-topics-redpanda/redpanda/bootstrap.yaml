@@ -1,0 +1,15 @@
+cloud_storage_enabled: true
+cloud_storage_bucket: s1-lake
+cloud_storage_region: us-east-1
+cloud_storage_access_key: s1admin
+cloud_storage_secret_key: s1password
+cloud_storage_api_endpoint: s1-minio
+cloud_storage_api_endpoint_port: 9000
+cloud_storage_disable_tls: true
+cloud_storage_url_style: path
+iceberg_enabled: true
+iceberg_catalog_type: rest
+iceberg_rest_catalog_endpoint: http://s1-rest:8181
+iceberg_rest_catalog_authentication_mode: none
+iceberg_catalog_commit_interval_ms: 10000
+iceberg_target_lag_ms: 10000

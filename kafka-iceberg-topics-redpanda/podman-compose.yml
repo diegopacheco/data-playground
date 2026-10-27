@@ -1,0 +1,83 @@
+services:
+  s1-minio:
+    image: docker.io/pgsty/minio:RELEASE.2026-08-04T00-00-00Z
+    container_name: s1-minio
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: s1admin
+      MINIO_ROOT_PASSWORD: s1password
+    ports:
+      - "${minio:-30004}:9000"
+      - "${console:-30005}:9001"
+    volumes:
+      - s1-minio-data:/data
+    networks:
+      - s1-net
+    mem_limit: 384m
+
+  s1-rest:
+    image: docker.io/apache/iceberg-rest-fixture:1.10.1
+    container_name: s1-rest
+    environment:
+      JAVA_TOOL_OPTIONS: -Xmx256m
+      AWS_ACCESS_KEY_ID: s1admin
+      AWS_SECRET_ACCESS_KEY: s1password
+      AWS_REGION: us-east-1
+      CATALOG_WAREHOUSE: s3://s1-lake/iceberg/
+      CATALOG_IO__IMPL: org.apache.iceberg.aws.s3.S3FileIO
+      CATALOG_S3_ENDPOINT: http://s1-minio:9000
+      CATALOG_S3_PATH__STYLE__ACCESS: "true"
+    ports:
+      - "${rest:-30006}:8181"
+    networks:
+      - s1-net
+    mem_limit: 512m
+    depends_on:
+      - s1-minio
+
+  s1-redpanda:
+    image: docker.io/redpandadata/redpanda:v26.2.3
+    container_name: s1-redpanda
+    command:
+      - redpanda
+      - start
+      - --smp
+      - "1"
+      - --memory
+      - 1G
+      - --overprovisioned
+      - --mode
+      - dev-container
+      - --kafka-addr
+      - internal://0.0.0.0:9092,external://0.0.0.0:${kafka:-30000}
+      - --advertise-kafka-addr
+      - internal://s1-redpanda:9092,external://localhost:${kafka:-30000}
+      - --pandaproxy-addr
+      - internal://0.0.0.0:8082
+      - --advertise-pandaproxy-addr
+      - internal://s1-redpanda:8082
+      - --schema-registry-addr
+      - internal://0.0.0.0:8081
+    ports:
+      - "${kafka:-30000}:${kafka:-30000}"
+      - "${proxy:-30001}:8082"
+      - "${registry:-30002}:8081"
+      - "${admin:-30003}:9644"
+    volumes:
+      - s1-redpanda-data:/var/lib/redpanda/data
+      - ./redpanda/bootstrap.yaml:/etc/redpanda/.bootstrap.yaml:ro
+    networks:
+      - s1-net
+    mem_limit: 1536m
+    depends_on:
+      - s1-rest
+
+networks:
+  s1-net:
+    name: s1-net
+
+volumes:
+  s1-minio-data:
+    name: s1-minio-data
+  s1-redpanda-data:
+    name: s1-redpanda-data

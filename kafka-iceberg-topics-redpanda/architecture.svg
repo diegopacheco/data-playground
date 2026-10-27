@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1320 560" width="1320" height="560">
+<defs>
+<style>@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700');text{font-family:Caveat,'Comic Sans MS',cursive;fill:#1d2330}.t{font-size:24px;font-weight:700}.s{font-size:18px}.l{font-size:16px;fill:#5a6275}</style>
+<filter id="w"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="3" seed="7"/><feDisplacementMap in="SourceGraphic" scale="3"/></filter>
+<marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0L10 5L0 10z" fill="#1d2330"/></marker>
+</defs>
+<rect width="1320" height="560" fill="#ffffff"/>
+<g filter="url(#w)" stroke="#1d2330" stroke-width="2">
+<rect x="30" y="50" width="200" height="90" rx="12" fill="#fff3c4"/>
+<rect x="30" y="220" width="200" height="140" rx="12" fill="#d7ecff"/>
+<rect x="330" y="40" width="330" height="330" rx="12" fill="#ffe0d6"/>
+<rect x="350" y="115" width="290" height="70" rx="10" fill="#fff8e6"/>
+<rect x="350" y="200" width="290" height="70" rx="10" fill="#e8f0fd"/>
+<rect x="350" y="285" width="290" height="70" rx="10" fill="#ffffff"/>
+<rect x="760" y="40" width="250" height="120" rx="12" fill="#f3e1ff"/>
+<rect x="760" y="230" width="250" height="140" rx="12" fill="#dff5e1"/>
+<rect x="1090" y="120" width="200" height="150" rx="12" fill="#e6f7f7"/>
+<rect x="1090" y="340" width="200" height="80" rx="12" fill="#fff3c4"/>
+<rect x="760" y="440" width="250" height="90" rx="12" fill="#d7ecff"/>
+<path d="M130 140 L130 216" fill="none" marker-end="url(#a)"/>
+<path d="M230 290 L326 220" fill="none" marker-end="url(#a)"/>
+<path d="M660 100 L756 100" fill="none" marker-end="url(#a)"/>
+<path d="M660 300 L756 300" fill="none" marker-end="url(#a)"/>
+<path d="M1090 170 L1014 110" fill="none" marker-end="url(#a)"/>
+<path d="M1090 230 L1014 290" fill="none" marker-end="url(#a)"/>
+<path d="M1190 270 L1190 336" fill="none" marker-end="url(#a)"/>
+<path d="M1010 485 L1140 424" fill="none" marker-end="url(#a)"/>
+</g>
+<text x="130" y="88" text-anchor="middle" class="t">data/orders.csv</text>
+<text x="130" y="114" text-anchor="middle" class="s">200 orders</text>
+<text x="130" y="254" text-anchor="middle" class="t">pipeline.py</text>
+<text x="130" y="280" text-anchor="middle" class="s">registers JSON schema</text>
+<text x="130" y="304" text-anchor="middle" class="s">4 batches of 50 orders</text>
+<text x="130" y="328" text-anchor="middle" class="s">to both topics, then</text>
+<text x="130" y="350" text-anchor="middle" class="s">waits for Iceberg</text>
+<text x="282" y="296" text-anchor="middle" class="l">HTTP</text>
+<text x="282" y="314" text-anchor="middle" class="l">produce</text>
+<text x="495" y="72" text-anchor="middle" class="t">Redpanda v26.2.3</text>
+<text x="495" y="98" text-anchor="middle" class="s">broker writes Iceberg, no Kafka Connect</text>
+<text x="495" y="144" text-anchor="middle" class="t">topic orders_kv</text>
+<text x="495" y="170" text-anchor="middle" class="s">iceberg.mode = key_value</text>
+<text x="495" y="229" text-anchor="middle" class="t">topic orders_typed</text>
+<text x="495" y="255" text-anchor="middle" class="s">iceberg.mode = value_schema_id_prefix</text>
+<text x="495" y="314" text-anchor="middle" class="t">schema registry</text>
+<text x="495" y="340" text-anchor="middle" class="s">JSON schema of an order</text>
+<text x="708" y="88" text-anchor="middle" class="l">commit</text>
+<text x="708" y="288" text-anchor="middle" class="l">parquet</text>
+<text x="885" y="76" text-anchor="middle" class="t">Iceberg REST catalog</text>
+<text x="885" y="104" text-anchor="middle" class="s">redpanda.orders_kv</text>
+<text x="885" y="128" text-anchor="middle" class="s">redpanda.orders_typed</text>
+<text x="885" y="266" text-anchor="middle" class="t">MinIO bucket s1-lake</text>
+<text x="885" y="294" text-anchor="middle" class="s">iceberg/redpanda/topic/</text>
+<text x="885" y="318" text-anchor="middle" class="s">data/*.parquet</text>
+<text x="885" y="342" text-anchor="middle" class="s">metadata/*.json, *.avro</text>
+<text x="1190" y="156" text-anchor="middle" class="t">DuckDB 1.5.5</text>
+<text x="1190" y="184" text-anchor="middle" class="s">server.py</text>
+<text x="1190" y="208" text-anchor="middle" class="s">iceberg + httpfs</text>
+<text x="1190" y="232" text-anchor="middle" class="s">loads tables, reads</text>
+<text x="1190" y="254" text-anchor="middle" class="s">parquet, time travel</text>
+<text x="1190" y="376" text-anchor="middle" class="t">UI index.html</text>
+<text x="1190" y="402" text-anchor="middle" class="s">modes, proof, lag</text>
+<text x="885" y="474" text-anchor="middle" class="t">test-all.sh</text>
+<text x="885" y="500" text-anchor="middle" class="s">awk on orders.csv</text>
+<text x="885" y="522" text-anchor="middle" class="s">against the API, rpk, mc</text>
+</svg>

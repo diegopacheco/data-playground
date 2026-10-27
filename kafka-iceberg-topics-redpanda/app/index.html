@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Redpanda Iceberg Topics</title>
+<style>
+:root{--bg:#f7f8fa;--card:#fff;--ink:#1d2330;--muted:#6b7385;--line:#e3e6ec;--accent:#d8432e;--accent-soft:#fdecea;--kv:#c98a12;--typed:#2f6fde;--up:#1f8a4c;--down:#c2412d}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+header{padding:20px 24px 8px}
+h1{margin:0;font-size:22px}
+header p{margin:4px 0 0;color:var(--muted)}
+nav{padding:8px 24px 0;display:flex;gap:6px}
+nav button{border:1px solid var(--line);background:#fff;border-radius:6px;padding:6px 14px;cursor:pointer;font:inherit}
+nav button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+main{padding:12px 24px 32px;display:grid;gap:16px;grid-template-columns:1fr 1fr}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;min-width:0}
+.card h2{margin:0 0 4px;font-size:16px}
+.card h3{margin:14px 0 6px;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.wide{grid-column:1/-1}
+.badge{display:inline-block;border-radius:6px;padding:1px 8px;font-size:12px;font-family:ui-monospace,Menlo,monospace;color:#fff}
+.kv{background:var(--kv)}.typed{background:var(--typed)}
+.kpis{display:flex;gap:12px;flex-wrap:wrap}
+.kpi{border:1px solid var(--line);border-radius:8px;padding:8px 12px;min-width:150px}
+.kpi span{display:block;color:var(--muted);font-size:12px}
+.kpi strong{font-size:18px;font-variant-numeric:tabular-nums}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+th,td{padding:5px 8px;border-bottom:1px solid var(--line);text-align:right;vertical-align:top}
+th:first-child,td:first-child{text-align:left}
+th{color:var(--muted);font-weight:600;font-size:12px}
+.raw td,.raw th{text-align:left;font-size:11px;font-family:ui-monospace,Menlo,monospace;overflow-wrap:break-word}
+.raw th{white-space:nowrap}
+.ok{color:var(--up);font-weight:600}.bad{color:var(--down);font-weight:600}
+code,.sql{font-family:ui-monospace,Menlo,monospace;font-size:12px}
+.sql{background:#f1f3f7;border-radius:6px;padding:8px;word-break:break-word}
+.scroll{overflow-x:auto}
+.bar{display:flex;align-items:center;gap:8px;margin:3px 0}
+.bar label{width:150px;color:var(--muted);font-size:12px}
+.bar div{height:16px;border-radius:4px}
+.bar b{font-variant-numeric:tabular-nums;font-size:12px}
+.muted{color:var(--muted)}
+.err{color:var(--down)}
+@media (max-width:900px){main{grid-template-columns:1fr;padding:12px 16px}header{padding:16px 16px 4px}nav{padding:8px 16px 0}}
+</style>
+</head>
+<body>
+<header>
+<h1>Redpanda Iceberg Topics</h1>
+<p>The broker writes each topic into an Iceberg table by itself. No Kafka Connect, no connector. DuckDB reads the tables back through the Iceberg REST catalog.</p>
+</header>
+<nav id="nav"></nav>
+<main id="main"></main>
+<script>
+const TABS = {modes: "Modes side by side", proof: "Produced against Iceberg", lag: "Produce to Iceberg lag", catalog: "Catalog and license"};
+const money = v => v.toLocaleString("en-US", {minimumFractionDigits: 2, maximumFractionDigits: 2});
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+const time = ms => new Date(ms).toISOString().slice(11, 23);
+const css = mode => mode === "key_value" ? "kv" : "typed";
+let data = {}, tab = new URLSearchParams(location.search).get("tab") || "modes";
+
+async function get(path) {
+  const r = await fetch(path);
+  const body = await r.json();
+  if (!r.ok) throw new Error(body.error || r.status);
+  return body;
+}
+
+function grid(rows, cls) {
+  if (!rows.length) return "<p class='muted'>no rows</p>";
+  const keys = Object.keys(rows[0]);
+  return `<div class="scroll"><table class="${cls || ""}"><tr>${keys.map(k => `<th>${esc(k)}</th>`).join("")}</tr>
+    ${rows.map(r => `<tr>${keys.map(k => `<td>${r[k]}</td>`).join("")}</tr>`).join("")}</table></div>`;
+}
+
+function kpi(label, value) {
+  return `<div class="kpi"><span>${label}</span><strong>${value}</strong></div>`;
+}
+
+function same(a, b) {
+  return a && b && a.orders === b.orders && a.quantity === b.quantity && a.revenue.toFixed(2) === b.revenue.toFixed(2);
+}
+
+function modeCard(t) {
+  const sample = t.sample.map(r => Object.fromEntries(Object.entries(r).map(([k, v]) => [k, esc(v)])));
+  return `<section class="card"><h2>topic ${esc(t.topic)} <span class="badge ${css(t.mode)}">redpanda.iceberg.mode=${esc(t.mode)}</span></h2>
+    <div class="muted">Iceberg table <code>${esc(t.table)}</code>, ${t.rows} rows, offsets ${t.first_offset} to ${t.last_offset}</div>
+    <h3>Columns Redpanda created</h3>${grid(t.columns.map(c => ({column: esc(c.column_name), type: esc(c.column_type)})), "raw")}
+    <h3>SQL needed to get orders out of this table</h3><div class="sql">${esc(t.orders_sql)}</div>
+    <h3>First rows</h3>${grid(sample, "raw")}</section>`;
+}
+
+function modes() {
+  return data.tables.map(modeCard).join("");
+}
+
+function proofCard(t) {
+  const produced = Object.fromEntries(data.produced.map(c => [c.category, c]));
+  const cats = t.categories.map(c => ({
+    category: esc(c.category), "orders produced": produced[c.category].orders, "orders in iceberg": c.orders,
+    "quantity produced": produced[c.category].quantity, "quantity in iceberg": c.quantity,
+    "revenue produced": money(produced[c.category].revenue), "revenue in iceberg": money(c.revenue),
+    check: same(c, produced[c.category]) ? "<span class='ok'>equal</span>" : "<span class='bad'>differs</span>"}));
+  return `<section class="card"><h2>${esc(t.table)} <span class="badge ${css(t.mode)}">${esc(t.mode)}</span></h2>
+    <div class="muted">${t.rows} rows, ${t.distinct_offsets} distinct Kafka offsets, ${t.first_offset} to ${t.last_offset}</div>
+    <h3>Produced (orders.csv) against Iceberg (DuckDB)</h3>${grid(cats)}</section>`;
+}
+
+function proof() {
+  const total = data.produced.reduce((n, c) => n + c.orders, 0);
+  const revenue = data.produced.reduce((n, c) => n + c.revenue, 0);
+  const kpis = [kpi("orders produced per topic", total), kpi("revenue produced", money(revenue))].concat(data.tables.map(t =>
+    kpi(`rows in ${esc(t.table)}`, `${t.rows} <span class="${t.rows === total ? "ok" : "bad"}">${t.rows === total ? "equal" : "differs"}</span>`)),
+    data.tables.map(t => kpi(`revenue in ${esc(t.table)}`, money(t.categories.reduce((n, c) => n + c.revenue, 0)))));
+  return `<section class="card wide"><div class="kpis">${kpis.join("")}</div></section>${data.tables.map(proofCard).join("")}`;
+}
+
+function lag() {
+  const s = data.settings, batches = data.batches.batches;
+  const max = Math.max(...batches.map(b => b.visible_after_s));
+  const bars = batches.map(b => `<div class="bar"><label>batch ${b.batch} ${esc(b.topic)}</label>
+    <div class="${b.topic === "orders_kv" ? "kv" : "typed"}" style="width:${(b.visible_after_s / max * 70).toFixed(1)}%"></div><b>${b.visible_after_s.toFixed(2)} s</b></div>`).join("");
+  const commits = data.tables.flatMap(t => t.snapshots).map(x => x.commit_lag_s);
+  const seen = batches.map(b => b.visible_after_s);
+  const kpis = [kpi("iceberg_target_lag_ms", s.iceberg_target_lag_ms), kpi("iceberg_catalog_commit_interval_ms", s.iceberg_catalog_commit_interval_ms),
+    kpi("readable from DuckDB after", `${Math.min(...seen).toFixed(2)} to ${Math.max(...seen).toFixed(2)} s`),
+    kpi("record to snapshot commit", `${Math.min(...commits).toFixed(2)} to ${Math.max(...commits).toFixed(2)} s`)];
+  const snaps = data.tables.map(t => `<section class="card"><h2>${esc(t.table)} snapshots <span class="badge ${css(t.mode)}">${esc(t.mode)}</span></h2>
+    ${grid(t.snapshots.map(x => ({snapshot: x.snapshot_id, "newest record (UTC)": time(x.newest_record_ms), "committed (UTC)": time(x.committed_at_ms),
+      "added records": x.added_records, "total records": x.total_records, "commit lag": x.commit_lag_s.toFixed(2) + " s"})))}</section>`).join("");
+  return `<section class="card wide"><div class="kpis">${kpis.join("")}</div></section>
+    <section class="card wide"><h2>Seconds from produce to the batch being readable from Iceberg</h2>
+    <div class="muted">Each batch of 50 orders is produced to both topics, then a new DuckDB connection polls the table every 0.5 s until the rows are there.</div><h3>Measured by the pipeline</h3>${bars}</section>${snaps}`;
+}
+
+function catalog() {
+  const l = data.license, s = data.settings;
+  const used = l.features.filter(f => f.enabled).map(f => f.name);
+  const days = Math.floor((l.expires * 1000 - Date.now()) / 86400000);
+  const tables = data.tables.map(t => { const last = t.snapshots[t.snapshots.length - 1]; return {table: esc(t.table), mode: esc(t.mode), location: esc(t.location),
+    "partition spec": esc(t.partition_spec.join(", ")), snapshots: t.snapshots.length, "data files": t.snapshots.reduce((n, x) => n + x.added_data_files, 0),
+    "parquet bytes": last.total_files_size, records: last.total_records}; });
+  return `<section class="card wide"><h2>Tables in the Iceberg REST catalog, namespace redpanda</h2>${grid(tables, "raw")}</section>
+    <section class="card"><h2>Redpanda license</h2><div class="kpis">${[kpi("organization", esc(l.org)), kpi("type", esc(l.type)), kpi("status", esc(l.license_status)),
+      kpi("expires", `${new Date(l.expires * 1000).toISOString().slice(0, 10)} (${days} days)`)].join("")}</div>
+      <h3>Enterprise features in use</h3>${used.map(f => `<span class="badge ${f === "datalake_iceberg" ? "typed" : "kv"}">${esc(f)}</span>`).join(" ")}
+      <p class="muted">Iceberg Topics is an enterprise feature. A new cluster starts with a built-in 30 day evaluation license, which is what this stack runs on.</p></section>
+    <section class="card"><h2>Cluster configuration</h2>${grid(Object.entries(s).map(([k, v]) => ({property: esc(k), value: esc(v)})), "raw")}</section>`;
+}
+
+function render() {
+  document.getElementById("nav").innerHTML = Object.entries(TABS).map(([k, v]) => `<button class="${k === tab ? "on" : ""}" data-tab="${k}">${v}</button>`).join("");
+  document.querySelectorAll("nav button").forEach(b => b.onclick = () => { tab = b.dataset.tab; history.replaceState(null, "", "?tab=" + tab); render(); });
+  document.getElementById("main").innerHTML = ({modes, proof, lag, catalog}[tab] || modes)();
+}
+
+async function load() {
+  try {
+    const [tables, produced, batches, license, settings] = await Promise.all(["tables", "produced", "batches", "license", "settings"].map(p => get("/api/" + p)));
+    data = {tables, produced, batches, license, settings};
+    render();
+  } catch (e) {
+    document.getElementById("main").innerHTML = `<section class="card wide err">${esc(e.message)}</section>`;
+  }
+}
+
+load();
+</script>
+</body>
+</html>
