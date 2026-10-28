@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1300" height="640" viewBox="0 0 1300 640">
+  <defs>
+    <style>@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&amp;display=swap'); text { font-family: 'Caveat', 'Comic Sans MS', cursive; fill: #1f2933; }</style>
+    <filter id="wobble"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="3"/></filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1f2933"/></marker>
+  </defs>
+  <rect width="1300" height="640" fill="#ffffff"/>
+  <g filter="url(#wobble)" stroke="#1f2933" stroke-width="2">
+    <rect x="20" y="255" width="165" height="110" rx="10" fill="#fff3bf"/>
+    <rect x="220" y="245" width="185" height="130" rx="10" fill="#ffd8a8"/>
+    <rect x="440" y="100" width="185" height="70" rx="10" fill="#d0ebff"/>
+    <rect x="660" y="100" width="185" height="70" rx="10" fill="#d0ebff"/>
+    <rect x="880" y="100" width="170" height="70" rx="10" fill="#d0ebff"/>
+    <rect x="440" y="190" width="185" height="70" rx="10" fill="#d0ebff"/>
+    <rect x="660" y="190" width="185" height="70" rx="10" fill="#d0ebff"/>
+    <rect x="1085" y="135" width="175" height="90" rx="10" fill="#a5d8ff"/>
+    <rect x="440" y="395" width="185" height="65" rx="10" fill="#e5dbff"/>
+    <rect x="660" y="395" width="185" height="65" rx="10" fill="#e5dbff"/>
+    <rect x="440" y="480" width="185" height="65" rx="10" fill="#e5dbff"/>
+    <rect x="660" y="480" width="185" height="65" rx="10" fill="#e5dbff"/>
+    <rect x="1085" y="420" width="175" height="90" rx="10" fill="#d0bfff"/>
+    <rect x="880" y="565" width="380" height="60" rx="10" fill="#d3f9d8"/>
+    <line x1="185" y1="310" x2="218" y2="310" marker-end="url(#arrow)"/>
+    <line x1="405" y1="270" x2="438" y2="140" marker-end="url(#arrow)"/>
+    <line x1="405" y1="290" x2="438" y2="228" marker-end="url(#arrow)"/>
+    <line x1="405" y1="335" x2="438" y2="425" marker-end="url(#arrow)"/>
+    <line x1="405" y1="355" x2="438" y2="508" marker-end="url(#arrow)"/>
+    <line x1="625" y1="135" x2="658" y2="135" marker-end="url(#arrow)"/>
+    <line x1="845" y1="135" x2="878" y2="135" marker-end="url(#arrow)"/>
+    <line x1="1050" y1="135" x2="1083" y2="165" marker-end="url(#arrow)"/>
+    <line x1="625" y1="225" x2="658" y2="225" marker-end="url(#arrow)"/>
+    <line x1="845" y1="225" x2="1083" y2="200" marker-end="url(#arrow)"/>
+    <line x1="625" y1="427" x2="658" y2="427" marker-end="url(#arrow)"/>
+    <line x1="625" y1="512" x2="658" y2="512" marker-end="url(#arrow)"/>
+    <line x1="845" y1="427" x2="1083" y2="450" marker-end="url(#arrow)"/>
+    <line x1="845" y1="512" x2="1083" y2="485" stroke-dasharray="8 6" marker-end="url(#arrow)"/>
+    <line x1="1172" y1="510" x2="1172" y2="563" marker-end="url(#arrow)"/>
+    <polyline points="1260,180 1285,180 1285,595 1262,595" fill="none" marker-end="url(#arrow)"/>
+  </g>
+  <text x="650" y="38" font-size="32" font-weight="700" text-anchor="middle">kappa-vs-lambda-backfill</text>
+  <text x="650" y="68" font-size="20" text-anchor="middle">one Redpanda log, two architectures, same revenue per day and store in Postgres 18</text>
+  <text x="102" y="295" font-size="23" text-anchor="middle">orders</text>
+  <text x="102" y="318" font-size="17" text-anchor="middle">3% resent</text>
+  <text x="102" y="340" font-size="17" text-anchor="middle">late event times</text>
+  <text x="312" y="285" font-size="23" text-anchor="middle">Redpanda 26.2</text>
+  <text x="312" y="310" font-size="17" text-anchor="middle">topic orders</text>
+  <text x="312" y="332" font-size="17" text-anchor="middle">1 partition</text>
+  <text x="312" y="354" font-size="17" text-anchor="middle">infinite retention</text>
+  <text x="440" y="92" font-size="22" font-weight="700" fill="#1c7ed6">Lambda</text>
+  <text x="532" y="130" font-size="20" text-anchor="middle">master ingest</text>
+  <text x="532" y="153" font-size="16" text-anchor="middle">dedup on event_id</text>
+  <text x="752" y="130" font-size="20" text-anchor="middle">lambda_master</text>
+  <text x="752" y="153" font-size="16" text-anchor="middle">offset per event</text>
+  <text x="965" y="130" font-size="20" text-anchor="middle">batch layer SQL</text>
+  <text x="965" y="153" font-size="16" text-anchor="middle">day overwrite</text>
+  <text x="532" y="220" font-size="20" text-anchor="middle">speed layer</text>
+  <text x="532" y="243" font-size="16" text-anchor="middle">Python, after watermark</text>
+  <text x="752" y="220" font-size="20" text-anchor="middle">lambda_speed_view</text>
+  <text x="752" y="243" font-size="16" text-anchor="middle">+ speed_seen ids</text>
+  <text x="1172" y="170" font-size="20" text-anchor="middle">lambda_serving</text>
+  <text x="1172" y="195" font-size="16" text-anchor="middle">batch view + speed view</text>
+  <text x="1172" y="215" font-size="16" text-anchor="middle">merged per day, store</text>
+  <text x="440" y="387" font-size="22" font-weight="700" fill="#7048e8">Kappa</text>
+  <text x="532" y="422" font-size="20" text-anchor="middle">stream job v1</text>
+  <text x="532" y="444" font-size="16" text-anchor="middle">live, logic v1</text>
+  <text x="752" y="422" font-size="20" text-anchor="middle">kappa_daily_v1</text>
+  <text x="752" y="444" font-size="16" text-anchor="middle">+ seen ids + offset</text>
+  <text x="532" y="507" font-size="20" text-anchor="middle">stream job v2</text>
+  <text x="532" y="529" font-size="16" text-anchor="middle">replay from offset 0</text>
+  <text x="752" y="507" font-size="20" text-anchor="middle">kappa_daily_v2</text>
+  <text x="752" y="529" font-size="16" text-anchor="middle">+ seen ids + offset</text>
+  <text x="1172" y="455" font-size="20" text-anchor="middle">kappa_serving</text>
+  <text x="1172" y="478" font-size="16" text-anchor="middle">view, swapped</text>
+  <text x="1172" y="498" font-size="16" text-anchor="middle">from v1 to v2</text>
+  <text x="960" y="535" font-size="16" text-anchor="middle">swap after catch up</text>
+  <text x="1070" y="590" font-size="20" text-anchor="middle">app (Python 3.14): REST API + UI on 27800</text>
+  <text x="1070" y="612" font-size="16" text-anchor="middle">scenario, checks, tests recompute from the topic</text>
+</svg>

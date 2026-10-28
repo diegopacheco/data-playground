@@ -1,0 +1,67 @@
+name: r13-kappa-vs-lambda-backfill
+
+services:
+  r13-redpanda:
+    image: docker.io/redpandadata/redpanda:v26.2.3
+    container_name: r13-redpanda
+    command:
+      - redpanda
+      - start
+      - --mode
+      - dev-container
+      - --smp
+      - "1"
+      - --memory
+      - 512M
+      - --reserve-memory
+      - 0M
+      - --overprovisioned
+      - --kafka-addr
+      - internal://0.0.0.0:9092,external://0.0.0.0:19092
+      - --advertise-kafka-addr
+      - internal://r13-redpanda:9092,external://localhost:${redpanda:-27801}
+    mem_limit: 1g
+    cpus: 1
+    ports:
+      - "${redpanda:-27801}:19092"
+    networks:
+      - r13-net
+
+  r13-postgres:
+    image: docker.io/library/postgres:18.6
+    container_name: r13-postgres
+    environment:
+      POSTGRES_USER: backfill
+      POSTGRES_PASSWORD: backfill
+      POSTGRES_DB: backfill
+    mem_limit: 384m
+    cpus: 1
+    ports:
+      - "${postgres:-27802}:5432"
+    networks:
+      - r13-net
+
+  r13-app:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: r13-kappa-vs-lambda-backfill:latest
+    container_name: r13-app
+    restart: unless-stopped
+    environment:
+      BROKERS: r13-redpanda:9092
+      TOPIC: orders
+      PG_DSN: postgresql://backfill:backfill@r13-postgres:5432/backfill
+      UI_PORT: "8080"
+    mem_limit: 384m
+    ports:
+      - "${ui:-27800}:8080"
+    networks:
+      - r13-net
+    depends_on:
+      - r13-redpanda
+      - r13-postgres
+
+networks:
+  r13-net:
+    name: r13-net

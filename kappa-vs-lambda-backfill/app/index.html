@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kappa vs Lambda Backfill</title>
+<style>
+:root { --bg: #f6f7f9; --card: #ffffff; --ink: #1f2933; --muted: #616e7c; --line: #e4e7eb; --lambda: #2563eb; --lambda-soft: #dbeafe; --kappa: #7c3aed; --kappa-soft: #ede9fe; --log: #b45309; --log-soft: #fef3c7; --ok: #047857; --ok-soft: #d1fae5; --bad: #b91c1c; --bad-soft: #fee2e2; --speed: #f59e0b; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.45 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+header { padding: 20px 28px 0; background: var(--card); border-bottom: 1px solid var(--line); }
+h1 { margin: 0; font-size: 22px; }
+.sub { color: var(--muted); margin: 4px 0 12px; }
+.row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+nav { display: flex; gap: 4px; margin-top: 8px; overflow-x: auto; }
+nav button { border: 0; background: none; padding: 10px 14px; font: inherit; color: var(--muted); cursor: pointer; border-bottom: 3px solid transparent; white-space: nowrap; }
+nav button.on { color: var(--ink); border-bottom-color: var(--ink); font-weight: 600; }
+main { padding: 20px 28px 40px; max-width: 1400px; }
+.tab { display: none; }
+.tab.on { display: block; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+.card h3 { margin: 0 0 6px; font-size: 15px; }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 14px; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 14px; }
+.tile { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+.tile b { display: block; font-size: 22px; }
+.tile span { color: var(--muted); font-size: 12px; }
+.pill { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+.p-lambda { background: var(--lambda-soft); color: var(--lambda); }
+.p-kappa { background: var(--kappa-soft); color: var(--kappa); }
+.p-both { background: #e5e7eb; color: #374151; }
+.p-log { background: var(--log-soft); color: var(--log); }
+.pass { background: var(--ok-soft); color: var(--ok); }
+.fail { background: var(--bad-soft); color: var(--bad); }
+.step { display: grid; grid-template-columns: 34px 1fr; gap: 10px; }
+.num { width: 28px; height: 28px; border-radius: 50%; background: var(--ink); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 12px; }
+.checks { list-style: none; padding: 0; margin: 8px 0 0; }
+.checks li { margin: 3px 0; }
+.checks small { color: var(--muted); }
+table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+th, td { text-align: right; padding: 5px 8px; border-bottom: 1px solid var(--line); }
+th:first-child, td:first-child { text-align: left; }
+th { font-size: 12px; color: var(--muted); font-weight: 600; }
+td.good { background: var(--ok-soft); }
+td.wrong { background: var(--bad-soft); color: var(--bad); font-weight: 600; }
+code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
+pre { background: #f3f4f6; padding: 10px; border-radius: 8px; overflow-x: auto; margin: 6px 0; }
+.md5 { font-family: ui-monospace, Menlo, monospace; font-size: 12px; }
+.muted { color: var(--muted); }
+.bar { display: flex; height: 14px; border-radius: 4px; overflow: hidden; background: #f3f4f6; min-width: 160px; }
+.bar i { display: block; height: 100%; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin: 0 4px 0 10px; }
+button.act { border: 1px solid var(--line); background: var(--card); padding: 7px 12px; border-radius: 8px; font: inherit; cursor: pointer; }
+button.act:hover { border-color: var(--ink); }
+button.primary { background: var(--ink); color: #fff; border-color: var(--ink); }
+#out { max-height: 260px; }
+@media (max-width: 700px) { main, header { padding-left: 16px; padding-right: 16px; } .grid2 { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="row" style="justify-content: space-between">
+    <div>
+      <h1>Kappa vs Lambda: idempotent backfills and reprocessing</h1>
+      <div class="sub">One Redpanda topic of orders, two architectures computing revenue per day and store in Postgres, one logic bug, late data and resends.</div>
+    </div>
+    <div class="row"><span id="overall" class="pill p-both">loading</span><button class="act primary" id="rerun">Rerun scenario</button></div>
+  </div>
+  <nav>
+    <button data-tab="timeline">Timeline</button>
+    <button data-tab="idempotency">Idempotency</button>
+    <button data-tab="late">Late data</button>
+    <button data-tab="bugfix">Bug fix</button>
+    <button data-tab="compare">Compare</button>
+    <button data-tab="live">Live</button>
+  </nav>
+</header>
+<main>
+  <section class="tab" id="timeline"></section>
+  <section class="tab" id="idempotency"></section>
+  <section class="tab" id="late"></section>
+  <section class="tab" id="bugfix"></section>
+  <section class="tab" id="compare"></section>
+  <section class="tab" id="live">
+    <div class="card">
+      <h3>Actions</h3>
+      <div class="row">
+        <button class="act" data-post="/api/produce?kind=late&count=40">Send 40 late orders (2026-09-20)</button>
+        <button class="act" data-post="/api/produce?kind=live&count=200">Send 200 live orders (2026-09-24)</button>
+        <button class="act" data-post="/api/lambda/nightly">Lambda nightly batch</button>
+        <button class="act" data-post="/api/lambda/backfill?day=2026-09-20">Lambda backfill 2026-09-20</button>
+        <button class="act" data-post="/api/kappa/backfill?day=2026-09-20">Kappa backfill 2026-09-20</button>
+        <button class="act" id="replay">Kappa replay into next version + swap</button>
+        <button class="act" data-post="/api/rewind">Redeliver whole log</button>
+      </div>
+      <pre id="out" class="muted">responses show here</pre>
+    </div>
+    <div id="liveState"></div>
+  </section>
+</main>
+<script>
+const $ = (id) => document.getElementById(id);
+let report = null;
+const money = (c) => (c / 100).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const pill = (arch) => `<span class="pill p-${arch}">${arch === "both" ? "Lambda + Kappa" : arch === "log" ? "Redpanda" : arch[0].toUpperCase() + arch.slice(1)}</span>`;
+const badge = (ok) => `<span class="pill ${ok ? "pass" : "fail"}">${ok ? "PASS" : "FAIL"}</span>`;
+const step = (id) => report.steps.find((s) => s.id === id);
+
+function byDay(rows) {
+  const out = {};
+  for (const r of rows) {
+    const d = out[r[0]] || (out[r[0]] = { sales: 0, refunds: 0, revenue: 0 });
+    d.sales += r[2]; d.refunds += r[3]; d.revenue += r[4];
+  }
+  return out;
+}
+
+function sameDay(rows, truth, day) {
+  return JSON.stringify(rows.filter((r) => r[0] === day)) === JSON.stringify(truth.filter((r) => r[0] === day));
+}
+
+function dayTable(cols, truthRows, days) {
+  const totals = cols.map((c) => byDay(c.rows));
+  const t = byDay(truthRows);
+  let h = `<table><tr><th>day</th><th>truth revenue</th>${cols.map((c) => `<th>${c.label}</th>`).join("")}</tr>`;
+  for (const d of days) {
+    h += `<tr><td>${d}</td><td>${t[d] ? money(t[d].revenue) : "-"}</td>`;
+    cols.forEach((c, i) => {
+      const v = totals[i][d];
+      const cls = c.judge === false ? "" : sameDay(c.rows, truthRows, d) ? "good" : "wrong";
+      h += `<td class="${cls}">${v ? money(v.revenue) : "-"}</td>`;
+    });
+    h += "</tr>";
+  }
+  return h + "</table>";
+}
+
+function renderTimeline() {
+  const all = report.steps.flatMap((s) => s.checks);
+  $("timeline").innerHTML = `
+    <div class="tiles">
+      <div class="tile"><b>${all.filter((c) => c.ok).length} / ${all.length}</b><span>checks passed</span></div>
+      <div class="tile"><b>${report.steps.length}</b><span>scenario steps</span></div>
+      <div class="tile"><b>${report.steps.at(-1).snapshot.log_end_offset}</b><span>events in the topic</span></div>
+      <div class="tile"><b>${money(report.compare.bug_overstatement_cents)}</b><span>revenue overstated by the bug</span></div>
+    </div>` + report.steps.map((s, i) => `
+    <div class="card step"><div class="num">${i + 1}</div><div>
+      <div class="row">${pill(s.arch)}<h3 style="margin:0">${esc(s.title)}</h3><span class="muted">${s.ms} ms</span></div>
+      <div class="muted">${esc(s.text)}</div>
+      <ul class="checks">${s.checks.map((c) => `<li>${badge(c.ok)} ${esc(c.name)} ${c.detail ? `<small>${esc(c.detail)}</small>` : ""}</li>`).join("")}</ul>
+    </div></div>`).join("");
+}
+
+function runCard(title, arch, a, b, note) {
+  const same = a.checksum.md5 === b.checksum.md5;
+  return `<div class="card"><div class="row">${pill(arch)}<h3 style="margin:0">${title}</h3>${badge(same)}</div>
+    <div class="muted">${note}</div>
+    <table><tr><th>run</th><th>md5 of the output rows</th><th>rows</th><th>ms</th></tr>
+    <tr><td>run 1</td><td class="md5">${a.checksum.md5}</td><td>${a.checksum.rows}</td><td>${a.ms}</td></tr>
+    <tr><td>run 2</td><td class="md5">${b.checksum.md5}</td><td>${b.checksum.rows}</td><td>${b.ms}</td></tr></table>
+    <table style="margin-top:8px"><tr><th>day</th><th>store</th><th>sales</th><th>refunds</th><th>revenue</th></tr>
+    ${b.rows.slice(0, 8).map((r) => `<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${money(r[4])}</td></tr>`).join("")}</table>
+    ${b.rows.length > 8 ? `<div class="muted">${b.rows.length - 8} more rows</div>` : ""}</div>`;
+}
+
+function renderIdempotency() {
+  const lb = step("lambda-backfill-day").extra, kb = step("kappa-backfill-day").extra, kr = step("kappa-replay").extra, rd = step("redelivery");
+  $("idempotency").innerHTML = `<div class="grid2">
+    ${runCard("Lambda backfill of one day partition", "lambda", lb.run1, lb.run2, `DELETE + INSERT of ${lb.run1.days[0]} in one transaction from the master dataset (deduplicated by event_id), up to watermark ${lb.run1.watermark}. ${lb.run1.master_rows_scanned} master rows scanned per run.`)}
+    ${runCard("Kappa backfill of one day partition", "kappa", kb.run1, kb.run2, `Replay ${kb.run1.events_replayed} log events from offset 0, keep the first copy of each event_id of ${kb.run1.days[0]} (${kb.run1.events_for_day} events), overwrite the day in ${"kappa_daily_" + kb.run1.version}.`)}
+    ${runCard("Kappa full replay into a new version", "kappa", kr.run1, kr.run2, `kappa_daily_v2 is dropped and rebuilt from offset 0 with logic v2, ${kr.run1.events_replayed} events per replay.`)}
+    <div class="card"><div class="row">${pill("both")}<h3 style="margin:0">At-least-once redelivery</h3>${badge(rd.checks.every((c) => c.ok))}</div>
+      <div class="muted">${esc(rd.text)} ${rd.extra.events_redelivered} events delivered a second time.</div>
+      <ul class="checks">${rd.checks.map((c) => `<li>${badge(c.ok)} ${esc(c.name)} ${c.detail ? `<small>${esc(c.detail)}</small>` : ""}</li>`).join("")}</ul>
+      <p class="muted">Why it holds: Lambda writes the master dataset with ON CONFLICT (event_id) DO NOTHING. The speed layer and every Kappa version keep an event_id table and write the aggregate, the seen ids and the consumer offset in one Postgres transaction.</p>
+    </div></div>`;
+}
+
+function stack(batch, speed, max) {
+  const w = (v) => (100 * Math.max(v, 0) / max).toFixed(1);
+  return `<div class="bar"><i style="width:${w(batch)}%;background:var(--lambda)"></i><i style="width:${w(speed)}%;background:var(--speed)"></i></div>`;
+}
+
+function renderLate() {
+  const s = step("late-data"), n2 = step("lambda-nightly-2");
+  const days = report.days;
+  const panel = (st, title) => {
+    const sn = st.snapshot, b = byDay(sn.lambda_batch), sp = byDay(sn.lambda_speed), k = byDay(sn.kappa_serving), t = byDay(sn.truth_v1);
+    const max = Math.max(...days.map((d) => (t[d] || { revenue: 0 }).revenue), 1);
+    return `<div class="card"><h3>${title}</h3><table><tr><th>day</th><th>truth v1</th><th>Lambda batch</th><th>Lambda speed</th><th>batch + speed</th><th>Lambda serving</th><th>Kappa serving</th></tr>
+      ${days.map((d) => { const bv = (b[d] || { revenue: 0 }).revenue, sv = (sp[d] || { revenue: 0 }).revenue; return `<tr><td>${d}</td><td>${t[d] ? money(t[d].revenue) : "-"}</td><td>${money(bv)}</td><td>${sv ? money(sv) : "-"}</td><td>${stack(bv, sv, max)}</td>
+        <td class="${sameDay(sn.lambda_serving, sn.truth_v1, d) ? "good" : "wrong"}">${money(bv + sv)}</td><td class="${sameDay(sn.kappa_serving, sn.truth_v1, d) ? "good" : "wrong"}">${k[d] ? money(k[d].revenue) : "-"}</td></tr>`; }).join("")}
+      </table><div class="legend muted"><i style="background:var(--lambda)"></i>batch view<i style="background:var(--speed)"></i>speed view</div></div>`;
+  };
+  $("late").innerHTML = `<div class="tiles">
+      <div class="tile"><b>${s.extra.late}</b><span>late events for 2026-09-20 and 09-21</span></div>
+      <div class="tile"><b>${s.extra.resends}</b><span>resends in the same batch</span></div>
+      <div class="tile"><b>${step("lambda-nightly-1").extra.batch.watermark}</b><span>Lambda watermark before the late data</span></div>
+      <div class="tile"><b>${n2.extra.batch.watermark}</b><span>Lambda watermark after the next nightly batch</span></div></div>
+    ${panel(s, "Right after the late events arrive: Lambda serves them from the speed layer, Kappa already updated the old days")}
+    ${panel(n2, "After the next Lambda nightly batch: the batch view absorbed the late data, the speed view is empty")}
+    <div class="card muted">Lambda: the batch view for 2026-09-20 stays stale until a nightly batch moves the watermark past the late events. A day backfill in between does not help, it recomputes up to the same watermark. Kappa: the late event is one more upsert into its old (day, store) row, there is no window to close.</div>`;
+}
+
+function renderBugfix() {
+  const days = report.days;
+  const mixed = step("lambda-fix-batch").snapshot, lf = step("lambda-fix-speed").snapshot, kr = step("kappa-replay").snapshot, ks = step("kappa-swap").snapshot, bug = step("bug-found").snapshot;
+  const truth = lf.truth_v2;
+  const wrong = step("lambda-fix-batch").checks[1].detail;
+  $("bugfix").innerHTML = `<div class="card"><h3>The bug</h3><div class="muted">v1: ${esc(report.rules.v1)}. v2: ${esc(report.rules.v2)}. Revenue was overstated by ${money(report.compare.bug_overstatement_cents)} over all days.</div></div>
+    <div class="grid2">
+      <div class="card"><div class="row">${pill("lambda")}<h3 style="margin:0">Lambda needs the fix twice</h3></div>
+        <ol class="muted"><li>Change the batch SQL, backfill every day (${step("lambda-fix-batch").extra.batch.master_rows_scanned} master rows).</li><li>Serving is now a mix: v2 batch + v1 speed. Wrong rows: <b>${esc(wrong)}</b></li><li>Change the speed layer Python code, rebuild the speed view from the watermark (${step("lambda-fix-speed").extra.events_reread} events).</li></ol></div>
+      <div class="card"><div class="row">${pill("kappa")}<h3 style="margin:0">Kappa fixes once and swaps</h3></div>
+        <ol class="muted"><li>Start job v2 with the fixed code, replay the topic from offset 0 into kappa_daily_v2 (${step("kappa-replay").extra.run1.events_replayed} events).</li><li>kappa_serving keeps reading v1 the whole time, no mixed rows.</li><li>Swap the view to v2, retire the v1 job, keep its table for rollback.</li></ol></div>
+    </div>
+    <div class="card"><h3>Revenue per day against truth v2 (green equals truth for every store of the day, red differs)</h3>
+      ${dayTable([
+        { label: "before fix (v1)", rows: bug.lambda_serving },
+        { label: "Lambda: batch fixed only", rows: mixed.lambda_serving },
+        { label: "Lambda: batch + speed fixed", rows: lf.lambda_serving },
+        { label: "Kappa: serving during replay", rows: kr.kappa_serving },
+        { label: "Kappa: after swap", rows: ks.kappa_serving },
+      ], truth, days)}
+      <div class="muted">Before the fix the numbers equal truth v1, so every day is red against truth v2. During the replay Kappa is still consistently v1, then flips to v2 in one step.</div></div>`;
+}
+
+function renderCompare() {
+  const c = report.compare, L = c.lambda, K = c.kappa;
+  const row = (name, a, b) => `<tr><td>${name}</td><td style="text-align:left">${a}</td><td style="text-align:left">${b}</td></tr>`;
+  $("compare").innerHTML = `<div class="card"><table>
+    <tr><th></th><th style="text-align:left">${pill("lambda")}</th><th style="text-align:left">${pill("kappa")}</th></tr>
+    ${row("implementations of the business logic", L.logic_implementations, K.logic_implementations)}
+    ${row("jobs to run", L.jobs.join("<br>"), K.jobs.join("<br>"))}
+    ${row("tables", L.tables.join(", "), K.tables.join(", "))}
+    ${row("deploys to fix the bug", L.fix_deploys, K.fix_deploys)}
+    ${row("time to fix (this run)", L.fix_ms + " ms", K.fix_ms + " ms")}
+    ${row("data re-read to fix", L.fix_reads_detail, K.fix_reads_detail)}
+    ${row("wrong (day, store) rows served during the fix", L.wrong_rows_during_fix, K.wrong_rows_during_fix)}
+    ${row("reprocessing source", L.reprocess_source, K.reprocess_source)}
+    ${row("late data", L.late_data, K.late_data)}
+    ${row("idempotency", L.idempotency, K.idempotency)}
+    ${row("final numbers equal", c.final_equal ? "yes" : "no", c.final_equal ? "yes" : "no")}
+    </table></div>
+    <div class="grid2"><div class="card"><div class="row">${pill("lambda")}<h3 style="margin:0">The fix lives in two places</h3></div>${L.logic_code.map((x) => `<pre>${esc(x)}</pre>`).join("")}</div>
+      <div class="card"><div class="row">${pill("kappa")}<h3 style="margin:0">The fix lives in one place</h3></div>${K.logic_code.map((x) => `<pre>${esc(x)}</pre>`).join("")}
+      <p class="muted">Trade-off: Kappa needs the whole history in the log (infinite retention here) and reprocessing time grows with the log. Lambda re-reads a compacted master dataset and can recompute one day cheaply, but every rule is written twice and the two can drift.</p></div></div>`;
+}
+
+async function refreshLive() {
+  try {
+    const [st, v] = await Promise.all([fetch("/api/state").then((r) => r.json()), fetch("/api/views").then((r) => r.json())]);
+    if (!st.ready) { $("liveState").innerHTML = `<div class="card">pipelines not ready</div>`; return; }
+    const jobs = st.kappa.jobs.map((j) => `<tr><td>${j.version}${j.version === st.kappa.active ? " (serving)" : ""}</td><td>${j.logic}</td><td>${j.status}</td><td>${j.next_offset}</td><td>${j.lag}</td></tr>`).join("");
+    $("liveState").innerHTML = `<div class="tiles">
+        <div class="tile"><b>${st.log_end_offset}</b><span>log end offset</span></div>
+        <div class="tile"><b>${st.lambda.watermark}</b><span>Lambda batch watermark</span></div>
+        <div class="tile"><b>${st.lambda.batch_logic} / ${st.lambda.speed_logic}</b><span>Lambda batch / speed logic</span></div>
+        <div class="tile"><b>${st.kappa.active}</b><span>Kappa serving version</span></div></div>
+      <div class="grid2"><div class="card"><h3>Lambda consumers</h3><table><tr><th>consumer</th><th>offset</th><th>lag</th></tr>
+        <tr><td>master ingest</td><td>${st.lambda.master_offset}</td><td>${st.lambda.master_lag}</td></tr>
+        <tr><td>speed layer</td><td>${st.lambda.speed_offset}</td><td>${st.lambda.speed_lag}</td></tr></table>
+        <div class="muted">${st.lambda.master_rows} events in the master dataset</div></div>
+        <div class="card"><h3>Kappa jobs</h3><table><tr><th>version</th><th>logic</th><th>status</th><th>offset</th><th>lag</th></tr>${jobs}</table></div></div>
+      <div class="card"><h3>Serving now against truth v2</h3>${dayTable([{ label: "Lambda serving", rows: v.lambda_serving }, { label: "Kappa serving", rows: v.kappa_serving }, { label: "Lambda batch view", rows: v.lambda_batch, judge: false }, { label: "Lambda speed view", rows: v.lambda_speed, judge: false }], v.truth_v2, report ? report.days : [])}</div>`;
+  } catch (e) { $("liveState").innerHTML = `<div class="card">${esc(e)}</div>`; }
+}
+
+async function post(url) {
+  $("out").textContent = "POST " + url + " ...";
+  const r = await fetch(url, { method: "POST" });
+  const body = await r.json();
+  if (body.rows) body.rows = body.rows.length + " rows";
+  $("out").textContent = "POST " + url + " -> " + r.status + "\n" + JSON.stringify(body, null, 2);
+  refreshLive();
+  return body;
+}
+
+function renderAll() {
+  const all = report.steps.flatMap((s) => s.checks);
+  $("overall").className = "pill " + (report.ok ? "pass" : "fail");
+  $("overall").textContent = `${all.filter((c) => c.ok).length}/${all.length} checks passed`;
+  renderTimeline(); renderIdempotency(); renderLate(); renderBugfix(); renderCompare();
+}
+
+function show(tab) {
+  document.querySelectorAll("nav button").forEach((b) => b.classList.toggle("on", b.dataset.tab === tab));
+  document.querySelectorAll(".tab").forEach((t) => t.classList.toggle("on", t.id === tab));
+  if (tab === "live") refreshLive();
+}
+
+async function load() {
+  const r = await fetch("/api/scenario");
+  if (r.ok) { report = await r.json(); renderAll(); } else { $("timeline").innerHTML = `<div class="card">No scenario yet. Press Rerun scenario.</div>`; }
+}
+
+document.querySelectorAll("nav button").forEach((b) => b.addEventListener("click", () => { location.hash = b.dataset.tab; }));
+window.addEventListener("hashchange", () => show(location.hash.slice(1) || "timeline"));
+document.querySelectorAll("[data-post]").forEach((b) => b.addEventListener("click", () => post(b.dataset.post)));
+$("replay").addEventListener("click", async () => {
+  const st = await fetch("/api/state").then((r) => r.json());
+  const next = "v" + (Math.max(...st.kappa.jobs.map((j) => +j.version.slice(1))) + 1);
+  await post(`/api/kappa/replay?version=${next}&logic=v2`);
+  await post(`/api/kappa/swap?version=${next}`);
+});
+$("rerun").addEventListener("click", async () => { $("overall").textContent = "running"; await fetch("/api/scenario", { method: "POST" }); await load(); refreshLive(); });
+setInterval(() => { if (location.hash === "#live") refreshLive(); }, 3000);
+show(location.hash.slice(1) || "timeline");
+load().then(() => { if (location.hash === "#live") refreshLive(); });
+</script>
+</body>
+</html>

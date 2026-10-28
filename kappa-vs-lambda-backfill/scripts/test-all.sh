@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -euo pipefail
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/common.sh"
+
+require podman
+require curl
+for name in $(service_names); do
+  port_up "$(service_port "$name")" || fail "$name is down, run scripts/start-all.sh first"
+done
+
+log "rerunning the scenario from an empty log"
+run_scenario
+log "scenario passed every check"
+
+mkdir -p "$RUN/logs"
+status=0
+podman exec r13-app python -m unittest -v tests.test_backfill >"$RUN/logs/tests.log" 2>&1 || status=$?
+cat "$RUN/logs/tests.log"
+[ "$status" = "0" ] || fail "tests failed, see .run/logs/tests.log"
+log "all tests passed"
