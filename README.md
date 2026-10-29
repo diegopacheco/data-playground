@@ -59,6 +59,10 @@ They keep running totals instead of waiting for a nightly batch.
 * [spark-redpanda-cassandra](spark-redpanda-cassandra/) - Spark reads a Redpanda topic into Cassandra
 * [arroyo-streaming-sql](arroyo-streaming-sql/) - Arroyo streaming SQL over Redpanda
 * [bytewax-python-streaming](bytewax-python-streaming/) - Bytewax dataflows in Python over Redpanda
+* [risingwave-streaming-mv](risingwave-streaming-mv/) - RisingWave streaming materialized views over Redpanda: tumbling windows, joins, cascades and an upsert sink, corrected by late and updated rows
+* [materialize-vs-flink-sql](materialize-vs-flink-sql/) - Materialize vs Flink SQL on the same upsert topics: same 4 queries, consistent reads vs Flink changelog states that never existed
+* [feldera-dbsp-incremental](feldera-dbsp-incremental/) - Feldera/DBSP incremental SQL with +1/-1 deltas and a recursive view: a 20-row change costs the same at 62.5k and 1M rows
+* [pathway-python-streaming-rag](pathway-python-streaming-rag/) - Pathway in Python: windowed totals over files and Redpanda that update on edits, plus a live document index for top-k retrieval
 
 ## 📨 Messaging & Streaming Storage
 
@@ -98,6 +102,7 @@ Ingestion tools copy data from databases and APIs into your warehouse or lake.
 They load only what changed and follow the source schema as it grows.
 
 * [dlt-python-ingest](dlt-python-ingest/) - dlt loads Postgres and a REST API into DuckDB with merge and schema evolution
+* [redpanda-connect-yaml-pipelines](redpanda-connect-yaml-pipelines/) - Redpanda Connect pipelines in YAML and Bloblang only: validate, dedupe, enrich, batch, dead-letter topic, Postgres and file sinks
 
 ## 🎼 Orchestration
 
@@ -109,6 +114,7 @@ They retry failures and show the state of every pipeline run.
 * [prefect-python-314-etl](prefect-python-314-etl/) - Prefect 3 ETL flow on Python 3.14
 * [kestra-yaml-pipelines](kestra-yaml-pipelines/) - Kestra pipelines written only in YAML
 * [temporal-java-25-etl](temporal-java-25-etl/) - Temporal durable workflow ETL in Java 25
+* [argo-workflows-k8s-etl](argo-workflows-k8s-etl/) - Argo Workflows ETL DAG on kind: fan-out per region, a retried step, MinIO artifacts, Postgres load and a CronWorkflow
 
 ## 🛠️ Transformation
 
@@ -154,6 +160,7 @@ Arrow moves columnar data between systems without converting it.
 * [parquet-vs-orc-vs-avro](parquet-vs-orc-vs-avro/) - Parquet vs ORC vs Avro on 1M rows
 * [lance-vs-vortex-vs-parquet](lance-vs-vortex-vs-parquet/) - Lance vs Vortex vs Parquet: size, scans, random access, vector search
 * [arrow-flight-java-python](arrow-flight-java-python/) - Arrow Flight server in Java, client in Python
+* [nimble-vs-parquet](nimble-vs-parquet/) - Meta's Nimble (built from source) vs Parquet on a 4,000-column wide table and a 1M-row table: size, write, scan, projection and metadata cost
 
 ## 🗄️ Databases
 
@@ -166,6 +173,7 @@ Here: wide-column storage, a financial ledger and a graph.
 * [tigerbeetle-ledger-ingest](tigerbeetle-ledger-ingest/) - TigerBeetle double-entry ledger for orders
 * [sql-playground](sql-playground/) - PostgreSQL 18 workbench with plans, timing, hints, 8 contention races and every join type
 * [apache-age-graph](apache-age-graph/) - Apache AGE: openCypher graph and SQL tables in one Postgres 18
+* [turso-libsql-embedded-replicas](turso-libsql-embedded-replicas/) - libSQL sqld primary with embedded SQLite replicas: microsecond local reads, forwarded writes, staleness and catch-up after an outage
 
 ## 🧮 Fundamentals
 
@@ -175,3 +183,4 @@ Encodings, sketches and reprocessing patterns show up under every tool above.
 * [columnar-encodings-from-scratch](columnar-encodings-from-scratch/) - RLE, dictionary, delta, bit-packing, FSST and ALP in Rust, compared with DuckDB and Parquet
 * [datasketches-hll-kll-theta](datasketches-hll-kll-theta/) - Apache DataSketches HLL, KLL, Theta and Count-Min vs exact answers on 10M events
 * [kappa-vs-lambda-backfill](kappa-vs-lambda-backfill/) - Kappa vs Lambda: idempotent backfills, late data and a bug fix by log replay
+* [h3-hex-aggregation](h3-hex-aggregation/) - Uber H3 hexagons in DuckDB and h3-py: per-cell aggregates, parent rollups, k-ring smoothing and polyfill vs a lat/lon grid
