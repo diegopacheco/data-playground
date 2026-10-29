@@ -1,0 +1,63 @@
+id: revenue_quality
+namespace: i40.sales
+description: Data quality check on revenue_by_category, runs after every successful revenue_pipeline execution
+
+inputs:
+  - id: source_rows
+    type: INT
+    defaults: 0
+
+variables:
+  pg_url: jdbc:postgresql://i40-postgres:5432/sales
+
+tasks:
+  - id: check
+    type: io.kestra.plugin.jdbc.postgresql.Query
+    url: "{{ vars.pg_url }}"
+    username: "{{ envs.pg_user }}"
+    password: "{{ envs.pg_password }}"
+    sql: |
+      WITH stats AS (
+        SELECT CAST(count(*) AS INT) AS categories,
+               CAST(coalesce(sum(total_orders), 0) AS INT) AS loaded_orders,
+               CAST(count(*) FILTER (WHERE category IS NULL OR category = '' OR total_orders <= 0 OR total_quantity <= 0 OR total_revenue <= 0) AS INT) AS bad_rows
+        FROM revenue_by_category
+      )
+      SELECT categories, loaded_orders, bad_rows,
+             categories > 0 AND bad_rows = 0 AND loaded_orders = {{ inputs.source_rows }} AS passed
+      FROM stats
+    fetchType: FETCH_ONE
+
+  - id: record
+    type: io.kestra.plugin.jdbc.postgresql.Queries
+    url: "{{ vars.pg_url }}"
+    username: "{{ envs.pg_user }}"
+    password: "{{ envs.pg_password }}"
+    sql: |
+      CREATE TABLE IF NOT EXISTS dq_results (
+        execution_id TEXT PRIMARY KEY,
+        upstream_execution_id TEXT,
+        checked_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+        source_rows INT NOT NULL,
+        loaded_orders INT NOT NULL,
+        categories INT NOT NULL,
+        bad_rows INT NOT NULL,
+        passed BOOLEAN NOT NULL
+      );
+      INSERT INTO dq_results (execution_id, upstream_execution_id, source_rows, loaded_orders, categories, bad_rows, passed)
+      VALUES ('{{ execution.id }}', '{{ trigger.executionId ?? '' }}', {{ inputs.source_rows }}, {{ outputs.check.row.loaded_orders }}, {{ outputs.check.row.categories }}, {{ outputs.check.row.bad_rows }}, {{ outputs.check.row.passed }});
+
+  - id: gate
+    type: io.kestra.plugin.core.execution.Fail
+    condition: "{{ not outputs.check.row.passed }}"
+    errorMessage: "data quality failed: {{ outputs.check.row }} source_rows={{ inputs.source_rows }}"
+
+triggers:
+  - id: after_pipeline
+    type: io.kestra.plugin.core.trigger.Flow
+    inputs:
+      source_rows: "{{ trigger.outputs.source_rows }}"
+    dependsOn:
+      - namespace: i40.sales
+        flowId: revenue_pipeline
+        states: [SUCCESS]

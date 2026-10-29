@@ -1,0 +1,70 @@
+name: i40-kestra-yaml-pipelines
+
+services:
+  postgres:
+    image: docker.io/library/postgres:18.6-alpine
+    container_name: i40-postgres
+    environment:
+      POSTGRES_USER: sales
+      POSTGRES_PASSWORD: sales
+      POSTGRES_DB: sales
+    ports:
+      - "24032:5432"
+    volumes:
+      - i40-postgres-data:/var/lib/postgresql
+    networks:
+      - i40-net
+
+  kestra:
+    image: docker.io/kestra/kestra:v2.0.3-slim
+    container_name: i40-kestra
+    user: root
+    command: server local --config /etc/config/application.yml
+    environment:
+      JAVA_OPTS: "-Xms256m -Xmx512m"
+      ENV_PG_USER: sales
+      ENV_PG_PASSWORD: sales
+    ports:
+      - "24080:8080"
+    volumes:
+      - ./kestra/application.yml:/etc/config/application.yml:Z
+      - i40-kestra-plugins:/app/plugins
+      - i40-kestra-storage:/app/storage
+      - i40-kestra-db:/app/data
+    depends_on:
+      - postgres
+    networks:
+      - i40-net
+
+  ui:
+    build: ./ui
+    image: localhost/i40-ui:latest
+    container_name: i40-ui
+    environment:
+      PG_HOST: i40-postgres
+      PG_PORT: "5432"
+      PG_USER: sales
+      PG_PASSWORD: sales
+      PG_DB: sales
+      UI_PORT: "8000"
+      KESTRA_URL: http://localhost:24080
+    ports:
+      - "24081:8000"
+    depends_on:
+      - postgres
+    networks:
+      - i40-net
+
+volumes:
+  i40-postgres-data:
+    name: i40-postgres-data
+  i40-kestra-plugins:
+    name: i40-kestra-plugins
+  i40-kestra-storage:
+    name: i40-kestra-storage
+  i40-kestra-db:
+    name: i40-kestra-db
+
+networks:
+  i40-net:
+    name: i40-net

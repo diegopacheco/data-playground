@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kestra Revenue</title>
+<style>
+  :root { --bg: #f7f8fa; --card: #ffffff; --ink: #1f2933; --muted: #6b7785; --line: #e3e7ec; --accent: #6b46c1; --ok: #1f8a4c; --bad: #c53030; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 -apple-system, "Segoe UI", Roboto, sans-serif; }
+  header { padding: 24px 32px 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+  h1 { margin: 0; font-size: 22px; }
+  header p { margin: 4px 0 0; color: var(--muted); }
+  a.button { background: var(--accent); color: #fff; text-decoration: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; }
+  main { padding: 16px 32px 32px; display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); }
+  section { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; }
+  section.wide { grid-column: 1 / -1; }
+  h2 { margin: 0 0 12px; font-size: 16px; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--line); }
+  th { color: var(--muted); font-weight: 600; font-size: 13px; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  tfoot td { font-weight: 700; border-bottom: none; }
+  .pass { color: var(--ok); font-weight: 700; }
+  .fail { color: var(--bad); font-weight: 700; }
+  .error { color: var(--bad); }
+  code { font-size: 12px; }
+  svg text { font-size: 12px; fill: var(--ink); }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Revenue by category</h1>
+    <p>Loaded into Postgres by the Kestra flow <code>i40.sales.revenue_pipeline</code>, checked by <code>i40.sales.revenue_quality</code></p>
+  </div>
+  <a id="kestra" class="button" href="#" target="_blank" rel="noopener">Open Kestra UI</a>
+</header>
+<main>
+  <section>
+    <h2>revenue_by_category</h2>
+    <div id="table"></div>
+  </section>
+  <section>
+    <h2>Revenue chart</h2>
+    <div id="chart"></div>
+  </section>
+  <section class="wide">
+    <h2>Data quality results (latest 10)</h2>
+    <div id="quality"></div>
+  </section>
+</main>
+<script>
+const money = v => v.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+async function load(path) {
+  const res = await fetch(path);
+  const body = await res.json();
+  if (!res.ok) throw new Error(body.error || res.statusText);
+  return body;
+}
+
+function renderTable(rows) {
+  const total = rows.reduce((a, r) => ({ o: a.o + r.total_orders, q: a.q + r.total_quantity, r: a.r + r.total_revenue }), { o: 0, q: 0, r: 0 });
+  const body = rows.map(r => `<tr><td>${r.category}</td><td class="num">${r.total_orders}</td><td class="num">${r.total_quantity}</td><td class="num">${money(r.total_revenue)}</td></tr>`).join("");
+  document.getElementById("table").innerHTML = `<table><thead><tr><th>category</th><th class="num">orders</th><th class="num">quantity</th><th class="num">revenue</th></tr></thead><tbody>${body}</tbody><tfoot><tr><td>total</td><td class="num">${total.o}</td><td class="num">${total.q}</td><td class="num">${money(total.r)}</td></tr></tfoot></table>`;
+}
+
+function renderChart(rows) {
+  const max = Math.max(...rows.map(r => r.total_revenue), 1);
+  const barH = 26, gap = 10, left = 100, width = 460, height = rows.length * (barH + gap);
+  const bars = rows.map((r, i) => {
+    const y = i * (barH + gap);
+    const w = Math.max(2, (r.total_revenue / max) * (width - left - 90));
+    return `<text x="${left - 8}" y="${y + barH / 2 + 4}" text-anchor="end">${r.category}</text><rect x="${left}" y="${y}" width="${w}" height="${barH}" rx="4" fill="#6b46c1" opacity="${0.45 + 0.55 * r.total_revenue / max}"></rect><text x="${left + w + 6}" y="${y + barH / 2 + 4}">${money(r.total_revenue)}</text>`;
+  }).join("");
+  document.getElementById("chart").innerHTML = `<svg viewBox="0 0 ${width} ${height}" width="100%" role="img" aria-label="revenue per category">${bars}</svg>`;
+}
+
+function renderQuality(rows) {
+  if (!rows.length) { document.getElementById("quality").innerHTML = "<p>No data quality run yet.</p>"; return; }
+  const body = rows.map(r => `<tr><td>${new Date(r.checked_at).toLocaleString()}</td><td><code>${r.execution_id}</code></td><td><code>${r.upstream_execution_id}</code></td><td class="num">${r.source_rows}</td><td class="num">${r.loaded_orders}</td><td class="num">${r.categories}</td><td class="num">${r.bad_rows}</td><td class="${r.passed ? "pass" : "fail"}">${r.passed ? "PASSED" : "FAILED"}</td></tr>`).join("");
+  document.getElementById("quality").innerHTML = `<table><thead><tr><th>checked at</th><th>quality execution</th><th>pipeline execution</th><th class="num">csv rows</th><th class="num">loaded orders</th><th class="num">categories</th><th class="num">bad rows</th><th>result</th></tr></thead><tbody>${body}</tbody></table>`;
+}
+
+function showError(id, err) {
+  document.getElementById(id).innerHTML = `<p class="error">${err.message}. Run ./scripts/test-all.sh to execute the flows.</p>`;
+}
+
+load("/api/config").then(c => { document.getElementById("kestra").href = c.kestra_url + "/ui/main/flows?namespace=i40.sales"; });
+load("/api/revenue").then(rows => { renderTable(rows); renderChart(rows); }).catch(e => { showError("table", e); showError("chart", e); });
+load("/api/quality").then(renderQuality).catch(e => showError("quality", e));
+</script>
+</body>
+</html>

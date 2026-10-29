@@ -1,0 +1,61 @@
+id: revenue_pipeline
+namespace: i40.sales
+description: Reads orders.csv from namespace files, aggregates revenue per category with DuckDB and loads it into Postgres
+
+variables:
+  pg_url: jdbc:postgresql://i40-postgres:5432/sales
+
+tasks:
+  - id: aggregate
+    type: io.kestra.plugin.jdbc.duckdb.Query
+    inputFiles:
+      orders.csv: "{{ read('data/orders.csv') }}"
+    sql: |
+      SELECT category,
+             CAST(count(*) AS BIGINT) AS total_orders,
+             CAST(sum(quantity) AS BIGINT) AS total_quantity,
+             CAST(sum(quantity * CAST(price AS DECIMAL(12,2))) AS DECIMAL(14,2)) AS total_revenue
+      FROM read_csv('orders.csv', header = true)
+      GROUP BY category
+      ORDER BY category
+    fetchType: STORE
+
+  - id: source_rows
+    type: io.kestra.plugin.jdbc.duckdb.Query
+    inputFiles:
+      orders.csv: "{{ read('data/orders.csv') }}"
+    sql: SELECT CAST(count(*) AS BIGINT) AS source_rows FROM read_csv('orders.csv', header = true)
+    fetchType: FETCH_ONE
+
+  - id: prepare_table
+    type: io.kestra.plugin.jdbc.postgresql.Queries
+    url: "{{ vars.pg_url }}"
+    username: "{{ envs.pg_user }}"
+    password: "{{ envs.pg_password }}"
+    sql: |
+      CREATE TABLE IF NOT EXISTS revenue_by_category (
+        category TEXT PRIMARY KEY,
+        total_orders BIGINT NOT NULL,
+        total_quantity BIGINT NOT NULL,
+        total_revenue NUMERIC(14,2) NOT NULL
+      );
+      TRUNCATE revenue_by_category;
+
+  - id: load
+    type: io.kestra.plugin.jdbc.postgresql.Batch
+    url: "{{ vars.pg_url }}"
+    username: "{{ envs.pg_user }}"
+    password: "{{ envs.pg_password }}"
+    from: "{{ outputs.aggregate.uri }}"
+    sql: INSERT INTO revenue_by_category (category, total_orders, total_quantity, total_revenue) VALUES (?, ?, ?, ?)
+
+outputs:
+  - id: source_rows
+    type: INT
+    value: "{{ outputs.source_rows.row.source_rows }}"
+
+triggers:
+  - id: nightly
+    type: io.kestra.plugin.core.trigger.Schedule
+    cron: "0 3 * * *"
+    disabled: true
