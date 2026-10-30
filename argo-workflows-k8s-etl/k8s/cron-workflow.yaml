@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: CronWorkflow
+metadata:
+  name: t8-etl-cron
+  namespace: t8-etl
+spec:
+  schedules:
+    - "*/5 * * * *"
+  timezone: UTC
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 60
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  workflowSpec:
+    workflowTemplateRef:
+      name: t8-etl
+    arguments:
+      parameters:
+        - name: seed
+          value: "21"
+        - name: rows
+          value: "600"

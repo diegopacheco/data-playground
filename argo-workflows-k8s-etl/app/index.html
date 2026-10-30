@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Argo ETL</title>
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--ink:#1d2433;--mute:#6b7385;--line:#e3e6ee;--accent:#ef7b4d;--ok:#2f9e6e;--bad:#d64545;--skip:#8a8fa0;--run:#3b82f6}
+*{box-sizing:border-box}
+body{margin:0;font:14px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:var(--card);border-bottom:1px solid var(--line);padding:14px 24px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+header h1{font-size:18px;margin:0}
+header h1 span{color:var(--accent)}
+nav{display:flex;gap:6px}
+nav button{border:1px solid var(--line);background:var(--card);padding:7px 14px;border-radius:8px;cursor:pointer;font:inherit}
+nav button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+main{padding:20px 24px;max-width:1200px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:16px}
+.card h2{font-size:15px;margin:0 0 12px}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{color:var(--mute);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.03em}
+tr.pick{cursor:pointer}
+tr.pick:hover{background:#fafbff}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:600;color:#fff;background:var(--skip)}
+.Succeeded{background:var(--ok)}.Failed,.Error{background:var(--bad)}.Running,.Pending{background:var(--run)}.Skipped,.Omitted{background:var(--skip)}
+form{display:flex;gap:12px;flex-wrap:wrap;align-items:end}
+label{display:flex;flex-direction:column;font-size:12px;color:var(--mute);gap:4px}
+input{border:1px solid var(--line);border-radius:7px;padding:6px 8px;font:inherit;width:130px}
+.go{background:var(--accent);color:#fff;border:0;border-radius:8px;padding:8px 16px;font:inherit;font-weight:600;cursor:pointer}
+.dag{display:flex;gap:16px;align-items:center;overflow-x:auto;padding:6px 2px}
+.col{display:flex;flex-direction:column;gap:10px}
+.node{border:1px solid var(--line);border-left:5px solid var(--skip);border-radius:9px;padding:8px 10px;min-width:150px;background:#fff}
+.node.Succeeded{border-left-color:var(--ok);background:#fff}.node.Failed{border-left-color:var(--bad);background:#fff}.node.Skipped{border-left-color:var(--skip);background:#fff}.node.Running{border-left-color:var(--run);background:#fff}
+.node b{display:block}
+.node small{color:var(--mute);display:block}
+.tries{display:flex;gap:4px;margin-top:5px}
+.try{width:14px;height:14px;border-radius:4px;background:var(--skip)}
+.try.Succeeded{background:var(--ok)}.try.Failed,.try.Error{background:var(--bad)}.try.Running{background:var(--run)}
+.arrow{color:var(--mute);font-size:22px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.stat{background:var(--bg);border-radius:10px;padding:12px}
+.stat small{color:var(--mute);display:block;font-size:12px}
+.stat b{font-size:20px}
+.bar{height:8px;background:var(--accent);border-radius:4px}
+.mute{color:var(--mute)}
+.err{color:var(--bad)}
+section{display:none}
+section.on{display:block}
+</style>
+</head>
+<body>
+<header>
+  <h1><span>Argo</span> Workflows ETL</h1>
+  <nav>
+    <button data-tab="runs" class="on">Runs</button>
+    <button data-tab="dag">DAG and Retries</button>
+    <button data-tab="warehouse">Warehouse</button>
+    <button data-tab="cron">Cron</button>
+  </nav>
+</header>
+<main>
+  <section id="runs" class="on">
+    <div class="card">
+      <h2>Submit the t8-etl WorkflowTemplate</h2>
+      <form id="submit">
+        <label>seed<input name="seed" value="8"></label>
+        <label>rows<input name="rows" value="1000"></label>
+        <label>alert_cents<input name="alert_cents" value="9000000"></label>
+        <label>big_cents<input name="big_cents" value="75000"></label>
+        <label>fail_region<input name="fail_region" value="br"></label>
+        <button class="go">Submit</button>
+        <span id="submitted" class="mute"></span>
+      </form>
+    </div>
+    <div class="card"><h2>Workflows</h2><div id="workflows" class="mute">loading</div></div>
+  </section>
+  <section id="dag">
+    <div class="card"><h2 id="dagtitle">Pick a workflow on the Runs tab</h2><div id="dagview"></div></div>
+    <div class="card"><h2>Steps</h2><div id="steps" class="mute">no workflow selected</div></div>
+  </section>
+  <section id="warehouse">
+    <div class="card"><h2>Loaded batches (Postgres table batches)</h2><div id="batches" class="mute">loading</div></div>
+    <div class="card"><h2 id="detailtitle">Region totals</h2><div id="detail" class="mute">pick a batch</div></div>
+  </section>
+  <section id="cron">
+    <div class="card"><h2>CronWorkflow t8-etl-cron</h2><div id="cronview" class="mute">loading</div></div>
+    <div class="card"><h2>Runs created by the cron</h2><div id="cronruns" class="mute">loading</div></div>
+  </section>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const pill = p => `<span class="pill ${esc(p)}">${esc(p)}</span>`;
+const money = c => (Number(c) / 100).toLocaleString("en-US", {style: "currency", currency: "USD"});
+const secs = (a, b) => a && b ? Math.round((new Date(b) - new Date(a)) / 1000) + "s" : "";
+let picked = null;
+let all = [];
+
+async function api(path, opts) {
+  const r = await fetch(path, opts);
+  const body = await r.json();
+  if (!r.ok) throw new Error(body.error || r.status);
+  return body;
+}
+
+function table(head, rows) {
+  return `<table><tr>${head.map(h => `<th class="${h.startsWith("#") ? "num" : ""}">${esc(h.replace("#", ""))}</th>`).join("")}</tr>${rows.join("")}</table>`;
+}
+
+function runRows(list) {
+  return list.map(w => `<tr class="pick" data-wf="${esc(w.name)}"><td>${esc(w.name)}</td><td>${pill(w.phase)}</td><td>${esc(w.progress)}</td><td>${esc(w.cron || "submit")}</td><td>${esc(Object.entries(w.parameters).map(([k, v]) => k + "=" + v).join(" "))}</td><td class="num">${secs(w.started, w.finished)}</td></tr>`);
+}
+
+async function loadRuns() {
+  try {
+    all = await api("/api/workflows");
+    $("workflows").innerHTML = all.length ? table(["name", "phase", "progress", "source", "parameters", "#took"], runRows(all)) : "no workflows yet";
+    const fromCron = all.filter(w => w.cron);
+    $("cronruns").innerHTML = fromCron.length ? table(["name", "phase", "progress", "source", "parameters", "#took"], runRows(fromCron)) : "no cron runs yet";
+    if (!picked && all.length) picked = all[0].name;
+  } catch (e) { $("workflows").innerHTML = `<span class="err">${esc(e.message)}</span>`; }
+}
+
+function node(s) {
+  const tries = s.attempts.map(a => `<span class="try ${esc(a.phase)}" title="${esc(a.phase + " " + a.message)}"></span>`).join("");
+  return `<div class="node ${esc(s.phase)}"><b>${esc(s.name)}</b><small>${esc(s.phase)} · ${s.attempts.length} attempt${s.attempts.length > 1 ? "s" : ""}</small><div class="tries">${tries}</div></div>`;
+}
+
+async function loadDag() {
+  if (!picked) return;
+  try {
+    const wf = await api("/api/workflows/" + encodeURIComponent(picked));
+    $("dagtitle").innerHTML = `${esc(wf.name)} ${pill(wf.phase)}`;
+    const cols = ["extract", "transform", "merge", "load", "alert"].map(t => wf.steps.filter(s => s.template === t));
+    $("dagview").innerHTML = `<div class="dag">${cols.map(c => `<div class="col">${c.map(node).join("") || '<span class="mute">pending</span>'}</div>`).join('<span class="arrow">&rarr;</span>')}</div>`;
+    $("steps").innerHTML = table(["step", "phase", "attempts", "outputs", "message"], wf.steps.map(s =>
+      `<tr><td>${esc(s.name)}</td><td>${pill(s.phase)}</td><td>${s.attempts.map(a => pill(a.phase)).join(" ")}</td><td>${esc(Object.entries(s.outputs).map(([k, v]) => k + "=" + (String(v).length > 40 ? String(v).slice(0, 40) + "..." : v)).join(" "))}</td><td class="mute">${esc(s.attempts.map(a => a.message).filter(Boolean).join(" | ") || s.message)}</td></tr>`));
+  } catch (e) { $("dagview").innerHTML = `<span class="err">${esc(e.message)}</span>`; }
+}
+
+async function loadWarehouse() {
+  try {
+    const list = await api("/api/batches");
+    $("batches").innerHTML = list.length ? table(["batch", "#seed", "#rows", "#orders", "#total", "loaded at"], list.map(b =>
+      `<tr class="pick" data-batch="${esc(b.batch)}"><td>${esc(b.batch)}</td><td class="num">${b.seed}</td><td class="num">${b.rows}</td><td class="num">${b.orders}</td><td class="num">${money(b.cents)}</td><td>${esc(b.loaded_at)}</td></tr>`)) : "nothing loaded yet";
+    if (list.length && !$("detail").dataset.batch) showBatch(list[0].batch);
+  } catch (e) { $("batches").innerHTML = `<span class="err">${esc(e.message)}</span>`; }
+}
+
+async function showBatch(batch) {
+  const d = await api("/api/batches/" + encodeURIComponent(batch));
+  $("detail").dataset.batch = batch;
+  $("detailtitle").textContent = "Region totals for " + batch;
+  const top = Math.max(1, ...d.regions.map(r => r.cents));
+  const hot = new Set(d.alerts.map(a => a.region));
+  $("detail").innerHTML = table(["region", "#orders", "#total", "#max order", "#big orders", "#days", "share", "alert"], d.regions.map(r =>
+    `<tr><td>${esc(r.region)}</td><td class="num">${r.orders}</td><td class="num">${money(r.cents)}</td><td class="num">${money(r.max_cents)}</td><td class="num">${r.big_orders}</td><td class="num">${r.days}</td><td style="width:180px"><div class="bar" style="width:${Math.round(r.cents / top * 100)}%"></div></td><td>${hot.has(r.region) ? '<span class="pill Failed">above threshold</span>' : ""}</td></tr>`)) +
+    `<p class="mute">${d.alerts.length ? d.alerts.length + " alert rows, threshold " + money(d.alerts[0].threshold) : "no alert rows: the conditional alert step was skipped or nothing crossed the threshold"}</p>`;
+}
+
+async function loadCron() {
+  try {
+    const c = await api("/api/cron");
+    $("cronview").innerHTML = `<div class="grid">${[["schedules", c.schedules.join(", ")], ["concurrency", c.concurrency], ["suspended", c.suspended], ["last scheduled", c.last_scheduled || "not yet"], ["active", c.active], ["succeeded / failed", c.succeeded + " / " + c.failed]].map(([k, v]) => `<div class="stat"><small>${esc(k)}</small><b>${esc(v)}</b></div>`).join("")}</div>`;
+  } catch (e) { $("cronview").innerHTML = `<span class="err">${esc(e.message)}</span>`; }
+}
+
+function show(tab) {
+  document.querySelectorAll("nav button").forEach(b => b.classList.toggle("on", b.dataset.tab === tab));
+  document.querySelectorAll("section").forEach(s => s.classList.toggle("on", s.id === tab));
+  location.hash = tab;
+  refresh();
+}
+
+function refresh() {
+  const tab = location.hash.slice(1) || "runs";
+  loadRuns().then(() => tab === "dag" && loadDag());
+  if (tab === "warehouse") loadWarehouse();
+  if (tab === "cron") loadCron();
+}
+
+document.querySelectorAll("nav button").forEach(b => b.onclick = () => show(b.dataset.tab));
+document.addEventListener("click", e => {
+  const wf = e.target.closest("[data-wf]");
+  if (wf) { picked = wf.dataset.wf; show("dag"); }
+  const batch = e.target.closest("[data-batch]");
+  if (batch) showBatch(batch.dataset.batch);
+});
+$("submit").onsubmit = async e => {
+  e.preventDefault();
+  const q = new URLSearchParams(new FormData(e.target)).toString();
+  try {
+    const r = await api("/api/submit?" + q, {method: "POST"});
+    picked = r.name;
+    $("submitted").textContent = "submitted " + r.name;
+    loadRuns();
+  } catch (err) { $("submitted").innerHTML = `<span class="err">${esc(err.message)}</span>`; }
+};
+const params = new URLSearchParams(location.search);
+if (params.get("wf")) picked = params.get("wf");
+if (params.get("batch")) showBatch(params.get("batch"));
+show(location.hash.slice(1) || "runs");
+setInterval(refresh, 3000);
+</script>
+</body>
+</html>

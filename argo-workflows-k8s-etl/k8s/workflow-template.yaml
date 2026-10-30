@@ -1,0 +1,145 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: t8-etl
+  namespace: t8-etl
+spec:
+  serviceAccountName: t8-etl-runner
+  entrypoint: etl
+  activeDeadlineSeconds: 600
+  podGC:
+    strategy: OnWorkflowSuccess
+  arguments:
+    parameters:
+      - name: seed
+        value: "8"
+      - name: rows
+        value: "1000"
+      - name: big_cents
+        value: "75000"
+      - name: alert_cents
+        value: "9000000"
+      - name: fail_region
+        value: br
+  templates:
+    - name: etl
+      dag:
+        tasks:
+          - name: extract
+            template: extract
+          - name: transform
+            depends: extract
+            template: transform
+            withParam: "{{tasks.extract.outputs.parameters.regions}}"
+            arguments:
+              parameters:
+                - name: region
+                  value: "{{item}}"
+              artifacts:
+                - name: orders
+                  from: "{{tasks.extract.outputs.artifacts.orders}}"
+          - name: merge
+            depends: transform
+            template: merge
+          - name: load
+            depends: merge
+            template: load
+            arguments:
+              artifacts:
+                - name: report
+                  from: "{{tasks.merge.outputs.artifacts.report}}"
+          - name: alert
+            depends: load
+            template: alert
+            when: "{{tasks.merge.outputs.parameters.max_region_cents}} > {{workflow.parameters.alert_cents}}"
+            arguments:
+              artifacts:
+                - name: report
+                  from: "{{tasks.merge.outputs.artifacts.report}}"
+
+    - name: extract
+      container: &step
+        image: localhost/t8-argo-etl:v1
+        imagePullPolicy: Never
+        command: [python, etl.py]
+        args: [extract, --seed, "{{workflow.parameters.seed}}", --rows, "{{workflow.parameters.rows}}", --out, /tmp/work]
+        resources:
+          requests: {cpu: 10m, memory: 32Mi}
+          limits: {cpu: 500m, memory: 128Mi}
+      outputs:
+        parameters:
+          - name: regions
+            valueFrom: {path: /tmp/work/regions.json}
+          - name: count
+            valueFrom: {path: /tmp/work/count}
+        artifacts:
+          - name: orders
+            path: /tmp/work/orders.json
+            archive: {none: {}}
+
+    - name: transform
+      retryStrategy:
+        limit: "2"
+        retryPolicy: Always
+        backoff:
+          duration: "2s"
+      inputs:
+        parameters:
+          - name: region
+        artifacts:
+          - name: orders
+            path: /tmp/work/orders.json
+      container:
+        <<: *step
+        args: [transform, --region, "{{inputs.parameters.region}}", --source, /tmp/work/orders.json, --out, /tmp/work/part.json, --big-cents, "{{workflow.parameters.big_cents}}", --fail-region, "{{workflow.parameters.fail_region}}", --attempt, "{{retries}}"]
+      outputs:
+        artifacts:
+          - name: part
+            path: /tmp/work/part.json
+            archive: {none: {}}
+            s3:
+              key: "{{workflow.name}}/parts/{{inputs.parameters.region}}.json"
+
+    - name: merge
+      inputs:
+        artifacts:
+          - name: parts
+            path: /tmp/work/parts
+            s3:
+              key: "{{workflow.name}}/parts"
+      container:
+        <<: *step
+        args: [merge, --parts, /tmp/work/parts, --out, /tmp/work]
+      outputs:
+        parameters:
+          - name: max_region_cents
+            valueFrom: {path: /tmp/work/max_region_cents}
+          - name: total_cents
+            valueFrom: {path: /tmp/work/total_cents}
+        artifacts:
+          - name: report
+            path: /tmp/work/report.json
+            archive: {none: {}}
+
+    - name: load
+      inputs:
+        artifacts:
+          - name: report
+            path: /tmp/work/report.json
+      container:
+        <<: *step
+        args: [load, --source, /tmp/work/report.json, --batch, "{{workflow.name}}", --seed, "{{workflow.parameters.seed}}", --rows, "{{workflow.parameters.rows}}"]
+        env: &db
+          - name: DATABASE_URL
+            valueFrom:
+              secretKeyRef: {name: t8-postgres-creds, key: url}
+
+    - name: alert
+      inputs:
+        artifacts:
+          - name: report
+            path: /tmp/work/report.json
+      container:
+        <<: *step
+        args: [alert, --source, /tmp/work/report.json, --batch, "{{workflow.name}}", --threshold, "{{workflow.parameters.alert_cents}}"]
+        env: *db

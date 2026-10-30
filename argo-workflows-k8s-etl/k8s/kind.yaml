@@ -1,0 +1,20 @@
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: t8-argo
+containerdConfigPatches:
+  - |-
+    [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+      NoNewKeyring = true
+nodes:
+  - role: control-plane
+    image: docker.io/kindest/node:v1.35.0@sha256:452d707d4862f52530247495d180205e029056831160e22870e37e3f6c1ac31f
+    extraPortMappings:
+      - containerPort: __argo_ui__
+        hostPort: __argo_ui__
+        listenAddress: 127.0.0.1
+      - containerPort: __etl_ui__
+        hostPort: __etl_ui__
+        listenAddress: 127.0.0.1
+      - containerPort: __postgres__
+        hostPort: __postgres__
+        listenAddress: 127.0.0.1
