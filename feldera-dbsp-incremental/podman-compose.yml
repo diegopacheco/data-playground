@@ -1,0 +1,42 @@
+name: t3-feldera-dbsp-incremental
+
+services:
+  t3-feldera:
+    image: ghcr.io/feldera/pipeline-manager:0.371.0
+    container_name: t3-feldera
+    hostname: t3-feldera
+    mem_limit: 2048m
+    cpus: 3
+    restart: unless-stopped
+    ports:
+      - "${feldera:-31201}:8080"
+    volumes:
+      - t3-feldera-data:/home/ubuntu/.feldera
+    networks:
+      - t3-net
+
+  t3-app:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: t3-feldera-dbsp-incremental:latest
+    container_name: t3-app
+    restart: unless-stopped
+    environment:
+      FELDERA_URL: http://t3-feldera:8080
+      UI_PORT: "8080"
+    mem_limit: 768m
+    ports:
+      - "${ui:-31200}:8080"
+    networks:
+      - t3-net
+    depends_on:
+      - t3-feldera
+
+volumes:
+  t3-feldera-data:
+    name: t3-feldera-data
+
+networks:
+  t3-net:
+    name: t3-net

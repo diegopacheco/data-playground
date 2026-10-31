@@ -1,0 +1,9 @@
+FROM docker.io/library/python:3.15.2-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+ENV PYTHONUNBUFFERED=1
+COPY sql sql
+COPY app app
+COPY tests tests
+CMD ["python", "app/server.py"]

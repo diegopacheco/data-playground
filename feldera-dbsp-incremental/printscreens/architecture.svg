@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1160" height="560" viewBox="0 0 1160 560">
+  <defs>
+    <style>@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&amp;display=swap'); text { font-family: 'Caveat', 'Comic Sans MS', cursive; fill: #1f2933; }</style>
+    <filter id="wobble"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="3"/></filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1f2933"/></marker>
+  </defs>
+  <rect width="1160" height="560" fill="#ffffff"/>
+  <g filter="url(#wobble)" stroke="#1f2933" stroke-width="2">
+    <rect x="20" y="210" width="160" height="100" rx="10" fill="#d3f9d8"/>
+    <rect x="220" y="150" width="270" height="230" rx="10" fill="#ffd8a8"/>
+    <rect x="600" y="60" width="540" height="420" rx="14" fill="#f8f9fa" stroke-dasharray="8 6"/>
+    <rect x="630" y="100" width="480" height="100" rx="10" fill="#d0ebff"/>
+    <rect x="630" y="240" width="480" height="210" rx="10" fill="#e5dbff"/>
+    <rect x="650" y="300" width="130" height="120" rx="8" fill="#ffffff"/>
+    <rect x="830" y="300" width="260" height="120" rx="8" fill="#ffffff"/>
+    <rect x="220" y="440" width="270" height="80" rx="10" fill="#fff3bf"/>
+    <line x1="180" y1="260" x2="217" y2="260" marker-end="url(#arrow)"/>
+    <line x1="490" y1="180" x2="627" y2="150" marker-end="url(#arrow)"/>
+    <line x1="490" y1="270" x2="647" y2="330" marker-end="url(#arrow)"/>
+    <polyline points="900,420 900,437 560,437 493,360" fill="none" marker-end="url(#arrow)" stroke-dasharray="6 5"/>
+    <line x1="780" y1="360" x2="827" y2="360" marker-end="url(#arrow)"/>
+    <line x1="870" y1="200" x2="870" y2="237" marker-end="url(#arrow)"/>
+    <line x1="355" y1="380" x2="355" y2="437" marker-end="url(#arrow)"/>
+  </g>
+  <text x="300" y="45" font-size="32" font-weight="700" text-anchor="middle">feldera-dbsp-incremental</text>
+  <text x="300" y="76" font-size="19" text-anchor="middle">SQL views maintained by DBSP, cost follows the change</text>
+  <text x="100" y="250" font-size="22" text-anchor="middle">Browser UI</text>
+  <text x="100" y="275" font-size="17" text-anchor="middle">5 tabs, plain JS</text>
+  <text x="100" y="297" font-size="17" text-anchor="middle">:31200</text>
+  <text x="355" y="185" font-size="24" text-anchor="middle">t3-app: server.py</text>
+  <text x="355" y="212" font-size="17" text-anchor="middle">Python 3.15, stdlib http + urllib</text>
+  <text x="355" y="237" font-size="17" text-anchor="middle">feldera.py: deploy, ingress, egress,</text>
+  <text x="355" y="259" font-size="17" text-anchor="middle">completion tokens, ad hoc query</text>
+  <text x="355" y="284" font-size="17" text-anchor="middle">scenarios: changes, scaling</text>
+  <text x="355" y="309" font-size="17" text-anchor="middle">recompute.py: DuckDB 2.0.0 and</text>
+  <text x="355" y="331" font-size="17" text-anchor="middle">pure Python full recompute</text>
+  <text x="355" y="356" font-size="17" text-anchor="middle">tests/ run inside this container</text>
+  <text x="870" y="90" font-size="20" text-anchor="middle">t3-feldera: Feldera 0.371.0 on t3-net, :31201</text>
+  <text x="870" y="133" font-size="24" text-anchor="middle">pipeline manager /v0</text>
+  <text x="870" y="160" font-size="17" text-anchor="middle">SQL compiler (Java) to Rust, cargo build of the circuit</text>
+  <text x="870" y="183" font-size="17" text-anchor="middle">PUT pipeline, start, stop, clear, proxies ingress and egress</text>
+  <text x="870" y="272" font-size="24" text-anchor="middle">pipeline "incremental": DBSP circuit, 2 workers</text>
+  <text x="715" y="335" font-size="20" text-anchor="middle">tables</text>
+  <text x="715" y="362" font-size="17" text-anchor="middle">orders (pk id)</text>
+  <text x="715" y="386" font-size="17" text-anchor="middle">edges (pk src,dst)</text>
+  <text x="960" y="330" font-size="20" text-anchor="middle">materialized views</text>
+  <text x="960" y="355" font-size="17" text-anchor="middle">region_totals: GROUP BY region</text>
+  <text x="960" y="378" font-size="17" text-anchor="middle">hourly_revenue: TUMBLE 1 hour</text>
+  <text x="960" y="401" font-size="17" text-anchor="middle">reachable: RECURSIVE closure</text>
+  <text x="545" y="140" font-size="15" text-anchor="middle">PUT, start</text>
+  <text x="545" y="250" font-size="15" text-anchor="middle">POST /ingress</text>
+  <text x="545" y="268" font-size="15" text-anchor="middle">insert / delete</text>
+  <text x="545" y="470" font-size="15" text-anchor="middle">egress stream</text>
+  <text x="545" y="488" font-size="15" text-anchor="middle">+1 / -1 weights</text>
+  <text x="355" y="470" font-size="22" text-anchor="middle">in memory baseline</text>
+  <text x="355" y="497" font-size="17" text-anchor="middle">same rows in DuckDB and a Python dict</text>
+  <text x="870" y="510" font-size="18" text-anchor="middle">volume t3-feldera-data: compiled binary, pipeline storage</text>
+</svg>

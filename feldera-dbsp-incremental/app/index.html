@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Feldera DBSP Incremental</title>
+<style>
+:root{--bg:#f7f8fb;--card:#fff;--ink:#1d2433;--muted:#667085;--line:#e4e7ec;--accent:#6941c6;--feldera:#6941c6;--duck:#f79009;--py:#2e90fa;--ok:#12b76a;--bad:#f04438}
+*{box-sizing:border-box}
+body{margin:0;font:14px/1.5 system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:var(--card);border-bottom:1px solid var(--line);padding:16px 24px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+header h1{font-size:18px;margin:0}
+header .sub{color:var(--muted)}
+header .btns{margin-left:auto;display:flex;gap:8px}
+nav{display:flex;gap:4px;padding:0 24px;background:var(--card);border-bottom:1px solid var(--line);overflow-x:auto}
+nav button{border:0;background:none;padding:12px 14px;font:inherit;color:var(--muted);border-bottom:2px solid transparent;cursor:pointer}
+nav button.on{color:var(--ink);border-color:var(--accent);font-weight:600}
+main{padding:20px 24px;max-width:1240px;margin:0 auto}
+section{display:none}
+section.on{display:block}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:16px}
+.card h3{margin:0 0 4px;font-size:15px}
+.card p{margin:0 0 12px;color:var(--muted)}
+button.act{background:var(--accent);color:#fff;border:0;border-radius:6px;padding:8px 14px;font:inherit;cursor:pointer}
+button.act:disabled{opacity:.5}
+.kv{display:flex;gap:22px;flex-wrap:wrap;margin:6px 0}
+.kv div b{display:block;font-size:20px}
+.kv div span{color:var(--muted);font-size:12px}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{text-align:left;padding:5px 8px;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font-weight:500}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+.w{display:inline-block;min-width:30px;text-align:center;padding:0 6px;border-radius:10px;font-size:12px;font-weight:600}
+.wp{background:#d1f3e1;color:#067647}
+.wm{background:#fee4e2;color:#b42318}
+pre{background:#f9fafb;border:1px solid var(--line);border-radius:8px;padding:12px;overflow:auto;font-size:12.5px;margin:0}
+.step{border-top:1px solid var(--line);padding-top:10px;margin-top:10px}
+.step h4{margin:0 0 6px;font-size:14px}
+.step .meta{color:var(--muted);font-size:12px}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.mx{border-collapse:collapse}
+.mx td,.mx th{width:28px;height:24px;text-align:center;padding:0;border:1px solid var(--line);font-size:11px}
+.mx td.on{background:#ebe4ff;color:#42307d;font-weight:600}
+.mx td.gone{background:#fee4e2;color:#b42318}
+.mx td.new{background:#d1f3e1;color:#067647}
+.heat td{width:auto;min-width:18px;height:20px;padding:0;border:1px solid #fff}
+.legend{color:var(--muted);font-size:12px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin:0 4px 0 10px;vertical-align:middle}
+.err{color:var(--bad);white-space:pre-wrap}
+.ok{color:var(--ok);font-weight:600}
+code{background:#f2f4f7;padding:1px 5px;border-radius:4px}
+svg text{font:11px system-ui,sans-serif;fill:#475467}
+</style>
+</head>
+<body>
+<header>
+  <h1>Feldera DBSP Incremental</h1>
+  <span class="sub">SQL views kept up to date by DBSP: every change costs work proportional to the change</span>
+  <div class="btns">
+    <button class="act" data-run="changes">Run changes</button>
+    <button class="act" data-run="scaling">Run scaling</button>
+  </div>
+</header>
+<nav id="tabs">
+  <button data-tab="pipeline" class="on">Pipeline</button>
+  <button data-tab="deltas">Deltas</button>
+  <button data-tab="recursive">Recursive</button>
+  <button data-tab="windows">Windows</button>
+  <button data-tab="scaling">Scaling</button>
+</nav>
+<main>
+  <div id="error" class="err"></div>
+  <section id="pipeline" class="on"></section>
+  <section id="deltas"></section>
+  <section id="recursive"></section>
+  <section id="windows"></section>
+  <section id="scaling"></section>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+const fmt = n => n == null ? "-" : Number(n).toLocaleString("en-US");
+const weight = w => `<span class="w ${w > 0 ? "wp" : "wm"}">${w > 0 ? "+1" : "-1"}</span>`;
+const empty = what => `<div class="card"><p>No ${what} yet. Press the button above or run <code>scripts/test-all.sh</code>.</p></div>`;
+let results = {};
+
+document.querySelectorAll("#tabs button").forEach(b => b.onclick = () => {
+  document.querySelectorAll("#tabs button, section").forEach(e => e.classList.remove("on"));
+  b.classList.add("on");
+  $(b.dataset.tab).classList.add("on");
+  history.replaceState(null, "", "#" + b.dataset.tab);
+});
+
+document.querySelectorAll("[data-run]").forEach(b => b.onclick = async () => {
+  document.querySelectorAll("[data-run]").forEach(x => x.disabled = true);
+  $("error").textContent = "";
+  try {
+    const r = await fetch("/api/run/" + b.dataset.run, {method: "POST"});
+    const body = await r.json();
+    if (!r.ok) throw new Error(body.error);
+    await load();
+  } catch (e) { $("error").textContent = e.message; }
+  document.querySelectorAll("[data-run]").forEach(x => x.disabled = false);
+});
+
+function changeTable(changes, cols) {
+  if (!changes.length) return `<p class="legend">no change</p>`;
+  return `<table><tr><th>w</th>${cols.map(c => `<th class="num">${c}</th>`).join("")}</tr>${changes.map(c =>
+    `<tr><td>${weight(c.weight)}</td>${cols.map(k => `<td class="num">${esc(fmt2(c.row[k]))}</td>`).join("")}</tr>`).join("")}</table>`;
+}
+const fmt2 = v => typeof v === "number" ? fmt(v) : String(v).replace(/2026-01-01[T ]/, "d1 ").replace(/2026-01-02[T ]/, "d2 ").replace(":00:00", "h");
+
+function renderPipeline(p) {
+  const m = p.metrics || {};
+  $("pipeline").innerHTML = `
+  <div class="card"><h3>Pipeline <code>${esc(p.name)}</code></h3>
+    <p>One SQL program, compiled by the Feldera SQL compiler to a Rust DBSP circuit, running inside the pipeline manager.</p>
+    <div class="kv">
+      <div><b>${esc(p.program_status)}</b><span>program status</span></div>
+      <div><b>${esc(p.deployment_status)}</b><span>deployment status</span></div>
+      <div><b>${esc(p.storage_status)}</b><span>storage</span></div>
+      <div><b>${esc(p.platform_version)}</b><span>platform version</span></div>
+      <div><b>${esc(p.runtime_config.workers)}</b><span>DBSP workers</span></div>
+      <div><b>${fmt(m.total_input_records)}</b><span>input records</span></div>
+      <div><b>${fmt(m.total_processed_records)}</b><span>processed records</span></div>
+      <div><b>${fmt(m.total_completed_steps)}</b><span>completed steps</span></div>
+      <div><b>${m.rss_bytes ? (m.rss_bytes / 1048576).toFixed(0) + " MB" : "-"}</b><span>pipeline RSS</span></div>
+    </div></div>
+  <div class="grid">
+    <div class="card"><h3>program.sql</h3><p>2 tables, a group by, a tumbling window and a recursive view.</p><pre>${esc(p.program_code)}</pre></div>
+    <div class="card"><h3>HTTP connectors</h3><p>Ingress endpoints the app pushed to and egress streams it opened, as counted by the pipeline.</p>
+      <table><tr><th>input</th><th class="num">records</th></tr>${p.inputs.map(i => `<tr><td>${esc(i.name)}</td><td class="num">${fmt(i.records)}</td></tr>`).join("")}</table>
+      <br><table><tr><th>output</th><th class="num">records</th></tr>${p.outputs.map(o => `<tr><td>${esc(o.name)}</td><td class="num">${fmt(o.records)}</td></tr>`).join("")}</table>
+    </div>
+  </div>`;
+}
+
+function renderDeltas(r) {
+  if (!r) { $("deltas").innerHTML = empty("changes run"); return; }
+  const orderSteps = r.steps.filter(s => s.table === "orders");
+  $("deltas").innerHTML = `
+  <div class="card"><h3>Output changes per input step</h3>
+    <p>Each step is one HTTP ingress request to <code>orders</code>. The egress stream of each view sends back only the rows that changed, with weight +1 (insert) or -1 (delete). An update is a -1 of the old row and a +1 of the new one.</p>
+    ${orderSteps.map(s => `<div class="step"><h4>${esc(s.label)}</h4>
+      <div class="meta">${s.updates.length} input updates, pipeline step ${s.step}, ${s.ms} ms from POST to completion</div>
+      <div class="cols">
+        <div><b>region_totals</b>${changeTable(s.deltas.region_totals, ["region", "orders", "revenue"])}</div>
+        <div><b>hourly_revenue</b>${changeTable(s.deltas.hourly_revenue.slice(0, 12), ["window_start", "region", "orders", "revenue"])}
+          ${s.deltas.hourly_revenue.length > 12 ? `<p class="legend">+ ${s.deltas.hourly_revenue.length - 12} more changes</p>` : ""}</div>
+      </div></div>`).join("")}
+  </div>
+  <div class="card"><h3>region_totals snapshot</h3><p>Ad hoc query <code>SELECT * FROM region_totals</code> after the last step. It equals the sum of every weight streamed above.</p>
+    <table><tr><th>region</th><th class="num">orders</th><th class="num">revenue</th></tr>${r.snapshot.region_totals.sort((a, b) => a.region.localeCompare(b.region)).map(x =>
+      `<tr><td>${x.region}</td><td class="num">${fmt(x.orders)}</td><td class="num">${fmt(x.revenue)}</td></tr>`).join("")}</table></div>`;
+}
+
+function matrix(edges, reach, before) {
+  const nodes = [...Array(11).keys()].map(i => i + 1);
+  const has = (set, s, d) => set.has(s + ">" + d);
+  const now = new Set(reach.map(e => e.src + ">" + e.dst));
+  const was = before ? new Set(before) : null;
+  return `<table class="mx"><tr><th></th>${nodes.map(n => `<th>${n}</th>`).join("")}</tr>${nodes.map(s => `<tr><th>${s}</th>${nodes.map(d => {
+    const on = has(now, s, d), prev = was && has(was, s, d);
+    const cls = on ? (was && !prev ? "new" : "on") : (prev ? "gone" : "");
+    return `<td class="${cls}">${on ? (edges.has(s + ">" + d) ? "e" : "r") : (prev ? "x" : "")}</td>`;
+  }).join("")}</tr>`).join("")}</table>`;
+}
+
+function renderRecursive(r) {
+  if (!r) { $("recursive").innerHTML = empty("changes run"); return; }
+  const graphSteps = r.steps.filter(s => s.table === "edges");
+  let edges = new Set(), reach = new Map();
+  const blocks = graphSteps.map(s => {
+    const before = [...reach.keys()];
+    s.updates.forEach(u => { const k = Object.keys(u)[0], e = u[k]; k === "insert" ? edges.add(e.src + ">" + e.dst) : edges.delete(e.src + ">" + e.dst); });
+    s.deltas.reachable.forEach(c => { const k = c.row.src + ">" + c.row.dst; c.weight > 0 ? reach.set(k, c.row) : reach.delete(k); });
+    const plus = s.deltas.reachable.filter(c => c.weight > 0).length, minus = s.deltas.reachable.length - plus;
+    return `<div class="card"><h3>${esc(s.label)}</h3>
+      <p>${s.updates.length} edge update(s) gave <span class="w wp">${plus}</span> new and <span class="w wm">${minus}</span> retracted reachable pairs in ${s.ms} ms.</p>
+      ${matrix(new Set(edges), [...reach.values()], s === graphSteps[0] ? null : before)}</div>`;
+  });
+  $("recursive").innerHTML = `
+  <div class="card"><h3>Transitive closure with <code>DECLARE RECURSIVE VIEW reachable</code></h3>
+    <p>Rows are the source node, columns the destination. <b>e</b> is an edge, <b>r</b> is reachable through a path. Green cells were added and red <b>x</b> cells were retracted by that step. DBSP iterates the recursive view to a fixed point incrementally, so deleting an edge only retracts the paths that went through it.</p>
+    <p class="legend">graph: 1-2-3-4-5-6-3 cycle, 2-7-8-9, 10-11</p></div>
+  <div class="grid">${blocks.join("")}</div>`;
+}
+
+function heat(rows, title, note) {
+  const regions = [...new Set(rows.map(r => r.region))].sort();
+  const hours = [...new Set(rows.map(r => r.window_start))].sort();
+  const max = Math.max(...rows.map(r => r.revenue));
+  const at = new Map(rows.map(r => [r.window_start + r.region, r]));
+  return `<div class="card"><h3>${title}</h3><p>${note}</p><div style="overflow-x:auto"><table class="mx heat"><tr><th></th>${hours.map((h, i) => `<th>${i % 6 === 0 ? fmt2(h) : ""}</th>`).join("")}</tr>
+    ${regions.map(g => `<tr><th>${g}</th>${hours.map(h => { const r = at.get(h + g); const a = r ? 0.12 + 0.88 * r.revenue / max : 0;
+      return `<td title="${h} ${g}: ${r ? r.orders + " orders, " + r.revenue : "empty"}" style="background:rgba(105,65,198,${a})"></td>`; }).join("")}</tr>`).join("")}</table></div>
+    <p class="legend">${hours.length} one hour windows x ${regions.length} regions, ${rows.length} rows, darker = more revenue</p></div>`;
+}
+
+function renderWindows(c, s) {
+  if (!c && !s) { $("windows").innerHTML = empty("run"); return; }
+  const upd = c && c.steps.find(x => x.label.startsWith("update"));
+  $("windows").innerHTML = `
+  <div class="card"><h3><code>TUMBLE(TABLE orders, DESCRIPTOR(ts), INTERVAL '1' HOUR)</code></h3>
+    <p>Every order falls in exactly one one hour window. The view groups by <code>window_start, region</code>, so a change to one order only touches the window it belongs to.</p></div>
+  ${s ? heat(s.final.hourly_revenue, "hourly_revenue after the scaling run", `${fmt(s.final.rows)} orders over 48 hours, kept current while rows were inserted and deleted`) : ""}
+  ${c ? heat(c.snapshot.hourly_revenue, "hourly_revenue after the changes run", "the 50 orders left after the inserts, deletes and updates") : ""}
+  ${upd ? `<div class="card"><h3>${esc(upd.label)}</h3><p>Only the windows of orders 1, 2 and 3 changed: each one a -1 for the old aggregate and a +1 for the new one.</p>${changeTable(upd.deltas.hourly_revenue, ["window_start", "region", "orders", "revenue"])}</div>` : ""}`;
+}
+
+function chart(series, xs, xlabel, ylabel) {
+  const W = 560, H = 300, L = 56, R = 16, T = 16, B = 44;
+  const ys = series.flatMap(s => s.values);
+  const ymax = Math.max(...ys) * 1.1;
+  const lx = x => L + (Math.log(x) - Math.log(xs[0])) / (Math.log(xs[xs.length - 1]) - Math.log(xs[0])) * (W - L - R);
+  const ly = y => H - B - y / ymax * (H - T - B);
+  const ticks = [0, 0.25, 0.5, 0.75, 1].map(f => f * ymax);
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%">
+    ${ticks.map(t => `<line x1="${L}" x2="${W - R}" y1="${ly(t)}" y2="${ly(t)}" stroke="#eaecf0"/><text x="${L - 6}" y="${ly(t) + 4}" text-anchor="end">${t.toFixed(t < 10 ? 1 : 0)}</text>`).join("")}
+    ${xs.map(x => `<text x="${lx(x)}" y="${H - B + 16}" text-anchor="middle">${x >= 1e6 ? x / 1e6 + "M" : x >= 1e3 ? x / 1e3 + "k" : x}</text>`).join("")}
+    <text x="${(W + L) / 2}" y="${H - 6}" text-anchor="middle">${xlabel}</text>
+    <text x="12" y="${(H - B) / 2}" text-anchor="middle" transform="rotate(-90 12 ${(H - B) / 2})">${ylabel}</text>
+    ${series.map(s => `<polyline fill="none" stroke="${s.color}" stroke-width="2.5" points="${s.values.map((v, i) => lx(xs[i]) + "," + ly(v)).join(" ")}"/>
+      ${s.values.map((v, i) => `<circle cx="${lx(xs[i])}" cy="${ly(v)}" r="3.5" fill="${s.color}"/>`).join("")}`).join("")}
+  </svg><div class="legend">${series.map(s => `<i style="background:${s.color}"></i>${s.name}`).join("")}</div>`;
+}
+
+function renderScaling(r) {
+  if (!r) { $("scaling").innerHTML = empty("scaling run"); return; }
+  const xs = r.by_size.map(s => s.rows);
+  const last = r.by_size[r.by_size.length - 1], first = r.by_size[0];
+  $("scaling").innerHTML = `
+  <div class="kv card">
+    <div><b>${first.feldera_delta_ms} -> ${last.feldera_delta_ms} ms</b><span>Feldera, 20 row change, ${fmt(first.rows)} -> ${fmt(last.rows)} rows</span></div>
+    <div><b>${first.duckdb_full_ms} -> ${last.duckdb_full_ms} ms</b><span>DuckDB full recompute</span></div>
+    <div><b>${first.python_full_ms} -> ${last.python_full_ms} ms</b><span>Python full recompute</span></div>
+    <div><b>${r.by_size.map(s => s.output_changes).join(" / ")}</b><span>output changes per 20 row change</span></div>
+    <div><b class="ok">${r.final.matches_duckdb && r.final.matches_python ? "equal" : "DIFFERENT"}</b><span>Feldera views vs DuckDB and Python</span></div>
+  </div>
+  <div class="grid">
+    <div class="card"><h3>Same 20 row change, growing table</h3><p>10 deletes and 10 inserts, median of 5. Feldera only processes the change, the recomputes scan every row.</p>
+      ${chart([{name: "Feldera delta (POST to completion)", color: "var(--feldera)", values: r.by_size.map(s => s.feldera_delta_ms)},
+               {name: "DuckDB full recompute", color: "var(--duck)", values: r.by_size.map(s => s.duckdb_full_ms)},
+               {name: "Python full recompute", color: "var(--py)", values: r.by_size.map(s => s.python_full_ms)}], xs, "rows in orders (log scale)", "ms")}</div>
+    <div class="card"><h3>Growing change, same ${fmt(r.by_delta[0].rows)} row table</h3><p>The cost follows the size of the change instead, median of 3.</p>
+      ${chart([{name: "Feldera delta", color: "var(--feldera)", values: r.by_delta.map(d => d.feldera_delta_ms)}], r.by_delta.map(d => d.changed_rows), "changed rows (log scale)", "ms")}</div>
+  </div>
+  <div class="card"><h3>Measurements</h3><table>
+    <tr><th class="num">rows</th><th class="num">bulk load ms</th><th class="num">Feldera delta ms</th><th class="num">output changes</th><th class="num">DuckDB full ms</th><th class="num">Python full ms</th></tr>
+    ${r.by_size.map(s => `<tr><td class="num">${fmt(s.rows)}</td><td class="num">${s.load_ms}</td><td class="num">${s.feldera_delta_ms}</td><td class="num">${s.output_changes}</td><td class="num">${s.duckdb_full_ms}</td><td class="num">${s.python_full_ms}</td></tr>`).join("")}
+  </table><br><table><tr><th class="num">changed rows</th><th class="num">Feldera delta ms</th></tr>
+    ${r.by_delta.map(d => `<tr><td class="num">${fmt(d.changed_rows)}</td><td class="num">${d.feldera_delta_ms}</td></tr>`).join("")}</table></div>`;
+}
+
+async function load() {
+  try {
+    results = await (await fetch("/api/results")).json();
+    const p = await fetch("/api/pipeline");
+    if (p.ok) renderPipeline(await p.json());
+    renderDeltas(results.changes);
+    renderRecursive(results.changes);
+    renderWindows(results.changes, results.scaling);
+    renderScaling(results.scaling);
+  } catch (e) { $("error").textContent = e.message; }
+}
+
+const tab = location.hash.slice(1);
+if (tab && $(tab)) document.querySelector(`#tabs button[data-tab="${tab}"]`).click();
+load();
+</script>
+</body>
+</html>
