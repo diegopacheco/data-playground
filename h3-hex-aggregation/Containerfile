@@ -1,0 +1,8 @@
+FROM docker.io/library/python:3.12.16-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt && python -c "import duckdb; duckdb.sql('INSTALL h3 FROM community')"
+ENV PYTHONUNBUFFERED=1
+COPY app app
+COPY tests tests
+CMD ["python", "app/server.py"]

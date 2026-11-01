@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>H3 Hex Aggregation</title>
+<style>
+:root{--bg:#f7f8fb;--card:#fff;--ink:#1d2433;--muted:#667085;--line:#e4e7ec;--accent:#e8590c;--ok:#12b76a;--bad:#f04438;--soft:#fff4e6}
+*{box-sizing:border-box}
+body{margin:0;font:14px/1.5 system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:var(--card);border-bottom:1px solid var(--line);padding:16px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+header h1{font-size:18px;margin:0}
+header .sub{color:var(--muted)}
+header .controls{margin-left:auto;display:flex;gap:8px;align-items:center}
+select{font:inherit;padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:#fff}
+nav{display:flex;gap:4px;padding:0 24px;background:var(--card);border-bottom:1px solid var(--line);overflow-x:auto}
+nav button{border:0;background:none;padding:12px 14px;font:inherit;color:var(--muted);border-bottom:2px solid transparent;cursor:pointer;white-space:nowrap}
+nav button.on{color:var(--ink);border-color:var(--accent);font-weight:600}
+main{padding:20px 24px;max-width:1280px;margin:0 auto}
+section{display:none}
+section.on{display:block}
+.row{display:grid;grid-template-columns:minmax(0,2fr) minmax(280px,1fr);gap:16px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:900px){.row,.two{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:16px}
+.card h3{margin:0 0 4px;font-size:15px}
+.card p{margin:0 0 10px;color:var(--muted)}
+svg.map{width:100%;height:auto;background:#fbfcfe;border:1px solid var(--line);border-radius:8px;display:block;max-height:720px}
+svg.map polygon{stroke:#fff;stroke-width:.6}
+.kv{display:flex;gap:18px;flex-wrap:wrap;margin:6px 0 10px}
+.kv div b{display:block;font-size:20px}
+.kv div span{color:var(--muted);font-size:12px}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font-weight:500}
+.badge{display:inline-block;padding:1px 8px;border-radius:10px;font-size:12px}
+.b-ok{background:#d1f3e1;color:#067647}
+.b-bad{background:#fee4e2;color:#b42318}
+.legend{color:var(--muted);font-size:12px;display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:8px}
+.sw{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:middle;margin-right:4px}
+.ramp{display:inline-block;width:120px;height:10px;border-radius:3px;background:linear-gradient(90deg,#fff1e0,#fd8d3c,#a63603,#4a1500)}
+.toggle{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.toggle button{border:1px solid var(--line);background:#fff;border-radius:6px;padding:5px 10px;font:inherit;cursor:pointer}
+.toggle button.on{background:var(--soft);border-color:var(--accent);color:#9a3412;font-weight:600}
+.err{color:var(--bad);white-space:pre-wrap}
+code{background:#f2f4f7;padding:1px 5px;border-radius:4px}
+</style>
+</head>
+<body>
+<header>
+  <h1>H3 Hex Aggregation</h1>
+  <span class="sub" id="sub">ride pickups indexed with Uber H3, aggregated in DuckDB</span>
+  <div class="controls"><label for="city">City</label><select id="city"></select></div>
+</header>
+<nav id="tabs">
+  <button data-tab="map" class="on">Hex Map</button>
+  <button data-tab="rollup">Rollup</button>
+  <button data-tab="neighbours">Neighbours</button>
+  <button data-tab="region">Region</button>
+  <button data-tab="grid">Grid vs Hex</button>
+  <button data-tab="check">Cross-check</button>
+</nav>
+<main>
+  <div id="error" class="err"></div>
+  <section id="map" class="on">
+    <div class="row">
+      <div class="card">
+        <div class="toggle" id="resToggle"></div>
+        <div class="toggle" id="metricToggle"></div>
+        <div id="mapSvg"></div>
+        <div class="legend"><span>low</span><span class="ramp"></span><span>high</span><span>hover a cell for its values</span></div>
+      </div>
+      <div class="card" id="mapInfo"></div>
+    </div>
+  </section>
+  <section id="rollup">
+    <div class="row">
+      <div class="card">
+        <h3>Busiest res 7 cell and its 49 res 9 children</h3>
+        <p>Children coloured by pickups, the thick outlines are the 7 res 8 cells in between, the dashed line is the res 7 parent boundary.</p>
+        <div id="rollupSvg"></div>
+      </div>
+      <div class="card" id="rollupInfo"></div>
+    </div>
+    <div class="card"><h3>Every level rolled up from res 9</h3><p>Rollup groups res 9 cells by <code>h3_cell_to_parent</code>. Direct indexes every point again at the coarser resolution.</p><div id="levels"></div></div>
+  </section>
+  <section id="neighbours">
+    <div class="row">
+      <div class="card">
+        <h3>k-ring around the busiest res 8 cell</h3>
+        <p>Ring 0 is the centre, ring 1 the 6 neighbours, ring 2 the next 12. Numbers are pickups per cell.</p>
+        <div id="nbSvg"></div>
+        <div class="legend"><span><span class="sw" style="background:#a63603"></span>ring 0</span><span><span class="sw" style="background:#fd8d3c"></span>ring 1</span><span><span class="sw" style="background:#fdd0a2"></span>ring 2</span></div>
+      </div>
+      <div class="card" id="nbInfo"></div>
+    </div>
+  </section>
+  <section id="region">
+    <div class="row">
+      <div class="card">
+        <div class="toggle" id="regionToggle"></div>
+        <div id="regionSvg"></div>
+        <div class="legend"><span><span class="sw" style="background:#fdd0a2"></span>polyfill cells</span><span><span class="sw" style="background:#12b76a"></span>inside both</span><span><span class="sw" style="background:#2e90fa"></span>inside polygon only</span><span><span class="sw" style="background:#f04438"></span>inside cells only</span><span><span class="sw" style="background:#d0d5dd"></span>outside both</span></div>
+      </div>
+      <div class="card" id="regionInfo"></div>
+    </div>
+  </section>
+  <section id="grid">
+    <div class="two">
+      <div class="card"><h3>Naive lat/lon grid</h3><p id="gridSub"></p><div id="gridSvg"></div></div>
+      <div class="card"><h3>H3 res 8</h3><p id="hexSub"></p><div id="hexSvg"></div></div>
+    </div>
+    <div class="card"><h3>Grid vs hex, every city</h3><p>Cell area of the non-empty cells and distance from a cell centre to the centres of its neighbours (8 for the grid, 6 for H3).</p><div id="gridTable"></div></div>
+  </section>
+  <section id="check">
+    <div class="card"><h3>h3-py vs DuckDB h3 extension</h3><p id="checkSub"></p><div id="checkTable"></div></div>
+  </section>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const state = {city: 'sf', res: 8, metric: 'n', regionRes: 9, tab: 'map', summary: null};
+const fmt = (v, d = 0) => v === null || v === undefined ? '-' : Number(v).toLocaleString('en-US', {minimumFractionDigits: d, maximumFractionDigits: d});
+const money = c => c === null || c === undefined ? '-' : '$' + (c / 100).toFixed(2);
+const esc = s => String(s).replace(/[&<>"]/g, ch => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[ch]));
+
+async function api(path) {
+  const r = await fetch(path);
+  const body = await r.json();
+  if (!r.ok) throw new Error(body.error || r.statusText);
+  return body;
+}
+
+function ramp(t) {
+  const stops = [[255, 241, 224], [253, 141, 60], [166, 54, 3], [74, 21, 0]];
+  const x = Math.max(0, Math.min(1, t)) * (stops.length - 1);
+  const i = Math.min(stops.length - 2, Math.floor(x));
+  const f = x - i;
+  const c = stops[i].map((v, k) => Math.round(v + (stops[i + 1][k] - v) * f));
+  return `rgb(${c.join(',')})`;
+}
+
+function projector(rings, width) {
+  const merc = ([lat, lng]) => [lng, Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360)) * 180 / Math.PI];
+  const pts = rings.flat().map(merc);
+  const xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
+  const minX = Math.min(...xs), maxX = Math.max(...xs), minY = Math.min(...ys), maxY = Math.max(...ys);
+  const pad = 10, scale = (width - 2 * pad) / (maxX - minX);
+  const height = Math.round((maxY - minY) * scale + 2 * pad);
+  const xy = ll => { const [x, y] = merc(ll); return [pad + (x - minX) * scale, pad + (maxY - y) * scale]; };
+  return {height, xy, path: ring => ring.map(ll => xy(ll).map(v => v.toFixed(1)).join(',')).join(' ')};
+}
+
+function svg(width, height, inner) {
+  return `<svg class="map" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">${inner}</svg>`;
+}
+
+function kv(items) {
+  return '<div class="kv">' + items.map(([v, l]) => `<div><b>${v}</b><span>${l}</span></div>`).join('') + '</div>';
+}
+
+function toggle(id, options, current, onPick) {
+  $(id).innerHTML = options.map(([v, l]) => `<button data-v="${v}" class="${String(v) === String(current) ? 'on' : ''}">${l}</button>`).join('');
+  $(id).querySelectorAll('button').forEach(b => b.onclick = () => onPick(b.dataset.v));
+}
+
+async function renderMap() {
+  toggle('resToggle', state.summary.resolutions.map(r => [r, 'res ' + r]), state.res, v => { state.res = +v; renderMap(); });
+  toggle('metricToggle', [['n', 'pickups'], ['avg_fare', 'average fare'], ['smooth', 'k=1 smoothed pickups']], state.metric, v => { state.metric = v; renderMap(); });
+  const d = await api(`/api/hexmap?city=${state.city}&res=${state.res}`);
+  const cells = d.cells.filter(c => state.metric === 'smooth' || c.n > 0);
+  const values = cells.map(c => c[state.metric]);
+  const lo = Math.min(...values), hi = Math.max(...values);
+  const p = projector(cells.map(c => c.boundary), 760);
+  const inner = cells.map(c => `<polygon points="${p.path(c.boundary)}" fill="${ramp(hi > lo ? (c[state.metric] - lo) / (hi - lo) : 1)}"><title>${c.cell}
+pickups ${c.n}
+avg fare ${money(c.avg_fare)}
+avg wait ${fmt(c.avg_wait)} s
+smoothed ${fmt(c.smooth, 2)}</title></polygon>`).join('');
+  $('mapSvg').innerHTML = svg(760, p.height, inner);
+  const top = d.cells.filter(c => c.n > 0).sort((a, b) => b.n - a.n).slice(0, 8);
+  $('mapInfo').innerHTML = `<h3>${esc(state.summary.cities[state.city].name)}, res ${d.res}</h3>
+    <p>Each pickup is indexed with <code>h3_latlng_to_cell(lat, lng, ${d.res})</code> and grouped by cell in DuckDB.</p>
+    ${kv([[fmt(d.total), 'pickups'], [fmt(d.nonempty), 'non-empty cells'], [fmt(d.max_n), 'max per cell'], [fmt(d.avg_cell_km2, 3), 'global avg km² per cell']])}
+    <table><tr><th>cell</th><th>pickups</th><th>avg fare</th><th>smoothed</th></tr>
+    ${top.map(c => `<tr><td><code>${c.cell}</code></td><td>${c.n}</td><td>${money(c.avg_fare)}</td><td>${fmt(c.smooth, 1)}</td></tr>`).join('')}</table>`;
+}
+
+async function renderRollup() {
+  const d = await api(`/api/rollup?city=${state.city}`);
+  const hi = Math.max(...d.children.map(c => c.n));
+  const p = projector([d.parent_boundary, ...d.children.map(c => c.boundary), ...d.mids.map(m => m.boundary)], 640);
+  const kids = d.children.map(c => `<polygon points="${p.path(c.boundary)}" fill="${ramp(c.n / hi)}"><title>${c.cell}
+pickups ${c.n}</title></polygon>`).join('');
+  const mids = d.mids.map(m => `<polygon points="${p.path(m.boundary)}" fill="none" style="stroke:#1d2433;stroke-width:2"><title>${m.cell} res 8, ${m.n} pickups</title></polygon>`).join('');
+  const parent = `<polygon points="${p.path(d.parent_boundary)}" fill="none" style="stroke:#e8590c;stroke-width:2.5;stroke-dasharray:6 4"/>`;
+  const labels = d.mids.map(m => { const [x, y] = p.xy(m.boundary.reduce((a, b) => [a[0] + b[0] / m.boundary.length, a[1] + b[1] / m.boundary.length], [0, 0])); return `<text x="${x}" y="${y}" text-anchor="middle" font-size="15" font-weight="700" fill="#1d2433" stroke="#fff" stroke-width="3" paint-order="stroke">${m.n}</text>`; }).join('');
+  $('rollupSvg').innerHTML = svg(640, p.height, kids + mids + parent + labels);
+  const sumKids = d.children.reduce((a, c) => a + c.n, 0);
+  $('rollupInfo').innerHTML = `<h3><code>${d.parent}</code></h3>
+    <p>The parent value is the sum of its children, no point is read again.</p>
+    ${kv([[fmt(d.rollup.n), 'rolled up from 49 children'], [fmt(sumKids), 'sum of the children shown'], [money(d.rollup_avg_fare), 'weighted avg fare'], [fmt(d.direct.n), 'direct res 7 indexing']])}
+    <p>Direct indexing counts ${fmt(d.direct.n - d.rollup.n)} more pickups here. H3 children do not tile their parent exactly: a res 9 cell near the parent edge sticks out a little, and its parent can differ from the res 7 cell the point itself falls in.</p>
+    <table><tr><th>res 8 cell</th><th>pickups</th></tr>${d.mids.map(m => `<tr><td><code>${m.cell}</code></td><td>${m.n}</td></tr>`).join('')}</table>`;
+  $('levels').innerHTML = `<table><tr><th>res</th><th>cells (rollup)</th><th>total (rollup)</th><th>fare sum (rollup)</th><th>cells (direct)</th><th>total (direct)</th><th>points in a different cell</th></tr>
+    ${d.levels.map(l => `<tr><td>${l.res}</td><td>${fmt(l.rollup_cells)}</td><td>${fmt(l.rollup_total)}</td><td>${money(l.rollup_fare_sum)}</td><td>${fmt(l.direct_cells)}</td><td>${fmt(l.direct_total)}</td><td>${fmt(l.mismatched_points)} (${fmt(100 * l.mismatched_points / l.direct_total, 1)}%)</td></tr>`).join('')}</table>`;
+}
+
+async function renderNeighbours() {
+  const d = await api(`/api/neighbours?city=${state.city}`);
+  const colors = ['#a63603', '#fd8d3c', '#fdd0a2'];
+  const p = projector(d.cells.map(c => c.boundary), 640);
+  const inner = d.cells.map(c => {
+    const center = c.boundary.reduce((a, b) => [a[0] + b[0] / c.boundary.length, a[1] + b[1] / c.boundary.length], [0, 0]);
+    const [x, y] = p.xy(center);
+    return `<polygon points="${p.path(c.boundary)}" fill="${colors[c.ring]}" style="stroke:#fff;stroke-width:2"><title>${c.cell}
+ring ${c.ring}, ${c.n} pickups, ${fmt(c.km_from_center, 3)} km from centre</title></polygon><text x="${x}" y="${y + 5}" text-anchor="middle" font-size="16" font-weight="600" fill="${c.ring === 0 ? '#fff' : '#1d2433'}">${c.n}</text>`;
+  }).join('');
+  $('nbSvg').innerHTML = svg(640, p.height, inner);
+  const ring = r => d.cells.filter(c => c.ring === r);
+  const h = d.hex_neighbour_km, g = d.grid_neighbour_km;
+  $('nbInfo').innerHTML = `<h3><code>${d.center}</code></h3>
+    <p><code>h3_grid_disk(cell, k)</code> returns ${ring(0).length} + ${ring(1).length} + ${ring(2).length} cells for k=2.</p>
+    ${kv([[d.center_n, 'pickups in the centre'], [fmt(d.smooth_k1, 2), 'k=1 smoothed (mean of 7)'], [fmt(d.smooth_k2, 2), 'k=2 smoothed (mean of 19)']])}
+    <table><tr><th>neighbour centre distance</th><th>min km</th><th>max km</th><th>max / min</th></tr>
+    <tr><td>H3 ring 1 (6 cells)</td><td>${fmt(h.min, 3)}</td><td>${fmt(h.max, 3)}</td><td>${fmt(h.max / h.min, 2)}</td></tr>
+    <tr><td>lat/lon grid (8 cells)</td><td>${fmt(g.min, 3)}</td><td>${fmt(g.max, 3)}</td><td>${fmt(g.max / g.min, 2)}</td></tr></table>
+    <p style="margin-top:10px">Every H3 neighbour shares an edge and sits at about the same distance, so a k-ring average weighs all directions the same. A grid has edge and corner neighbours at different distances.</p>`;
+}
+
+async function renderRegion() {
+  toggle('regionToggle', [[8, 'res 8'], [9, 'res 9']], state.regionRes, v => { state.regionRes = +v; renderRegion(); });
+  const d = await api(`/api/region?city=${state.city}&res=${state.regionRes}`);
+  const ring = [...d.polygon, d.polygon[0]];
+  const p = projector([ring, ...d.cells.map(c => c.boundary), ...d.points.map(pt => [[pt.lat, pt.lng]])], 760);
+  const color = pt => pt.exact && pt.hex ? '#12b76a' : pt.exact ? '#2e90fa' : pt.hex ? '#f04438' : '#d0d5dd';
+  const cells = d.cells.map(c => `<polygon points="${p.path(c.boundary)}" fill="#fdd0a2" style="stroke:#fff;stroke-width:1"><title>${c.cell}</title></polygon>`).join('');
+  const dots = d.points.slice().sort((a, b) => (a.exact !== a.hex) - (b.exact !== b.hex)).map(pt => { const [x, y] = p.xy([pt.lat, pt.lng]); return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${pt.exact !== pt.hex ? 3 : 1.8}" fill="${color(pt)}"/>`; }).join('');
+  const poly = `<polygon points="${p.path(ring)}" fill="none" style="stroke:#1d2433;stroke-width:2.5"/>`;
+  $('regionSvg').innerHTML = svg(760, p.height, cells + poly + dots);
+  $('regionInfo').innerHTML = `<h3>Polyfill and point in region</h3>
+    <p><code>h3_polygon_wkt_to_cells</code> returns every res ${d.res} cell whose centre is inside the polygon. A pickup is in the region when its cell is in that set, a cheap set lookup instead of a polygon test per point.</p>
+    ${kv([[d.cells.length, 'polyfill cells'], [fmt(d.polygon_km2_by_cells, 2), 'km² covered by cells'], [fmt(d.exact), 'inside polygon (exact)'], [fmt(d.hex), 'inside by cell']])}
+    <table><tr><th>outcome</th><th>pickups</th></tr>
+    <tr><td>inside both</td><td>${fmt(d.both)}</td></tr><tr><td>inside the polygon only</td><td>${fmt(d.only_exact)}</td></tr><tr><td>inside the cells only</td><td>${fmt(d.only_hex)}</td></tr>
+    <tr><td>agreement</td><td>${fmt(100 * d.both / (d.both + d.only_exact + d.only_hex), 1)}%</td></tr></table>
+    <p style="margin-top:10px">Every disagreement sits along the polygon edge: the cells approximate it. Res 9 cells follow the edge closer than res 8.</p>`;
+}
+
+async function renderGrid() {
+  const [d, all] = await Promise.all([api(`/api/compare?city=${state.city}`), api('/api/compare-all')]);
+  const rectRing = ([s, w, n, e]) => [[s, w], [s, e], [n, e], [n, w]];
+  const rings = [...d.grid.map(c => rectRing(c.rect)), ...d.hex.map(c => c.boundary)];
+  const pg = projector(rings, 560);
+  $('gridSvg').innerHTML = svg(560, pg.height, d.grid.map(c => `<polygon points="${pg.path(rectRing(c.rect))}" fill="${ramp(c.n / d.grid_max_n)}"><title>row ${c.row} col ${c.col}
+pickups ${c.n}, ${fmt(c.km2, 3)} km²</title></polygon>`).join(''));
+  $('hexSvg').innerHTML = svg(560, pg.height, d.hex.map(c => `<polygon points="${pg.path(c.boundary)}" fill="${ramp(c.n / d.hex_max_n)}"><title>${c.cell}
+pickups ${c.n}, ${fmt(c.km2, 3)} km²</title></polygon>`).join(''));
+  $('gridSub').textContent = `${d.grid_step}° x ${d.grid_step}° cells, ${d.grid_nonempty} non-empty, max ${d.grid_max_n} pickups, ${fmt(d.grid_km2.mean, 3)} km² each.`;
+  $('hexSub').textContent = `${d.hex_nonempty} non-empty cells, max ${d.hex_max_n} pickups, ${fmt(d.hex_km2.mean, 3)} km² each.`;
+  const cities = Object.keys(all);
+  $('gridTable').innerHTML = `<table><tr><th>city</th><th>lat</th><th>grid km²</th><th>H3 km²</th><th>grid neighbour km min / max</th><th>grid max / min</th><th>H3 neighbour km min / max</th><th>H3 max / min</th></tr>
+    ${cities.map(k => { const c = all[k], box = state.summary.cities[k].box; return `<tr><td>${esc(state.summary.cities[k].name)}</td><td>${fmt((box[0] + box[2]) / 2, 2)}</td><td>${fmt(c.grid_km2.mean, 3)}</td><td>${fmt(c.hex_km2.mean, 3)}</td><td>${fmt(c.grid_neighbour_km.min, 3)} / ${fmt(c.grid_neighbour_km.max, 3)}</td><td>${fmt(c.grid_neighbour_km.max / c.grid_neighbour_km.min, 2)}</td><td>${fmt(c.hex_neighbour_km.min, 3)} / ${fmt(c.hex_neighbour_km.max, 3)}</td><td>${fmt(c.hex_neighbour_km.max / c.hex_neighbour_km.min, 2)}</td></tr>`; }).join('')}</table>
+    <p style="margin-top:10px">The same ${d.grid_step}° grid shrinks with cos(latitude): a London cell is ${fmt(100 * (1 - all.london.grid_km2.mean / all.sf.grid_km2.mean), 0)}% smaller than a San Francisco cell. H3 res 8 also varies with the position on its icosahedron face (${fmt(100 * (1 - all.london.hex_km2.mean / all.sf.hex_km2.mean), 0)}% here), but inside a cell neighbourhood every direction is the same distance.</p>`;
+}
+
+async function renderCheck() {
+  const d = await api('/api/crosscheck');
+  const s = state.summary;
+  $('checkSub').innerHTML = `Every aggregate computed twice: once with h3-py ${esc(s.h3_py.python)} (C library ${esc(s.h3_py.c)}) and Python dicts, once in DuckDB ${esc(s.duckdb)} SQL with the h3 community extension (${esc(s.h3_extension)}). ${d.checks.filter(c => c.equal).length} of ${d.checks.length} checks equal.`;
+  $('checkTable').innerHTML = `<table><tr><th>city</th><th>check</th><th>res</th><th>size</th><th>h3-py ms</th><th>DuckDB ms</th><th>result</th></tr>
+    ${d.checks.map(c => `<tr><td>${c.city}</td><td>${esc(c.check)}</td><td>${c.res}</td><td>${fmt(c.size)}</td><td>${fmt(c.python_ms, 2)}</td><td>${fmt(c.duckdb_ms, 2)}</td><td><span class="badge ${c.equal ? 'b-ok' : 'b-bad'}">${c.equal ? 'equal' : 'differs'}</span></td></tr>`).join('')}</table>`;
+}
+
+const renderers = {map: renderMap, rollup: renderRollup, neighbours: renderNeighbours, region: renderRegion, grid: renderGrid, check: renderCheck};
+
+async function render() {
+  $('error').textContent = '';
+  try { await renderers[state.tab](); } catch (e) { $('error').textContent = e.message; }
+}
+
+document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => {
+  state.tab = b.dataset.tab;
+  document.querySelectorAll('#tabs button').forEach(x => x.classList.toggle('on', x === b));
+  document.querySelectorAll('main section').forEach(s => s.classList.toggle('on', s.id === state.tab));
+  render();
+});
+
+async function init() {
+  try {
+    state.summary = await api('/api/summary');
+  } catch (e) { $('error').textContent = e.message; return; }
+  const hash = location.hash.slice(1);
+  if (renderers[hash]) state.tab = hash;
+  $('city').innerHTML = Object.entries(state.summary.cities).map(([k, c]) => `<option value="${k}">${esc(c.name)}</option>`).join('');
+  $('city').onchange = e => { state.city = e.target.value; render(); };
+  $('sub').textContent = `${fmt(state.summary.points)} seeded ride pickups (seed ${state.summary.seed}) indexed with Uber H3, aggregated in DuckDB`;
+  document.querySelector(`#tabs button[data-tab="${state.tab}"]`).click();
+}
+
+init();
+</script>
+</body>
+</html>

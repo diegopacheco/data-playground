@@ -1,0 +1,22 @@
+name: t7-h3-hex-aggregation
+
+services:
+  t7-app:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: t7-h3-hex-aggregation:latest
+    container_name: t7-app
+    restart: unless-stopped
+    environment:
+      UI_PORT: "8080"
+    mem_limit: 512m
+    cpus: 1
+    ports:
+      - "${ui:-31600}:8080"
+    networks:
+      - t7-net
+
+networks:
+  t7-net:
+    name: t7-net
