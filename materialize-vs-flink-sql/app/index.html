@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Materialize vs Flink SQL</title>
+<style>
+:root{--bg:#f7f8fb;--card:#fff;--ink:#1d2433;--muted:#667085;--line:#e4e7ec;--mz:#7f56d9;--fl:#e6522c;--ok:#12b76a;--bad:#f04438}
+*{box-sizing:border-box}
+body{margin:0;font:14px/1.5 system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:var(--card);border-bottom:1px solid var(--line);padding:16px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+header h1{font-size:18px;margin:0}
+header .sub{color:var(--muted)}
+header .right{margin-left:auto;display:flex;gap:12px;align-items:center}
+nav{display:flex;gap:4px;padding:0 24px;background:var(--card);border-bottom:1px solid var(--line);overflow-x:auto}
+nav button{border:0;background:none;padding:12px 14px;font:inherit;color:var(--muted);border-bottom:2px solid transparent;cursor:pointer}
+nav button.on{color:var(--ink);border-color:var(--mz);font-weight:600}
+main{padding:20px 24px;max-width:1280px;margin:0 auto}
+section{display:none}
+section.on{display:block}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(560px,1fr));gap:16px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:16px}
+.card h3{margin:0 0 4px;font-size:15px}
+.card p{margin:0 0 10px;color:var(--muted)}
+button.act{background:var(--mz);color:#fff;border:0;border-radius:6px;padding:8px 14px;font:inherit;cursor:pointer}
+button.act:disabled{opacity:.5}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{text-align:left;padding:4px 8px;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font-weight:500;position:sticky;top:0;background:var(--card)}
+.scroll{max-height:420px;overflow:auto}
+.badge{display:inline-block;padding:1px 8px;border-radius:10px;font-size:12px}
+.b-ok{background:#d1f3e1;color:#067647}
+.b-bad{background:#fee4e2;color:#b42318}
+.b-mz{background:#ede7fb;color:#53389e}
+.b-fl{background:#fde6df;color:#a5321a}
+.b-n{background:#f2f4f7;color:#475467}
+.kv{display:flex;gap:22px;flex-wrap:wrap;margin:6px 0 10px}
+.kv div b{display:block;font-size:20px}
+.kv div span{color:var(--muted);font-size:12px}
+tr.phantom td{background:#fee4e2}
+tr.del td{color:#98a2b3}
+pre{background:#f2f4f7;padding:10px;border-radius:6px;white-space:pre-wrap;font-size:12px;margin:6px 0}
+code{background:#f2f4f7;padding:1px 5px;border-radius:4px}
+.mz{color:var(--mz);font-weight:600}
+.fl{color:var(--fl);font-weight:600}
+.legend{color:var(--muted);font-size:12px}
+.err{color:var(--bad);white-space:pre-wrap}
+svg text{font-size:11px;fill:#667085}
+</style>
+</head>
+<body>
+<header>
+  <h1>Materialize vs Flink SQL</h1>
+  <span class="sub">same upsert topics, same SQL, one independent answer</span>
+  <div class="right"><span id="runInfo" class="legend"></span><button class="act" id="run">Run comparison</button></div>
+</header>
+<nav id="tabs">
+  <button data-tab="results" class="on">Results</button>
+  <button data-tab="changelog">Changelog</button>
+  <button data-tab="consistency">Consistency</button>
+  <button data-tab="events">Events</button>
+  <button data-tab="sql">SQL</button>
+</nav>
+<main>
+  <div id="error" class="err"></div>
+  <section id="results" class="on"></section>
+  <section id="changelog"></section>
+  <section id="consistency"></section>
+  <section id="events"></section>
+  <section id="sql"></section>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const esc = v => String(v === null || v === undefined ? "null" : v).replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c]));
+const key = r => JSON.stringify(r);
+const COLS = {totals:["order_count","total"], customer_totals:["customer_id","order_count","total"], region_revenue:["region","order_count","revenue"], top_orders:["region","order_id","amount","rn"]};
+const badge = (ok, yes, no) => `<span class="badge ${ok ? "b-ok" : "b-bad"}">${ok ? yes : no}</span>`;
+
+document.querySelectorAll("nav button").forEach(b => b.onclick = () => {
+  document.querySelectorAll("nav button").forEach(x => x.classList.toggle("on", x === b));
+  document.querySelectorAll("section").forEach(s => s.classList.toggle("on", s.id === b.dataset.tab));
+});
+
+function prefixStates(events) {
+  const live = new Map(), out = new Set([key([0, null])]);
+  for (const e of events) {
+    if (e.topic !== "orders") continue;
+    if (e.value === null) live.delete(e.key); else live.set(e.key, e.value.amount);
+    const vals = [...live.values()];
+    out.add(key([vals.length, vals.length ? vals.reduce((a, b) => a + b, 0) : null]));
+  }
+  return out;
+}
+
+function mzSnapshots(changelog) {
+  const byTs = new Map();
+  changelog.forEach(r => { if (!byTs.has(r[0])) byTs.set(r[0], []); byTs.get(r[0]).push(r); });
+  const state = new Map(), out = [];
+  [...byTs.keys()].sort((a, b) => a - b).forEach(ts => {
+    byTs.get(ts).forEach(r => { const k = key(r.slice(2)); state.set(k, (state.get(k) || 0) + r[1]); });
+    const rows = [];
+    state.forEach((d, k) => { for (let i = 0; i < d; i++) rows.push(JSON.parse(k)); });
+    out.push({ts, rows, diffs: byTs.get(ts).length});
+  });
+  return out;
+}
+
+function flinkSnapshots(changelog) {
+  const state = [], out = [];
+  changelog.forEach(r => {
+    const row = r.slice(1);
+    if (r[0] === "INSERT" || r[0] === "UPDATE_AFTER") { state.push(row); out.push({kind: r[0], rows: state.map(x => x)}); }
+    else { const i = state.findIndex(x => key(x) === key(row)); if (i >= 0) state.splice(i, 1); }
+  });
+  return out;
+}
+
+function renderResults(r) {
+  const c = r.checks;
+  let html = `<div class="card"><h3>Final answers</h3><p>Every engine read the same two upsert topics (${r.events.length} records with updates, a customer move, deletes as Kafka tombstones and re-inserts). The expected answer is replayed from the input in Python, independently of both engines. Materialize is read with real time recency right after the last producer ack; Flink is the final state after applying its whole changelog.</p><div class="kv">`;
+  html += Object.keys(COLS).map(n => `<div><b>${badge(c.results[n].materialize, "match", "differs")} ${badge(c.results[n].flink, "match", "differs")}</b><span>${n}: <span class="mz">materialize</span> / <span class="fl">flink</span></span></div>`).join("");
+  html += `</div></div><div class="grid">`;
+  for (const n of Object.keys(COLS)) {
+    const mz = new Set(r.materialize.final.results[n].map(key)), fl = new Set(r.flink.results[n].map(key));
+    html += `<div class="card"><h3>${n}</h3><pre>${esc(r.queries[n])}</pre><div class="scroll"><table><tr>${COLS[n].map(h => `<th>${h}</th>`).join("")}<th>expected</th><th class="mz">materialize</th><th class="fl">flink</th></tr>`;
+    html += r.expected[n].map(row => `<tr>${row.map(v => `<td>${esc(v)}</td>`).join("")}<td><span class="badge b-n">row</span></td><td>${badge(mz.has(key(row)), "same", "missing")}</td><td>${badge(fl.has(key(row)), "same", "missing")}</td></tr>`).join("");
+    const extra = [...new Set([...mz, ...fl])].filter(k => !r.expected[n].map(key).includes(k));
+    html += extra.map(k => `<tr class="phantom">${JSON.parse(k).map(v => `<td>${esc(v)}</td>`).join("")}<td>not expected</td><td>${mz.has(k) ? "has it" : ""}</td><td>${fl.has(k) ? "has it" : ""}</td></tr>`).join("");
+    html += `</table></div></div>`;
+  }
+  $("results").innerHTML = html + `</div>`;
+}
+
+function renderChangelog(r) {
+  const prefixes = prefixStates(r.events);
+  let html = `<div class="card"><h3>Changelog size per query</h3><p><span class="fl">Flink</span> streams a changelog row per input change: <code>+I</code> insert, <code>-U</code>/<code>+U</code> retract and add, <code>-D</code> delete. <span class="mz">Materialize</span> SUBSCRIBE (AS OF the creation time, UP TO the end, kept by RETAIN HISTORY) returns diffs consolidated per timestamp, so a timestamp is applied as one atomic step.</p><table><tr><th>query</th><th class="fl">+I</th><th class="fl">-U</th><th class="fl">+U</th><th class="fl">-D</th><th class="fl">flink rows</th><th class="mz">materialize diffs</th><th class="mz">materialize timestamps</th></tr>`;
+  for (const n of Object.keys(COLS)) {
+    const k = r.flink.kinds[n], ch = r.materialize.changelog[n];
+    html += `<tr><td>${n}</td><td>${k.INSERT || 0}</td><td>${k.UPDATE_BEFORE || 0}</td><td>${k.UPDATE_AFTER || 0}</td><td>${k.DELETE || 0}</td><td><b>${r.flink.changelog[n].length}</b></td><td><b>${ch.length}</b></td><td>${new Set(ch.map(x => x[0])).size}</td></tr>`;
+  }
+  html += `</table></div><div class="grid2"><div class="card"><h3 class="fl">Flink changelog of totals</h3><p>Grey rows are retractions. Rows on red are <code>+U</code> states that never existed in the orders log: an update of one order arrives as a retraction and an addition, and the aggregate emits a full row in between.</p><div class="scroll"><table><tr><th>#</th><th>kind</th><th>order_count</th><th>total</th></tr>`;
+  html += r.flink.changelog.totals.map((x, i) => { const add = x[0] === "INSERT" || x[0] === "UPDATE_AFTER"; const ph = add && !prefixes.has(key(x.slice(1))); return `<tr class="${ph ? "phantom" : (add ? "" : "del")}"><td>${i + 1}</td><td>${x[0]}</td><td>${esc(x[1])}</td><td>${esc(x[2])}</td></tr>`; }).join("");
+  html += `</table></div></div><div class="card"><h3 class="mz">Materialize SUBSCRIBE of totals</h3><p>Grey rows are retractions. Each timestamp retracts the old row (diff -1) and adds the new one (diff +1) at the same instant, so no state between them is ever visible.</p><div class="scroll"><table><tr><th>mz_timestamp</th><th>mz_diff</th><th>order_count</th><th>total</th></tr>`;
+  html += r.materialize.changelog.totals.map(x => `<tr class="${x[1] < 0 ? "del" : ""}"><td>${x[0]}</td><td>${x[1] > 0 ? "+" : ""}${x[1]}</td><td>${esc(x[2])}</td><td>${esc(x[3])}</td></tr>`).join("");
+  $("changelog").innerHTML = html + `</table></div></div></div>`;
+}
+
+function chart(points, color, phantomColor, width, height, maxX, maxY) {
+  const x = i => 40 + i / Math.max(maxX, 1) * (width - 50), y = v => height - 24 - v / maxY * (height - 40);
+  const line = points.map((p, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(p.v).toFixed(1)}`).join("");
+  const dots = points.map((p, i) => `<circle cx="${x(i).toFixed(1)}" cy="${y(p.v).toFixed(1)}" r="${p.phantom ? 4 : 2}" fill="${p.phantom ? phantomColor : color}"/>`).join("");
+  return `<svg viewBox="0 0 ${width} ${height}" width="100%"><line x1="40" y1="${height - 24}" x2="${width - 10}" y2="${height - 24}" stroke="#e4e7ec"/><line x1="40" y1="10" x2="40" y2="${height - 24}" stroke="#e4e7ec"/><text x="4" y="${y(maxY) + 4}">${maxY}</text><text x="4" y="${height - 20}">0</text><path d="${line}" fill="none" stroke="${color}" stroke-width="1.5"/>${dots}</svg>`;
+}
+
+function renderConsistency(r) {
+  const c = r.checks, prefixes = prefixStates(r.events), probes = r.materialize.probes;
+  const fl = flinkSnapshots(r.flink.changelog.totals).map(s => ({v: s.rows[0][1] || 0, phantom: !prefixes.has(key(s.rows[0]))}));
+  const mz = mzSnapshots(r.materialize.changelog.totals).map(s => ({v: s.rows[0][1] || 0, phantom: !prefixes.has(key(s.rows[0]))}));
+  const maxY = Math.max(...fl.map(p => p.v), ...mz.map(p => p.v), 1);
+  let html = `<div class="card"><h3>Totals over time</h3><p>Every state of <code>totals.total</code> each engine exposed. A state is real when it equals the sum after some prefix of the orders log. Large <b>black</b> dots are states that never existed.</p><div class="kv">
+  <div><b class="fl">${c.flink_states}</b><span>flink states</span></div><div><b class="fl">${c.flink_phantoms}</b><span>flink states that never existed</span></div>
+  <div><b class="mz">${c.mz_states}</b><span>materialize states</span></div><div><b class="mz">${c.mz_phantoms}</b><span>materialize states that never existed</span></div></div>
+  <div class="grid2"><div><div class="legend fl">Flink changelog states</div>${chart(fl, "#e6522c", "#101828", 560, 200, fl.length - 1, maxY)}</div><div><div class="legend mz">Materialize SUBSCRIBE states</div>${chart(mz, "#7f56d9", "#101828", 560, 200, mz.length - 1, maxY)}</div></div></div>`;
+  html += `<div class="card"><h3 class="mz">Materialize reads during ingestion</h3><p>A second connection ran one strict serializable SELECT across <code>orders</code>, <code>customer_totals</code>, <code>region_revenue</code> (a join) and <code>totals</code> in a loop while the producer was writing. Each read is one timestamp, so every view agrees and the state is a real prefix of the log.</p><div class="kv"><div><b>${probes.length}</b><span>reads</span></div><div><b>${c.probe_invariant_breaks}</b><span>reads where views disagree</span></div><div><b>${c.probe_phantoms}</b><span>reads of a state that never existed</span></div><div><b>${r.materialize.final.ms} ms</b><span>real time recency read after last ack</span></div></div><div class="scroll"><table><tr><th>mz_now()</th><th>orders count</th><th>orders sum</th><th>customer_totals count</th><th>customer_totals sum</th><th>region_revenue sum</th><th>totals</th><th>real state</th></tr>`;
+  html += probes.map(p => { const ok = p[1] === p[3] && p[3] === p[6] && p[2] === p[4] && p[4] === p[5] && p[5] === p[7]; const real = prefixes.has(key([p[1], p[1] ? p[2] : null])); return `<tr><td>${p[0]}</td><td>${p[1]}</td><td>${p[2]}</td><td>${p[3]}</td><td>${p[4]}</td><td>${p[5]}</td><td>${p[6]} / ${p[7]}</td><td>${badge(ok && real, "consistent", "inconsistent")}</td></tr>`; }).join("");
+  $("consistency").innerHTML = html + `</table></div></div>`;
+}
+
+function renderEvents(r) {
+  const seen = new Set();
+  const rows = r.events.map((e, i) => { const k = e.topic + e.key; const op = e.value === null ? "delete" : (seen.has(k) ? "update" : "insert"); if (e.value === null) seen.delete(k); else seen.add(k); return {i, e, op}; });
+  let html = `<div class="card"><h3>Produced phases</h3><p>Records are produced one by one with acks=all to single partition topics <code>${esc(r.topics.orders)}</code> and <code>${esc(r.topics.customers)}</code>, keyed by id. A delete is a Kafka tombstone (null value).</p><table><tr><th>phase</th><th>records</th><th>ms</th></tr>${r.phases.map(p => `<tr><td>${p.name}</td><td>${p.events}</td><td>${p.ms}</td></tr>`).join("")}</table></div>`;
+  html += `<div class="card"><h3>Every record</h3><div class="scroll"><table><tr><th>#</th><th>topic</th><th>key</th><th>op</th><th>value</th></tr>`;
+  html += rows.map(x => `<tr class="${x.op === "delete" ? "del" : ""}"><td>${x.i + 1}</td><td>${x.e.topic}</td><td>${esc(x.e.key)}</td><td><span class="badge ${x.op === "insert" ? "b-ok" : x.op === "update" ? "b-mz" : "b-bad"}">${x.op}</span></td><td><code>${esc(x.e.value === null ? "null" : JSON.stringify(x.e.value))}</code></td></tr>`).join("");
+  $("events").innerHTML = html + `</table></div></div>`;
+}
+
+function renderSql(r) {
+  let html = `<div class="card"><h3>Shared queries</h3><p>The exact same SQL text runs in both engines: as a <span class="mz">MATERIALIZED VIEW</span> in Materialize and as a streaming <span class="fl">SELECT</span> through the Flink SQL Gateway.</p>${Object.entries(r.queries).map(([n, q]) => `<b>${n}</b><pre>${esc(q)}</pre>`).join("")}</div>`;
+  html += `<div class="grid2"><div class="card"><h3 class="mz">Materialize DDL</h3>${r.materialize.ddl.map(s => `<pre>${esc(s)}</pre>`).join("")}</div><div class="card"><h3 class="fl">Flink DDL</h3>${r.flink.ddl.map(s => `<pre>${esc(s)}</pre>`).join("")}<p>Flink query time per query (bounded job): ${Object.entries(r.flink.ms).map(([n, ms]) => `${n} ${ms} ms`).join(", ")}</p></div></div>`;
+  $("sql").innerHTML = html;
+}
+
+function render(r) {
+  if (!r || !r.run_id) { $("results").innerHTML = `<div class="card"><p>No run yet. Press Run comparison.</p></div>`; return; }
+  $("runInfo").textContent = `run ${r.run_id} at ${r.ran_at}`;
+  renderResults(r); renderChangelog(r); renderConsistency(r); renderEvents(r); renderSql(r);
+}
+
+async function load() {
+  const r = await fetch("/api/result").then(x => x.json());
+  render(r);
+}
+
+$("run").onclick = async () => {
+  $("run").disabled = true; $("error").textContent = ""; $("runInfo").textContent = "running...";
+  try {
+    const res = await fetch("/api/run", {method: "POST"});
+    const r = await res.json();
+    if (!res.ok) throw new Error(r.error || res.status);
+    render(r);
+  } catch (e) { $("error").textContent = String(e); }
+  $("run").disabled = false;
+};
+
+load();
+</script>
+</body>
+</html>

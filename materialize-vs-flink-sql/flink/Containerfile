@@ -1,0 +1,2 @@
+FROM docker.io/library/flink:2.2.1-java21
+ADD --chown=flink:flink https://repo1.maven.org/maven2/org/apache/flink/flink-sql-connector-kafka/5.0.0-2.2/flink-sql-connector-kafka-5.0.0-2.2.jar /opt/flink/lib/flink-sql-connector-kafka-5.0.0-2.2.jar

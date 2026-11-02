@@ -1,0 +1,120 @@
+name: t2-materialize-vs-flink-sql
+
+x-flink: &flink
+  image: t2-flink:2.2.1-kafka-5.0.0
+  restart: unless-stopped
+  networks:
+    - t2-net
+
+services:
+  t2-redpanda:
+    image: docker.io/redpandadata/redpanda:v26.2.6
+    container_name: t2-redpanda
+    hostname: t2-redpanda
+    command:
+      - redpanda
+      - start
+      - --mode=dev-container
+      - --smp=1
+      - --memory=256M
+      - --reserve-memory=0M
+      - --overprovisioned
+      - --kafka-addr=internal://0.0.0.0:9092,external://0.0.0.0:19092
+      - --advertise-kafka-addr=internal://t2-redpanda:9092,external://localhost:${kafka:-31104}
+    mem_limit: 448m
+    cpus: 1
+    restart: unless-stopped
+    ports:
+      - "${kafka:-31104}:19092"
+    networks:
+      - t2-net
+
+  t2-materialize:
+    image: docker.io/materialize/materialized:v26.48.2
+    container_name: t2-materialize
+    hostname: t2-materialize
+    mem_limit: 1536m
+    cpus: 2
+    restart: unless-stopped
+    ports:
+      - "${mzsql:-31101}:6875"
+      - "${mzhttp:-31102}:6876"
+      - "${mzconsole:-31103}:6874"
+    networks:
+      - t2-net
+    depends_on:
+      - t2-redpanda
+
+  t2-flink-jm:
+    <<: *flink
+    container_name: t2-flink-jm
+    hostname: t2-flink-jm
+    command: ["jobmanager"]
+    environment:
+      FLINK_PROPERTIES: |
+        jobmanager.rpc.address: t2-flink-jm
+        jobmanager.memory.process.size: 640m
+        jobmanager.memory.jvm-metaspace.size: 160m
+        parallelism.default: 1
+        rest.address: 0.0.0.0
+        rest.bind-address: 0.0.0.0
+    mem_limit: 704m
+    ports:
+      - "${flinkui:-31105}:8081"
+
+  t2-flink-tm:
+    <<: *flink
+    container_name: t2-flink-tm
+    hostname: t2-flink-tm
+    command: ["taskmanager"]
+    environment:
+      FLINK_PROPERTIES: |
+        jobmanager.rpc.address: t2-flink-jm
+        taskmanager.numberOfTaskSlots: 4
+        taskmanager.memory.process.size: 800m
+        taskmanager.memory.jvm-metaspace.size: 160m
+        taskmanager.memory.managed.fraction: 0.1
+        parallelism.default: 1
+    mem_limit: 864m
+    depends_on:
+      - t2-flink-jm
+
+  t2-flink-gateway:
+    <<: *flink
+    container_name: t2-flink-gateway
+    hostname: t2-flink-gateway
+    command: ["bin/sql-gateway.sh", "start-foreground", "-Dsql-gateway.endpoint.rest.address=0.0.0.0", "-Dsql-gateway.endpoint.rest.bind-address=0.0.0.0", "-Dsql-gateway.endpoint.rest.port=8083", "-Drest.address=t2-flink-jm", "-Drest.port=8081", "-Djobmanager.rpc.address=t2-flink-jm", "-Dexecution.target=remote", "-Dparallelism.default=1"]
+    environment:
+      JVM_ARGS: "-Xms128m -Xmx256m -XX:MaxMetaspaceSize=128m"
+    mem_limit: 448m
+    ports:
+      - "${gateway:-31106}:8083"
+    depends_on:
+      - t2-flink-jm
+
+  t2-app:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: t2-materialize-vs-flink-sql:latest
+    container_name: t2-app
+    restart: unless-stopped
+    environment:
+      MZ_URL: postgresql://materialize@t2-materialize:6875/materialize
+      ENGINE_BROKER: t2-redpanda:9092
+      GATEWAY_URL: http://t2-flink-gateway:8083
+      KAFKA_BROKER: t2-redpanda:9092
+      UI_PORT: "8080"
+    mem_limit: 192m
+    ports:
+      - "${ui:-31100}:8080"
+    networks:
+      - t2-net
+    depends_on:
+      - t2-redpanda
+      - t2-materialize
+      - t2-flink-gateway
+
+networks:
+  t2-net:
+    name: t2-net
