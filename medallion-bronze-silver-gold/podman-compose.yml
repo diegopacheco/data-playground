@@ -1,0 +1,63 @@
+name: i50-medallion
+
+services:
+  minio:
+    image: docker.io/pgsty/minio:RELEASE.2026-08-04T00-00-00Z
+    container_name: i50-minio
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: password
+    ports:
+      - "25000:9000"
+      - "25001:9001"
+    volumes:
+      - i50-minio-data:/data
+    networks:
+      - i50-net
+
+  bucket:
+    image: docker.io/pgsty/minio:RELEASE.2026-08-04T00-00-00Z
+    container_name: i50-bucket
+    depends_on:
+      - minio
+    restart: on-failure
+    environment:
+      MC_HOST_lake: http://admin:password@i50-minio:9000
+    entrypoint: ["mc"]
+    command: ["mb", "--ignore-existing", "lake/warehouse"]
+    networks:
+      - i50-net
+
+  rest:
+    image: docker.io/apache/iceberg-rest-fixture:1.10.1
+    container_name: i50-rest
+    depends_on:
+      - minio
+    environment:
+      AWS_ACCESS_KEY_ID: admin
+      AWS_SECRET_ACCESS_KEY: password
+      AWS_REGION: us-east-1
+      CATALOG_URI: jdbc:sqlite:file:/catalog/iceberg_catalog.db
+      CATALOG_JDBC_USER: user
+      CATALOG_JDBC_PASSWORD: password
+      CATALOG_WAREHOUSE: s3://warehouse/
+      CATALOG_IO__IMPL: org.apache.iceberg.aws.s3.S3FileIO
+      CATALOG_S3_ENDPOINT: http://i50-minio:9000
+      CATALOG_S3_PATH__STYLE__ACCESS: "true"
+    ports:
+      - "25002:8181"
+    volumes:
+      - i50-catalog-data:/catalog
+    networks:
+      - i50-net
+
+volumes:
+  i50-minio-data:
+    name: i50-minio-data
+  i50-catalog-data:
+    name: i50-catalog-data
+
+networks:
+  i50-net:
+    name: i50-net

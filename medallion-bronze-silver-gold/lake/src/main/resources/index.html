@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Medallion Lakehouse</title>
+<style>
+  :root {
+    color-scheme: light;
+    --surface: #f6f6f4;
+    --card: #ffffff;
+    --border: #e4e3de;
+    --grid: #ecebe6;
+    --text-primary: #0b0b0b;
+    --text-secondary: #52514e;
+    --bronze: #b0703a;
+    --silver: #8a8f98;
+    --gold: #c9a227;
+    --bad: #b3261e;
+    --accent: #2a78d6;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--surface); color: var(--text-primary); font: 14px/1.5 -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 1080px; margin: 0 auto; padding: 24px 16px 48px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  h2 { font-size: 15px; margin: 0 0 12px; }
+  .sub { color: var(--text-secondary); margin: 0 0 20px; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 18px; margin-bottom: 18px; overflow-x: auto; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 18px; }
+  .tile { background: var(--card); border: 1px solid var(--border); border-left: 4px solid var(--c); border-radius: 10px; padding: 12px 14px; }
+  .tile .k { color: var(--text-secondary); font-size: 12px; }
+  .tile .v { font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .tile .s { color: var(--text-secondary); font-size: 11px; }
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  th, td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+  th { color: var(--text-secondary); font-weight: 600; font-size: 12px; }
+  td.num, th.num { text-align: right; }
+  td.null { color: var(--text-secondary); font-style: italic; }
+  .bar { display: grid; grid-template-columns: 170px 1fr 40px; gap: 10px; align-items: center; margin: 6px 0; }
+  .bar div.track { background: var(--grid); border-radius: 4px; height: 14px; }
+  .bar div.fill { background: var(--c); border-radius: 4px; height: 14px; }
+  .bar span.n { text-align: right; font-variant-numeric: tabular-nums; }
+  .tabs { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+  .tabs button { border: 1px solid var(--border); background: var(--card); border-radius: 99px; padding: 4px 12px; cursor: pointer; font: inherit; color: var(--text-secondary); }
+  .tabs button.on { background: var(--text-primary); color: #fff; border-color: var(--text-primary); }
+  .err { color: var(--bad); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Bronze, silver and gold on Apache Iceberg</h1>
+  <p class="sub">Raw landing files go into bronze as strings. Silver types, validates and merges the latest version of each order, and quarantines bad rows with a reason. Gold holds the business aggregates.</p>
+  <div class="tiles" id="tiles"></div>
+  <div class="card">
+    <h2>Row counts per layer</h2>
+    <div id="funnel"></div>
+  </div>
+  <div class="card">
+    <h2>Bronze landing files</h2>
+    <table id="files"></table>
+  </div>
+  <div class="card">
+    <h2>Silver quarantine reasons</h2>
+    <div id="reasons"></div>
+    <table id="quarantine" style="margin-top:12px"></table>
+  </div>
+  <div class="card">
+    <h2>Silver rows whose latest version came from a later batch</h2>
+    <table id="late"></table>
+  </div>
+  <div class="card">
+    <h2>Gold tables</h2>
+    <div class="tabs" id="tabs"></div>
+    <div id="goldchart"></div>
+    <table id="gold" style="margin-top:12px"></table>
+  </div>
+</main>
+<script>
+const colors = { bronze: "var(--bronze)", silver: "var(--silver)", gold: "var(--gold)" };
+const moneyCols = ["revenue", "price"];
+const get = url => fetch(url).then(r => r.json().then(j => { if (!r.ok) throw new Error(j.error || r.status); return j; }));
+const esc = v => String(v).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;" }[c]));
+const fmt = (k, v) => moneyCols.includes(k) && v !== null && !isNaN(v) && typeof v === "number" ? Number(v).toLocaleString("en-US", { minimumFractionDigits: 2 }) : v;
+
+function table(el, rows) {
+  if (!rows.length) { el.innerHTML = "<tr><td>no rows</td></tr>"; return; }
+  const cols = Object.keys(rows[0]);
+  const num = k => typeof rows[0][k] === "number";
+  el.innerHTML = "<tr>" + cols.map(c => `<th class="${num(c) ? "num" : ""}">${esc(c)}</th>`).join("") + "</tr>" +
+    rows.map(r => "<tr>" + cols.map(c => r[c] === null ? `<td class="null">null</td>` : `<td class="${num(c) ? "num" : ""}">${esc(fmt(c, r[c]))}</td>`).join("") + "</tr>").join("");
+}
+
+function bars(el, items, color) {
+  const max = Math.max(...items.map(i => i.n), 1);
+  el.innerHTML = items.map(i => `<div class="bar" style="--c:${i.c || color}"><span>${esc(i.k)}</span><div class="track"><div class="fill" style="width:${(i.n / max * 100).toFixed(1)}%"></div></div><span class="n">${esc(i.label || i.n)}</span></div>`).join("");
+}
+
+async function loadLayers() {
+  const layers = await get("/api/layers");
+  document.getElementById("tiles").innerHTML = layers.map(l =>
+    `<div class="tile" style="--c:${colors[l.layer]}"><div class="k">${esc(l.table_name)}</div><div class="v">${l.row_count}</div><div class="s">${l.snapshots} snapshots</div></div>`).join("");
+  bars(document.getElementById("funnel"), layers.map(l => ({ k: l.table_name, n: l.row_count, c: colors[l.layer] })));
+}
+
+async function loadSilver() {
+  table(document.getElementById("files"), await get("/api/bronze"));
+  const q = await get("/api/quarantine");
+  bars(document.getElementById("reasons"), q.reasons.map(r => ({ k: r.reason, n: r.row_count })), "var(--bad)");
+  table(document.getElementById("quarantine"), q.rows);
+  table(document.getElementById("late"), await get("/api/silver/late"));
+}
+
+const goldTables = { revenue_by_category: "category", daily_revenue: "order_date", top_customers: "customer" };
+
+async function showGold(name) {
+  document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("on", b.dataset.t === name));
+  const g = await get("/api/gold?table=" + name);
+  const key = goldTables[name];
+  bars(document.getElementById("goldchart"), g.rows.map(r => ({ k: r[key], n: Number(r.revenue), label: Number(r.revenue).toLocaleString("en-US", { maximumFractionDigits: 0 }) })), "var(--gold)");
+  table(document.getElementById("gold"), g.rows);
+}
+
+document.getElementById("tabs").innerHTML = Object.keys(goldTables).map(t => `<button data-t="${t}">${t}</button>`).join("");
+document.getElementById("tabs").addEventListener("click", e => { if (e.target.dataset.t) showGold(e.target.dataset.t).catch(fail); });
+
+function fail(e) { document.querySelector("main").insertAdjacentHTML("afterbegin", `<p class="err">${esc(e.message)}</p>`); }
+
+const firstGold = goldTables[location.hash.slice(1)] ? location.hash.slice(1) : "revenue_by_category";
+Promise.all([loadLayers(), loadSilver(), showGold(firstGold)]).catch(fail);
+</script>
+</body>
+</html>

@@ -1,0 +1,201 @@
+order_id,customer,product,category,quantity,price,ts
+1001,Emma Brown,Building Blocks Set,toys,1,42.87,2026-01-05T10:05:00Z
+1002,Sofia Rossi,Building Blocks Set,toys,2,82.98,2026-01-05T11:25:00Z
+1003,Thomas Clark,Coffee Maker,home,1,58.68,2026-01-05T13:55:00Z
+1004,Noah Wilson,4K Monitor,electronics,1,404.47,2026-01-05T15:37:00Z
+1005,Felipe Costa,Sapiens,books,2,23.08,2026-01-05T16:05:00Z
+1006,David Kim,Plush Bear,toys,1,12.32,2026-01-05T18:25:00Z
+1007,Isabela Rocha,Mechanical Keyboard,electronics,1,143.21,2026-01-05T20:36:00Z
+1008,Carla Mendes,Smartwatch,electronics,1,147.71,2026-01-05T21:44:00Z
+1009,Sofia Rossi,Tennis Racket,sports,3,145.59,2026-01-05T23:19:00Z
+1010,Carla Mendes,The Pragmatic Programmer,books,1,36.10,2026-01-06T00:47:00Z
+1011,Felipe Costa,The Pragmatic Programmer,books,1,40.16,2026-01-06T02:33:00Z
+1012,Carla Mendes,Cotton T-Shirt,clothing,1,13.99,2026-01-06T04:51:00Z
+1013,Maria Garcia,Dumbbell Set,sports,2,73.48,2026-01-06T06:00:00Z
+1014,Hugo Martins,Rain Boots,clothing,1,41.97,2026-01-06T06:45:00Z
+1015,Karen White,Bluetooth Speaker,electronics,1,34.62,2026-01-06T09:27:00Z
+1016,Emma Brown,Sapiens,books,1,24.14,2026-01-06T10:50:00Z
+1017,Sofia Rossi,Denim Jeans,clothing,1,67.07,2026-01-06T12:02:00Z
+1018,Quinn Taylor,Cast Iron Skillet,home,1,31.57,2026-01-06T13:23:00Z
+1019,Felipe Costa,Coffee Maker,home,3,116.50,2026-01-06T15:02:00Z
+1020,Olivia Davis,Plush Bear,toys,2,15.76,2026-01-06T17:36:00Z
+1021,David Kim,Tennis Racket,sports,5,179.51,2026-01-06T17:58:00Z
+1022,David Kim,Board Game,toys,3,43.05,2026-01-06T20:17:00Z
+1023,Quinn Taylor,Wool Sweater,clothing,1,45.21,2026-01-06T21:44:00Z
+1024,Quinn Taylor,Designing Data-Intensive Applications,books,4,57.27,2026-01-06T23:26:00Z
+1025,Quinn Taylor,Dumbbell Set,sports,1,125.25,2026-01-07T01:34:00Z
+1026,James Smith,4K Monitor,electronics,1,234.26,2026-01-07T02:48:00Z
+1027,Carla Mendes,The Pragmatic Programmer,books,1,42.21,2026-01-07T03:49:00Z
+1028,Emma Brown,Plush Bear,toys,3,24.66,2026-01-07T06:24:00Z
+1029,Thomas Clark,Sapiens,books,4,16.64,2026-01-07T08:00:00Z
+1030,Grace Lee,Desk Lamp,home,4,50.20,2026-01-07T09:58:00Z
+1031,Olivia Davis,Remote Control Car,toys,1,63.57,2026-01-07T10:54:00Z
+1032,Alice Johnson,Cycling Helmet,sports,1,59.22,2026-01-07T12:27:00Z
+1033,Bruno Silva,Soccer Ball,sports,1,20.50,2026-01-07T13:30:00Z
+1034,Quinn Taylor,The Pragmatic Programmer,books,4,47.46,2026-01-07T15:07:00Z
+1035,Sofia Rossi,Dune,books,2,11.92,2026-01-07T16:51:00Z
+1036,Grace Lee,Cycling Helmet,sports,1,81.57,2026-01-07T19:04:00Z
+1037,Olivia Davis,Wireless Headphones,electronics,2,91.88,2026-01-07T20:41:00Z
+1038,Bruno Silva,Building Blocks Set,toys,2,88.96,2026-01-07T21:38:00Z
+1039,Grace Lee,Throw Pillow,home,3,14.40,2026-01-07T23:27:00Z
+1040,Hugo Martins,Cycling Helmet,sports,1,55.51,2026-01-08T01:39:00Z
+1041,Bruno Silva,Mechanical Keyboard,electronics,3,144.15,2026-01-08T02:29:00Z
+1042,Felipe Costa,Board Game,toys,3,49.06,2026-01-08T04:24:00Z
+1043,Felipe Costa,Chef Knife,home,1,106.82,2026-01-08T05:38:00Z
+1044,James Smith,Coffee Maker,home,5,62.87,2026-01-08T08:06:00Z
+1045,James Smith,Cast Iron Skillet,home,2,39.59,2026-01-08T09:09:00Z
+1046,Bruno Silva,The Pragmatic Programmer,books,2,41.75,2026-01-08T11:02:00Z
+1047,Felipe Costa,4K Monitor,electronics,1,477.23,2026-01-08T13:06:00Z
+1048,Carla Mendes,4K Monitor,electronics,1,279.17,2026-01-08T14:52:00Z
+1049,Hugo Martins,Puzzle 1000 Pieces,toys,1,29.00,2026-01-08T16:25:00Z
+1050,Sofia Rossi,Soccer Ball,sports,1,17.04,2026-01-08T18:14:00Z
+1051,Karen White,Soccer Ball,sports,1,21.51,2026-01-08T19:52:00Z
+1052,Olivia Davis,Dune,books,1,16.04,2026-01-08T20:42:00Z
+1053,David Kim,Running Jacket,clothing,1,98.69,2026-01-08T22:53:00Z
+1054,Carla Mendes,4K Monitor,electronics,1,300.60,2026-01-09T00:02:00Z
+1055,James Smith,Dune,books,1,13.93,2026-01-09T02:04:00Z
+1056,David Kim,Soccer Ball,sports,1,35.42,2026-01-09T03:10:00Z
+1057,Emma Brown,Dune,books,1,10.95,2026-01-09T05:19:00Z
+1058,Isabela Rocha,Cotton T-Shirt,clothing,2,20.75,2026-01-09T06:12:00Z
+1059,Carla Mendes,Cycling Helmet,sports,1,120.73,2026-01-09T07:29:00Z
+1060,Emma Brown,Plush Bear,toys,3,10.65,2026-01-09T09:42:00Z
+1061,Noah Wilson,Remote Control Car,toys,1,52.08,2026-01-09T12:07:00Z
+1062,Emma Brown,Yoga Mat,sports,1,48.34,2026-01-09T13:42:00Z
+1063,Noah Wilson,Yoga Mat,sports,3,37.47,2026-01-09T14:09:00Z
+1064,Lucas Pereira,The Pragmatic Programmer,books,1,48.17,2026-01-09T15:33:00Z
+1065,Noah Wilson,Clean Architecture,books,2,32.24,2026-01-09T18:16:00Z
+1066,Felipe Costa,Dumbbell Set,sports,4,72.67,2026-01-09T19:02:00Z
+1067,Hugo Martins,Coffee Maker,home,1,122.20,2026-01-09T21:11:00Z
+1068,Pedro Alves,Denim Jeans,clothing,3,44.40,2026-01-09T22:00:00Z
+1069,Hugo Martins,Clean Architecture,books,3,33.52,2026-01-10T00:12:00Z
+1070,Carla Mendes,The Pragmatic Programmer,books,2,39.17,2026-01-10T01:45:00Z
+1071,Karen White,Cotton T-Shirt,clothing,2,15.99,2026-01-10T03:55:00Z
+1072,Isabela Rocha,Wireless Headphones,electronics,4,83.50,2026-01-10T05:38:00Z
+1073,Noah Wilson,Wireless Headphones,electronics,2,91.10,2026-01-10T06:41:00Z
+1074,Isabela Rocha,Soccer Ball,sports,1,37.48,2026-01-10T08:02:00Z
+1075,Grace Lee,Smartwatch,electronics,1,238.58,2026-01-10T10:23:00Z
+1076,Thomas Clark,Wool Sweater,clothing,1,88.18,2026-01-10T11:34:00Z
+1077,Noah Wilson,Running Jacket,clothing,2,73.03,2026-01-10T13:08:00Z
+1078,Noah Wilson,Wool Sweater,clothing,2,81.04,2026-01-10T14:30:00Z
+1079,Sofia Rossi,Plush Bear,toys,2,23.53,2026-01-10T17:01:00Z
+1080,Grace Lee,Wool Sweater,clothing,2,45.03,2026-01-10T17:56:00Z
+1081,Olivia Davis,Cast Iron Skillet,home,2,34.66,2026-01-10T19:53:00Z
+1082,Carla Mendes,Puzzle 1000 Pieces,toys,2,26.48,2026-01-10T20:55:00Z
+1083,Hugo Martins,Rain Boots,clothing,2,53.77,2026-01-10T22:22:00Z
+1084,Bruno Silva,Remote Control Car,toys,1,39.95,2026-01-10T23:51:00Z
+1085,Noah Wilson,Sapiens,books,2,22.67,2026-01-11T02:23:00Z
+1086,Maria Garcia,Board Game,toys,1,40.88,2026-01-11T04:05:00Z
+1087,Noah Wilson,Clean Architecture,books,2,28.07,2026-01-11T04:52:00Z
+1088,Bruno Silva,Clean Architecture,books,3,36.34,2026-01-11T07:15:00Z
+1089,Olivia Davis,Dumbbell Set,sports,4,61.14,2026-01-11T08:10:00Z
+1090,Thomas Clark,Board Game,toys,5,37.85,2026-01-11T10:26:00Z
+1091,Felipe Costa,Board Game,toys,1,47.20,2026-01-11T12:04:00Z
+1092,Isabela Rocha,Plush Bear,toys,1,21.27,2026-01-11T14:05:00Z
+1093,James Smith,Cycling Helmet,sports,2,63.71,2026-01-11T14:30:00Z
+1094,Emma Brown,Dune,books,1,18.03,2026-01-11T16:08:00Z
+1095,Carla Mendes,Clean Architecture,books,1,29.83,2026-01-11T18:02:00Z
+1096,Grace Lee,Chef Knife,home,1,70.93,2026-01-11T19:19:00Z
+1097,Alice Johnson,Chef Knife,home,4,81.57,2026-01-11T22:18:00Z
+1098,Maria Garcia,Cycling Helmet,sports,1,123.85,2026-01-11T23:04:00Z
+1099,Hugo Martins,Cast Iron Skillet,home,2,41.37,2026-01-12T01:20:00Z
+1100,Karen White,Desk Lamp,home,1,39.42,2026-01-12T02:29:00Z
+1101,Thomas Clark,Plush Bear,toys,2,22.60,2026-01-12T03:33:00Z
+1102,Alice Johnson,Yoga Mat,sports,4,37.75,2026-01-12T06:18:00Z
+1103,Bruno Silva,Smartwatch,electronics,1,318.38,2026-01-12T06:54:00Z
+1104,Maria Garcia,Wool Sweater,clothing,1,74.56,2026-01-12T08:51:00Z
+1105,Rafael Souza,Wool Sweater,clothing,1,50.32,2026-01-12T09:47:00Z
+1106,Bruno Silva,Bluetooth Speaker,electronics,1,34.79,2026-01-12T12:45:00Z
+1107,Hugo Martins,USB-C Charger,electronics,1,15.51,2026-01-12T13:18:00Z
+1108,Olivia Davis,Sapiens,books,2,20.63,2026-01-12T15:03:00Z
+1109,David Kim,Remote Control Car,toys,3,38.38,2026-01-12T17:30:00Z
+1110,Sofia Rossi,Dune,books,1,10.22,2026-01-12T18:29:00Z
+1111,Sofia Rossi,Plush Bear,toys,1,20.72,2026-01-12T19:36:00Z
+1112,Thomas Clark,Puzzle 1000 Pieces,toys,1,26.12,2026-01-12T22:31:00Z
+1113,Lucas Pereira,4K Monitor,electronics,3,322.75,2026-01-12T23:35:00Z
+1114,Pedro Alves,4K Monitor,electronics,2,232.42,2026-01-13T01:11:00Z
+1115,Emma Brown,Mechanical Keyboard,electronics,5,119.90,2026-01-13T02:53:00Z
+1116,Thomas Clark,Desk Lamp,home,2,58.61,2026-01-13T04:06:00Z
+1117,Isabela Rocha,Cycling Helmet,sports,1,113.32,2026-01-13T06:24:00Z
+1118,Hugo Martins,Denim Jeans,clothing,3,43.33,2026-01-13T07:43:00Z
+1119,Pedro Alves,Cast Iron Skillet,home,2,36.36,2026-01-13T08:26:00Z
+1120,Karen White,Denim Jeans,clothing,1,56.74,2026-01-13T10:33:00Z
+1121,Quinn Taylor,Rain Boots,clothing,2,40.05,2026-01-13T11:38:00Z
+1122,Hugo Martins,The Pragmatic Programmer,books,1,39.31,2026-01-13T14:25:00Z
+1123,Carla Mendes,Plush Bear,toys,2,17.35,2026-01-13T14:53:00Z
+1124,Sofia Rossi,Denim Jeans,clothing,1,51.17,2026-01-13T17:52:00Z
+1125,Karen White,Wool Sweater,clothing,2,67.34,2026-01-13T19:15:00Z
+1126,Grace Lee,Wool Sweater,clothing,1,61.34,2026-01-13T19:57:00Z
+1127,Felipe Costa,Running Jacket,clothing,2,125.07,2026-01-13T22:47:00Z
+1128,Quinn Taylor,Clean Architecture,books,2,31.32,2026-01-14T00:11:00Z
+1129,Hugo Martins,Tennis Racket,sports,5,175.57,2026-01-14T01:10:00Z
+1130,Isabela Rocha,Denim Jeans,clothing,1,74.40,2026-01-14T02:26:00Z
+1131,Pedro Alves,Wireless Headphones,electronics,2,122.76,2026-01-14T04:03:00Z
+1132,Karen White,Wireless Headphones,electronics,2,102.24,2026-01-14T06:20:00Z
+1133,Carla Mendes,The Pragmatic Programmer,books,1,47.50,2026-01-14T07:15:00Z
+1134,Emma Brown,Chef Knife,home,1,85.65,2026-01-14T08:44:00Z
+1135,David Kim,Designing Data-Intensive Applications,books,4,40.79,2026-01-14T10:46:00Z
+1136,Quinn Taylor,Cycling Helmet,sports,2,110.17,2026-01-14T12:20:00Z
+1137,Noah Wilson,Chef Knife,home,4,55.76,2026-01-14T14:44:00Z
+1138,Grace Lee,Rain Boots,clothing,2,53.39,2026-01-14T15:18:00Z
+1139,Felipe Costa,Puzzle 1000 Pieces,toys,1,14.37,2026-01-14T17:13:00Z
+1140,Thomas Clark,Yoga Mat,sports,1,32.25,2026-01-14T19:48:00Z
+1141,Olivia Davis,Throw Pillow,home,1,18.34,2026-01-14T20:33:00Z
+1142,Sofia Rossi,Smartwatch,electronics,1,179.85,2026-01-14T22:54:00Z
+1143,Emma Brown,Puzzle 1000 Pieces,toys,1,22.25,2026-01-15T00:33:00Z
+1144,Thomas Clark,Denim Jeans,clothing,1,47.30,2026-01-15T01:27:00Z
+1145,James Smith,Board Game,toys,4,33.16,2026-01-15T03:24:00Z
+1146,Olivia Davis,Plush Bear,toys,4,17.50,2026-01-15T05:05:00Z
+1147,Thomas Clark,4K Monitor,electronics,1,345.65,2026-01-15T06:20:00Z
+1148,Sofia Rossi,Running Jacket,clothing,1,125.95,2026-01-15T08:29:00Z
+1149,Pedro Alves,Smartwatch,electronics,3,251.54,2026-01-15T09:15:00Z
+1150,Noah Wilson,Cycling Helmet,sports,4,55.33,2026-01-15T11:44:00Z
+1151,Karen White,Plush Bear,toys,5,17.04,2026-01-15T12:59:00Z
+1152,Pedro Alves,Running Jacket,clothing,3,75.38,2026-01-15T15:12:00Z
+1153,Carla Mendes,Wool Sweater,clothing,3,80.76,2026-01-15T16:19:00Z
+1154,Quinn Taylor,Cotton T-Shirt,clothing,1,24.54,2026-01-15T17:49:00Z
+1155,Grace Lee,Smartwatch,electronics,3,225.25,2026-01-15T18:41:00Z
+1156,Bruno Silva,Tennis Racket,sports,2,128.79,2026-01-15T21:08:00Z
+1157,Pedro Alves,Dune,books,2,18.34,2026-01-15T22:45:00Z
+1158,Felipe Costa,Wireless Headphones,electronics,5,114.79,2026-01-15T23:56:00Z
+1159,David Kim,Rain Boots,clothing,1,45.32,2026-01-16T01:31:00Z
+1160,Quinn Taylor,Coffee Maker,home,2,52.86,2026-01-16T03:17:00Z
+1161,Hugo Martins,Remote Control Car,toys,1,54.11,2026-01-16T05:17:00Z
+1162,Quinn Taylor,Cast Iron Skillet,home,1,30.71,2026-01-16T07:10:00Z
+1163,Karen White,Puzzle 1000 Pieces,toys,3,17.69,2026-01-16T08:24:00Z
+1164,Sofia Rossi,Tennis Racket,sports,3,98.60,2026-01-16T09:46:00Z
+1165,Lucas Pereira,Cycling Helmet,sports,3,79.19,2026-01-16T11:46:00Z
+1166,Grace Lee,Rain Boots,clothing,3,44.09,2026-01-16T13:03:00Z
+1167,Bruno Silva,Puzzle 1000 Pieces,toys,2,16.96,2026-01-16T14:51:00Z
+1168,Emma Brown,Wool Sweater,clothing,2,97.74,2026-01-16T16:25:00Z
+1169,David Kim,Coffee Maker,home,1,125.88,2026-01-16T17:55:00Z
+1170,Noah Wilson,Coffee Maker,home,2,80.12,2026-01-16T19:08:00Z
+1171,Karen White,Puzzle 1000 Pieces,toys,1,26.28,2026-01-16T21:00:00Z
+1172,Rafael Souza,Cycling Helmet,sports,2,115.66,2026-01-16T23:30:00Z
+1173,Rafael Souza,Throw Pillow,home,2,31.52,2026-01-17T00:43:00Z
+1174,Hugo Martins,4K Monitor,electronics,1,399.41,2026-01-17T01:54:00Z
+1175,David Kim,Building Blocks Set,toys,1,31.39,2026-01-17T04:16:00Z
+1176,Karen White,Desk Lamp,home,2,56.13,2026-01-17T04:37:00Z
+1177,Quinn Taylor,Bluetooth Speaker,electronics,1,60.14,2026-01-17T06:40:00Z
+1178,Carla Mendes,Cast Iron Skillet,home,2,30.39,2026-01-17T08:08:00Z
+1179,Emma Brown,Cycling Helmet,sports,2,60.67,2026-01-17T10:37:00Z
+1180,Alice Johnson,Sapiens,books,2,19.59,2026-01-17T12:25:00Z
+1181,Lucas Pereira,Throw Pillow,home,2,15.48,2026-01-17T13:33:00Z
+1182,Olivia Davis,Tennis Racket,sports,2,118.40,2026-01-17T14:46:00Z
+1183,Hugo Martins,Denim Jeans,clothing,5,81.67,2026-01-17T16:04:00Z
+1184,James Smith,Cast Iron Skillet,home,1,33.87,2026-01-17T18:57:00Z
+1185,Bruno Silva,Smartwatch,electronics,1,120.86,2026-01-17T20:32:00Z
+1186,Thomas Clark,Cycling Helmet,sports,3,120.26,2026-01-17T21:11:00Z
+1187,Emma Brown,Denim Jeans,clothing,2,70.04,2026-01-17T23:45:00Z
+1188,Olivia Davis,Building Blocks Set,toys,4,67.00,2026-01-18T00:35:00Z
+1189,Karen White,4K Monitor,electronics,1,264.48,2026-01-18T02:10:00Z
+1190,Lucas Pereira,Plush Bear,toys,1,11.97,2026-01-18T04:19:00Z
+1191,Pedro Alves,Soccer Ball,sports,4,35.75,2026-01-18T05:19:00Z
+1192,Emma Brown,Cotton T-Shirt,clothing,3,17.01,2026-01-18T06:33:00Z
+1193,Carla Mendes,Sapiens,books,5,23.04,2026-01-18T08:47:00Z
+1194,Isabela Rocha,Coffee Maker,home,1,50.12,2026-01-18T10:25:00Z
+1195,Hugo Martins,Cycling Helmet,sports,3,123.63,2026-01-18T11:28:00Z
+1196,Thomas Clark,Coffee Maker,home,2,123.89,2026-01-18T13:33:00Z
+1197,James Smith,The Pragmatic Programmer,books,2,40.35,2026-01-18T15:58:00Z
+1198,James Smith,Plush Bear,toys,1,10.67,2026-01-18T16:10:00Z
+1199,Maria Garcia,Coffee Maker,home,1,118.85,2026-01-18T18:00:00Z
+1200,Noah Wilson,Throw Pillow,home,2,28.35,2026-01-18T20:29:00Z

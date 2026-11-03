@@ -1,0 +1,22 @@
+order_id,customer,product,category,quantity,price,ts
+1001,Emma Brown,Building Blocks Set,toys,1,42.87,2026-01-05T10:05:00Z
+1002,Sofia Rossi,Building Blocks Set,toys,2,82.98,2026-01-05T11:25:00Z
+1005,Felipe Costa,Sapiens,books,4,23.08,2026-01-05T16:05:00Z
+1010,Carla Mendes,The Pragmatic Programmer,books,-1,36.10,2026-01-06T00:47:00Z
+1050,  Sofia Rossi ,Soccer Ball, Sports ,3,17.04,2026-01-08T18:14:00Z
+1201,Liam Smith,Wireless Mouse,electronics,2,25.50,2026-01-19T09:15:00Z
+1201,Liam Smith,Wireless Mouse,electronics,2,25.50,2026-01-19T09:15:00Z
+1202,Olivia Jones,Yoga Mat,sports,1,31.99,2026-01-19T10:40:00Z
+1203,Emma Brown,Desk Lamp,HOME,3,19.90,2026-01-19T13:05:00Z
+1204,Noah Wilson,Mechanical Keyboard, Electronics,1,89.00,2026-01-20T08:30:00Z
+1205,Maria Garcia,Graphic Novel,books,2,15.75,2026-01-20T12:00:00Z
+1206,Felipe Costa,Running Shoes,clothing,-3,64.20,2026-01-20T14:22:00Z
+1207,Sofia Rossi,Puzzle 1000,toys,0,21.40,2026-01-20T15:10:00Z
+1208,Liam Smith,Hoodie,,1,39.90,2026-01-20T16:45:00Z
+1209,Olivia Jones,Board Game,toys,1,N/A,2026-01-20T17:30:00Z
+1210,Emma Brown,USB Hub,electronics,2,12.9.9,2026-01-20T18:05:00Z
+1211,Noah Wilson,Blender,home,one,55.00,2026-01-20T19:00:00Z
+1212,Maria Garcia,Notebook Set,books,2,8.50,yesterday
+X1213,Carla Mendes,Beanie,clothing,1,14.00,2026-01-20T20:10:00Z
+1214,,Tent,sports,1,120.00,2026-01-20T21:00:00Z
+1203,Emma Brown,Desk Lamp,home,2,19.90,2026-01-19T13:05:00Z
