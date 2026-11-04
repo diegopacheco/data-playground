@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NATS JetStream Streams</title>
+<style>
+:root{--bg:#f7f8fb;--card:#fff;--ink:#1d2433;--muted:#667085;--line:#e4e7ec;--accent:#27aae1;--ok:#12b76a;--warn:#f79009;--bad:#f04438;--soft:#eef8fd}
+*{box-sizing:border-box}
+body{margin:0;font:14px/1.5 system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:var(--card);border-bottom:1px solid var(--line);padding:16px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+header h1{font-size:18px;margin:0}
+header .sub{color:var(--muted)}
+header button{margin-left:auto}
+nav{display:flex;gap:4px;padding:0 24px;background:var(--card);border-bottom:1px solid var(--line);overflow-x:auto}
+nav button{border:0;background:none;padding:12px 14px;font:inherit;color:var(--muted);border-bottom:2px solid transparent;cursor:pointer}
+nav button.on{color:var(--ink);border-color:var(--accent);font-weight:600}
+main{padding:20px 24px;max-width:1200px;margin:0 auto}
+section{display:none}
+section.on{display:block}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px}
+.card h3{margin:0 0 4px;font-size:15px}
+.card p{margin:0 0 12px;color:var(--muted)}
+button.act{background:var(--accent);color:#fff;border:0;border-radius:6px;padding:8px 14px;font:inherit;cursor:pointer}
+button.act:disabled{opacity:.5}
+.cells{display:flex;flex-wrap:wrap;gap:3px;margin:8px 0}
+.cell{width:26px;height:22px;border-radius:4px;font-size:10px;display:flex;align-items:center;justify-content:center;background:#f2f4f7;color:#98a2b3}
+.cell.kept{background:#d1f3e1;color:#067647}
+.cell.gone{background:#f2f4f7;color:#98a2b3;text-decoration:line-through}
+.cell.hit{background:#d6effa;color:#065986}
+.kv{display:flex;gap:18px;flex-wrap:wrap;margin:6px 0}
+.kv div b{display:block;font-size:20px}
+.kv div span{color:var(--muted);font-size:12px}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font-weight:500}
+.badge{display:inline-block;padding:1px 8px;border-radius:10px;font-size:12px}
+.b-ok{background:#d1f3e1;color:#067647}
+.b-warn{background:#fef0c7;color:#93370d}
+.b-bad{background:#fee4e2;color:#b42318}
+.b-info{background:#d6effa;color:#065986}
+.legend{color:var(--muted);font-size:12px}
+.timeline{position:relative;height:60px;border-left:1px solid var(--line);border-bottom:1px solid var(--line);margin:10px 0 20px}
+.dot{position:absolute;width:10px;height:10px;border-radius:50%;transform:translate(-5px,-5px)}
+.node{border:1px solid var(--line);border-radius:10px;padding:12px;background:var(--card)}
+.node.down{opacity:.5}
+.err{color:var(--bad);white-space:pre-wrap}
+code{background:#f2f4f7;padding:1px 5px;border-radius:4px}
+</style>
+</head>
+<body>
+<header>
+  <h1>NATS JetStream Streams</h1>
+  <span class="sub">3 node cluster, R3 streams, retention, consumers, replay and key-value</span>
+  <button class="act" id="runAll">Run all scenarios</button>
+</header>
+<nav id="tabs">
+  <button data-tab="retention" class="on">Retention</button>
+  <button data-tab="consumers">Consumers</button>
+  <button data-tab="replay">Replay</button>
+  <button data-tab="kv">Key-Value</button>
+  <button data-tab="cluster">Cluster</button>
+</nav>
+<main>
+  <div id="error" class="err"></div>
+  <section id="retention" class="on"></section>
+  <section id="consumers"></section>
+  <section id="replay"></section>
+  <section id="kv"></section>
+  <section id="cluster"></section>
+</main>
+<script>
+const $ = (id) => document.getElementById(id);
+let results = {};
+
+function cells(all, cls) {
+  return `<div class="cells">${all.map((id) => `<div class="cell ${cls(id)}">${id}</div>`).join("")}</div>`;
+}
+function stats(pairs) {
+  return `<div class="kv">${pairs.map(([k, v]) => `<div><b>${v}</b><span>${k}</span></div>`).join("")}</div>`;
+}
+function range(a, b) {
+  return Array.from({length: b - a + 1}, (_, i) => a + i);
+}
+function badge(text) {
+  const cls = text.startsWith("rejected") ? "b-ok" : "b-bad";
+  return `<span class="badge ${cls}">${text}</span>`;
+}
+function rerun(name) {
+  return `<button class="act" onclick="run('${name}', this)">Run again</button>`;
+}
+function empty(name) {
+  return `<div class="card"><p>No result yet.</p>${rerun(name)}</div>`;
+}
+
+function renderRetention(r) {
+  if (!r) return empty("retention");
+  const l = r.limits, w = r.workqueue, i = r.interest;
+  const kept = new Set(l.kept_ids), left = new Set(w.left_ids), ileft = new Set(i.left_ids);
+  return `<div class="grid">
+  <div class="card"><h3>Limits: <code>max_msgs=50</code>, discard old</h3><p>80 orders published, the stream keeps the newest 50 and evicts the rest.</p>
+    ${stats([["published", l.published], ["stored", l.messages], ["first seq", l.first_seq], ["last seq", l.last_seq]])}
+    ${cells(range(1, l.published), (id) => kept.has(id) ? "kept" : "gone")}<div class="legend">green: stored, grey: evicted by the limit</div></div>
+  <div class="card"><h3>Work queue</h3><p>20 jobs, one worker acked 12. Acked jobs are deleted, the rest wait.</p>
+    ${stats([["published", w.published], ["acked", w.acked_ids.length], ["left", w.messages]])}
+    ${cells(range(1, w.published), (id) => left.has(id) ? "kept" : "gone")}
+    <div class="legend">green: still queued, grey: processed and removed</div>
+    <p style="margin-top:10px">Second consumer on the same subjects: ${badge(w.second_consumer)}</p></div>
+  <div class="card"><h3>Interest</h3><p>Consumers <code>email</code> and <code>audit</code>. email acked all 10, audit acked ${i.audit_acked_ids.length}.</p>
+    ${stats([["published", i.published], ["consumers", i.consumers], ["left", i.messages]])}
+    ${cells(range(1, i.published), (id) => ileft.has(id) ? "kept" : "gone")}
+    <div class="legend">green: waiting for audit, grey: acked by every consumer and removed</div></div>
+  </div><p>${rerun("retention")} <span class="legend">ran at ${r.ran_at}</span></p>`;
+}
+
+function renderConsumers(r) {
+  if (!r) return empty("consumers");
+  const colors = {"ack": "b-ok", "nak": "b-warn", "no ack": "b-bad", "term": "b-bad", "ack (redelivery)": "b-info"};
+  const rows = r.log.map((e) => `<tr><td>${e.ms} ms</td><td>${e.id}</td><td>${e.seq}</td><td>${e.delivered}</td><td><span class="badge ${colors[e.action]}">${e.action}</span></td></tr>`).join("");
+  const b = r.billing;
+  return `<div class="grid">
+  <div class="card" style="grid-column:1/-1"><h3>Durable pull consumer <code>billing</code> (ack_wait 2 s, max_deliver 3)</h3>
+    <p>10 orders fetched. 1 to 7 acked, 8 nak, 9 left without ack, 10 terminated. The nak comes back at once, the unacked one after ack_wait, the terminated one never.</p>
+    <table><tr><th>time</th><th>order</th><th>stream seq</th><th>delivery #</th><th>action</th></tr>${rows}</table></div>
+  <div class="card"><h3>Resume after reconnect</h3><p>Connection closed, orders 11 and 12 published, a new connection binds to <code>billing</code> again.</p>
+    ${stats([["received after reconnect", r.resumed_ids.join(", ")], ["ack floor seq", b.ack_floor_stream_seq], ["pending", b.num_pending], ["ack pending", b.num_ack_pending]])}</div>
+  <div class="card"><h3>Poison message</h3><p>Always nak'd by consumer <code>poison</code> with max_deliver ${r.poison.max_deliver}.</p>
+    ${stats([["delivery attempts", r.poison.attempts.join(", ")], ["still pending", r.poison.num_ack_pending]])}</div>
+  </div><p>${rerun("consumers")} <span class="legend">ran at ${r.ran_at}</span></p>`;
+}
+
+function renderReplay(r) {
+  if (!r) return empty("replay");
+  const all = r.all, bySeq = new Set(r.from_seq_21), byTime = new Set(r.from_time_batch2);
+  const last = new Set(Object.values(r.last_per_subject));
+  const p = r.original_pace;
+  return `<div class="grid">
+  <div class="card"><h3>From sequence 21</h3><p>DeliverPolicy by_start_sequence, opt_start_seq 21.</p>${cells(all, (id) => bySeq.has(id) ? "hit" : "")}</div>
+  <div class="card"><h3>From time</h3><p>30 events in 3 batches 1.4 s apart. Start time <code>${r.from_time_value}</code> sits between batch 1 and 2.</p>${cells(all, (id) => byTime.has(id) ? "hit" : "")}</div>
+  <div class="card"><h3>Last per subject</h3><p>One message per <code>events.&lt;region&gt;</code> subject, the newest.</p>${cells(all, (id) => last.has(id) ? "hit" : "")}
+    <table>${Object.entries(r.last_per_subject).map(([s, id]) => `<tr><td>${s}</td><td>${id}</td></tr>`).join("")}</table></div>
+  <div class="card"><h3>Replay at original speed</h3><p>ReplayPolicy original from seq 10: the consumer waits the real gap between batches.</p>
+    ${stats([["gap seq 10 to 11, original", p.gap_between_seq10_and_seq11_ms + " ms"], ["same gap, instant replay", p.instant_gap_ms + " ms"], ["whole original replay", p.total_ms + " ms"]])}
+    <p>Direct get of seq 15: <code>${r.get_msg_seq_15.subject}</code> order ${r.get_msg_seq_15.id}</p></div>
+  </div><p>${rerun("replay")} <span class="legend">ran at ${r.ran_at}</span></p>`;
+}
+
+function renderKv(r) {
+  if (!r) return empty("kv");
+  const hist = r.history.map((h) => `<tr><td>${h.revision}</td><td>${h.value}</td></tr>`).join("");
+  const watch = r.watched.map((w) => `<tr><td>${w.revision}</td><td>${w.key}</td><td><span class="badge ${w.op === "DEL" ? "b-bad" : "b-ok"}">${w.op}</span></td><td>${w.value ?? ""}</td></tr>`).join("");
+  return `<div class="grid">
+  <div class="card"><h3>Bucket <code>${r.bucket}</code>, history ${r.history_limit}, R${r.backing_stream.replicas}</h3>
+    <p>7 puts to <code>feature.checkout</code>: ${r.puts.join(", ")}. Only the last ${r.history_limit} revisions stay.</p>
+    ${stats([["revision after 7 puts", r.current.revision], ["value after 7 puts", r.current.value], ["backing stream msgs", r.backing_stream.messages]])}
+    <table><tr><th>revision</th><th>value</th></tr>${hist}</table></div>
+  <div class="card"><h3>Compare and set</h3>
+    <table>
+      <tr><td>update with stale revision</td><td>${badge(r.stale_update)}</td></tr>
+      <tr><td>update with current revision</td><td><span class="badge b-ok">revision ${r.cas_update_revision}</span></td></tr>
+      <tr><td>create <code>feature.search</code></td><td><span class="badge b-ok">revision ${r.create_revision}</span></td></tr>
+      <tr><td>create it again</td><td>${badge(r.duplicate_create)}</td></tr>
+      <tr><td>get after delete</td><td><span class="badge b-info">${r.after_delete}</span></td></tr>
+      <tr><td>keys now</td><td>${r.keys.join(", ")}</td></tr>
+    </table></div>
+  <div class="card"><h3>Watcher on <code>feature.*</code></h3><table><tr><th>rev</th><th>key</th><th>op</th><th>value</th></tr>${watch}</table></div>
+  </div><p>${rerun("kv")} <span class="legend">ran at ${r.ran_at}</span></p>`;
+}
+
+async function renderCluster() {
+  const c = await (await fetch("/api/cluster")).json();
+  if (c.error) { $("cluster").innerHTML = `<div class="err">${c.error}</div>`; return; }
+  const nodes = c.nodes.map((n) => n.up
+    ? `<div class="node"><h3>${n.name} <span class="badge ${n.meta_leader === n.name ? "b-info" : "b-ok"}">${n.meta_leader === n.name ? "meta leader" : "up"}</span></h3>
+       ${stats([["version", n.version], ["memory", n.mem_mb + " MB"], ["routes", n.routes], ["streams", Object.keys(n.streams).length]])}</div>`
+    : `<div class="node down"><h3>${n.url}</h3><span class="badge b-bad">down</span></div>`).join("");
+  const rows = c.streams.map((s) => {
+    const per = c.nodes.filter((n) => n.up).map((n) => `${n.name}: ${n.streams[s.stream] ? n.streams[s.stream].last_seq : "-"}`).join(", ");
+    const reps = s.replicas.map((r) => `<span class="badge ${r.current ? "b-ok" : "b-warn"}">${r.name}${r.current ? "" : " lag " + r.lag}</span>`).join(" ");
+    return `<tr><td>${s.stream}</td><td><span class="badge b-info">${s.leader}</span></td><td>${reps}</td><td>${s.messages}</td><td>${per}</td></tr>`;
+  }).join("");
+  $("cluster").innerHTML = `<div class="grid">${nodes}</div>
+  <div class="card" style="margin-top:16px"><h3>Stream placement (R3)</h3><p>Every stream has a leader and two replicas; the last sequence is read from each node's own monitoring endpoint. App connected to <code>${c.connected_to}</code>.</p>
+    <table><tr><th>stream</th><th>leader</th><th>replicas</th><th>messages</th><th>last seq per node</th></tr>${rows}</table>
+    <p style="margin-top:12px"><button class="act" onclick="post('/api/ledger?n=100', this)">Publish 100 to LEDGER</button>
+    <button class="act" onclick="post('/api/stepdown', this)">Step down LEDGER leader</button> <span id="clusterMsg" class="legend"></span></p></div>`;
+}
+
+async function post(path, btn) {
+  btn.disabled = true;
+  try {
+    const r = await (await fetch(path, {method: "POST"})).json();
+    await renderCluster();
+    $("clusterMsg").textContent = r.error ? r.error : r.new_leader ? `leader ${r.old_leader} -> ${r.new_leader}, next write got seq ${r.publish_after_stepdown_seq}` : `${r.acked} acked, last seq ${r.last_seq_before} -> ${r.last_seq_after}`;
+  } finally { btn.disabled = false; }
+}
+
+function render() {
+  $("retention").innerHTML = renderRetention(results.retention);
+  $("consumers").innerHTML = renderConsumers(results.consumers);
+  $("replay").innerHTML = renderReplay(results.replay);
+  $("kv").innerHTML = renderKv(results.kv);
+}
+
+async function run(name, btn) {
+  btn.disabled = true;
+  $("error").textContent = "";
+  try {
+    const r = await (await fetch(`/api/run/${name}`, {method: "POST"})).json();
+    if (r.error) $("error").textContent = r.error; else results[name] = r;
+    render();
+  } finally { btn.disabled = false; }
+}
+
+$("runAll").onclick = async (e) => {
+  e.target.disabled = true;
+  $("error").textContent = "";
+  try {
+    const r = await (await fetch("/api/run-all", {method: "POST"})).json();
+    if (r.error) $("error").textContent = r.error; else results = r;
+    render();
+  } finally { e.target.disabled = false; }
+};
+
+$("tabs").onclick = (e) => {
+  const tab = e.target.dataset.tab;
+  if (!tab) return;
+  document.querySelectorAll("nav button").forEach((b) => b.classList.toggle("on", b === e.target));
+  document.querySelectorAll("section").forEach((s) => s.classList.toggle("on", s.id === tab));
+  if (tab === "cluster") renderCluster();
+  history.replaceState(null, "", "#" + tab);
+};
+
+(async () => {
+  results = await (await fetch("/api/results")).json();
+  render();
+  const hash = location.hash.slice(1);
+  const btn = document.querySelector(`nav button[data-tab="${hash}"]`);
+  if (btn) btn.click();
+})();
+</script>
+</body>
+</html>

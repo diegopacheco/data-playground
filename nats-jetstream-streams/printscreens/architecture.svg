@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="490" viewBox="0 0 1100 490">
+  <defs>
+    <style>@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&amp;display=swap'); text { font-family: 'Caveat', 'Comic Sans MS', cursive; fill: #1f2933; }</style>
+    <filter id="wobble"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="3"/></filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1f2933"/></marker>
+  </defs>
+  <rect width="1100" height="490" fill="#ffffff"/>
+  <g filter="url(#wobble)" stroke="#1f2933" stroke-width="2">
+    <rect x="560" y="50" width="520" height="380" rx="14" fill="#f8f9fa" stroke-dasharray="8 6"/>
+    <rect x="590" y="110" width="210" height="110" rx="10" fill="#d0ebff"/>
+    <rect x="840" y="110" width="210" height="110" rx="10" fill="#d0ebff"/>
+    <rect x="715" y="290" width="210" height="110" rx="10" fill="#d0ebff"/>
+    <rect x="260" y="170" width="240" height="160" rx="10" fill="#ffd8a8"/>
+    <rect x="20" y="190" width="180" height="90" rx="10" fill="#d3f9d8"/>
+    <rect x="20" y="350" width="220" height="90" rx="10" fill="#e5dbff"/>
+    <line x1="800" y1="165" x2="840" y2="165"/>
+    <line x1="695" y1="220" x2="760" y2="290"/>
+    <line x1="945" y1="220" x2="880" y2="290"/>
+    <line x1="200" y1="235" x2="257" y2="235" marker-end="url(#arrow)"/>
+    <line x1="500" y1="210" x2="587" y2="175" marker-end="url(#arrow)"/>
+    <line x1="500" y1="290" x2="712" y2="335" marker-end="url(#arrow)"/>
+    <line x1="240" y1="395" x2="712" y2="385" marker-end="url(#arrow)" stroke-dasharray="6 5"/>
+  </g>
+  <text x="270" y="50" font-size="32" font-weight="700" text-anchor="middle">nats-jetstream-streams</text>
+  <text x="270" y="82" font-size="19" text-anchor="middle">persistent streams, consumers, replay and KV on 3 nodes</text>
+  <text x="820" y="85" font-size="20" text-anchor="middle">NATS 2.15.0 cluster "r8" on r8-net</text>
+  <text x="695" y="145" font-size="24" text-anchor="middle">r8-nats-1 (n1)</text>
+  <text x="695" y="170" font-size="17" text-anchor="middle">JetStream file store</text>
+  <text x="695" y="195" font-size="17" text-anchor="middle">client 4222, monitor 8222</text>
+  <text x="945" y="145" font-size="24" text-anchor="middle">r8-nats-2 (n2)</text>
+  <text x="945" y="170" font-size="17" text-anchor="middle">JetStream file store</text>
+  <text x="945" y="195" font-size="17" text-anchor="middle">client 4222, monitor 8222</text>
+  <text x="820" y="325" font-size="24" text-anchor="middle">r8-nats-3 (n3)</text>
+  <text x="820" y="350" font-size="17" text-anchor="middle">JetStream file store</text>
+  <text x="820" y="375" font-size="17" text-anchor="middle">client 4222, monitor 8222</text>
+  <text x="820" y="255" font-size="17" text-anchor="middle">routes :6222</text>
+  <text x="820" y="272" font-size="17" text-anchor="middle">raft per stream</text>
+  <text x="380" y="200" font-size="24" text-anchor="middle">r8-app: server.py</text>
+  <text x="380" y="225" font-size="17" text-anchor="middle">nats-py 2.16.0, Python 3.14</text>
+  <text x="380" y="248" font-size="17" text-anchor="middle">retention, consumers,</text>
+  <text x="380" y="270" font-size="17" text-anchor="middle">replay, key-value scenarios</text>
+  <text x="380" y="292" font-size="17" text-anchor="middle">REST API + UI, tests</text>
+  <text x="110" y="228" font-size="22" text-anchor="middle">browser UI</text>
+  <text x="110" y="255" font-size="17" text-anchor="middle">5 tabs, port 27300</text>
+  <text x="130" y="385" font-size="22" text-anchor="middle">test_failover.py</text>
+  <text x="130" y="412" font-size="17" text-anchor="middle">podman stop / start n3</text>
+  <text x="470" y="380" font-size="17" text-anchor="middle">kill a node, keep writing</text>
+  <text x="550" y="465" font-size="19" text-anchor="middle">every stream R3: ORDERS, EVENTS, LEDGER, KV_CONFIG, RET_LIMITS, RET_WORK, RET_INTEREST</text>
+</svg>

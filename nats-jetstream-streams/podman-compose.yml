@@ -1,0 +1,86 @@
+name: r8-nats-jetstream-streams
+
+x-nats: &nats
+  image: docker.io/library/nats:2.15.0
+  command: ["--config", "/etc/nats/nats.conf"]
+  mem_limit: 256m
+  cpus: 1
+  restart: unless-stopped
+  networks:
+    - r8-net
+
+services:
+  r8-nats-1:
+    <<: *nats
+    container_name: r8-nats-1
+    hostname: r8-nats-1
+    environment:
+      SERVER_NAME: n1
+      GOMEMLIMIT: 200MiB
+    ports:
+      - "${nats1:-27301}:4222"
+      - "${monitor1:-27304}:8222"
+    volumes:
+      - ./conf/nats.conf:/etc/nats/nats.conf:ro
+      - r8-nats-1-data:/data
+
+  r8-nats-2:
+    <<: *nats
+    container_name: r8-nats-2
+    hostname: r8-nats-2
+    environment:
+      SERVER_NAME: n2
+      GOMEMLIMIT: 200MiB
+    ports:
+      - "${nats2:-27302}:4222"
+      - "${monitor2:-27305}:8222"
+    volumes:
+      - ./conf/nats.conf:/etc/nats/nats.conf:ro
+      - r8-nats-2-data:/data
+
+  r8-nats-3:
+    <<: *nats
+    container_name: r8-nats-3
+    hostname: r8-nats-3
+    environment:
+      SERVER_NAME: n3
+      GOMEMLIMIT: 200MiB
+    ports:
+      - "${nats3:-27303}:4222"
+      - "${monitor3:-27306}:8222"
+    volumes:
+      - ./conf/nats.conf:/etc/nats/nats.conf:ro
+      - r8-nats-3-data:/data
+
+  r8-app:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: r8-nats-jetstream-streams:latest
+    container_name: r8-app
+    restart: unless-stopped
+    environment:
+      NATS_URLS: nats://r8-nats-1:4222,nats://r8-nats-2:4222,nats://r8-nats-3:4222
+      MONITOR_URLS: http://r8-nats-1:8222,http://r8-nats-2:8222,http://r8-nats-3:8222
+      UI_PORT: "8080"
+    mem_limit: 256m
+    ports:
+      - "${ui:-27300}:8080"
+    networks:
+      - r8-net
+    depends_on:
+      - r8-nats-1
+      - r8-nats-2
+      - r8-nats-3
+
+volumes:
+  r8-nats-1-data:
+    name: r8-nats-1-data
+  r8-nats-2-data:
+    name: r8-nats-2-data
+  r8-nats-3-data:
+    name: r8-nats-3-data
+
+networks:
+  r8-net:
+    name: r8-net
