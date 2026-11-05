@@ -1,0 +1,1058 @@
+{
+ "generated_at": "2026-10-29T21:52:16Z",
+ "elapsed_s": 51.8,
+ "iterations": 5,
+ "cpus": 6,
+ "versions": {
+  "python": "3.14.10",
+  "pyarrow": "26.0.0",
+  "numpy": "2.5.4",
+  "nimble_commit": "acead744054eb006da753390ba80d3b6a29212ce",
+  "velox_commit": "351b0a72f446c75e0bd0ad179063a7a02f8894fc"
+ },
+ "tables": [
+  {
+   "name": "wide",
+   "rows": 10000,
+   "columns": 4000,
+   "arrow_bytes": 319755706,
+   "projection": [
+    "row_id",
+    "f00800",
+    "f01601",
+    "f02402",
+    "f03203"
+   ],
+   "source_checksums": {
+    "row_id": "6602892080096809562",
+    "f00800": "903468717808669399",
+    "f01601": "1074986211884525257",
+    "f02402": "15254044737475050742",
+    "f03203": "1734155919320309528"
+   },
+   "formats": [
+    {
+     "name": "nimble",
+     "size_bytes": 33317084,
+     "footer_bytes": 264,
+     "metadata_bytes": 100758,
+     "schema_bytes": 41585,
+     "parts": 1,
+     "write_ms": {
+      "cold": 1107.57,
+      "median": 1011.34,
+      "runs": [
+       1107.57,
+       1039.75,
+       1031.59,
+       1011.34,
+       1001.55,
+       1004.86
+      ]
+     },
+     "scan_ms": {
+      "cold": 221.895,
+      "median": 203.382,
+      "runs": [
+       221.895,
+       203.889,
+       202.176,
+       204.587,
+       203.382,
+       203.091
+      ]
+     },
+     "project_ms": {
+      "cold": 2.533,
+      "median": 1.285,
+      "runs": [
+       2.533,
+       1.965,
+       1.315,
+       1.264,
+       1.285,
+       1.28
+      ]
+     },
+     "meta_ms": {
+      "cold": 3.339,
+      "median": 1.346,
+      "runs": [
+       3.339,
+       2.245,
+       1.315,
+       1.346,
+       1.356,
+       1.282
+      ]
+     },
+     "scan_checksums": null,
+     "project_checksums": {
+      "row_id": "6602892080096809562",
+      "f00800": "903468717808669399",
+      "f01601": "1074986211884525257",
+      "f02402": "15254044737475050742",
+      "f03203": "1734155919320309528"
+     },
+     "checks": {
+      "rows": true,
+      "scan_checksums": true,
+      "project_checksums": true,
+      "project_columns": true,
+      "meta_columns": true,
+      "full_equal": true
+     },
+     "ok": true
+    },
+    {
+     "name": "parquet_snappy",
+     "size_bytes": 47550503,
+     "footer_bytes": 786290,
+     "metadata_bytes": 786290,
+     "schema_bytes": null,
+     "parts": 1,
+     "write_ms": {
+      "cold": 628.925,
+      "median": 608.633,
+      "runs": [
+       628.925,
+       619.238,
+       603.976,
+       603.73,
+       612.918,
+       608.633
+      ]
+     },
+     "scan_ms": {
+      "cold": 294.16,
+      "median": 178.78,
+      "runs": [
+       294.16,
+       253.587,
+       178.78,
+       167.559,
+       188.383,
+       167.18
+      ]
+     },
+     "project_ms": {
+      "cold": 13.136,
+      "median": 6.92,
+      "runs": [
+       13.136,
+       8.637,
+       6.563,
+       6.92,
+       6.928,
+       6.475
+      ]
+     },
+     "meta_ms": {
+      "cold": 9.179,
+      "median": 8.525,
+      "runs": [
+       9.179,
+       10.145,
+       8.591,
+       8.508,
+       8.406,
+       8.525
+      ]
+     },
+     "scan_checksums": null,
+     "project_checksums": {
+      "row_id": "6602892080096809562",
+      "f00800": "903468717808669399",
+      "f01601": "1074986211884525257",
+      "f02402": "15254044737475050742",
+      "f03203": "1734155919320309528"
+     },
+     "checks": {
+      "rows": true,
+      "scan_checksums": true,
+      "project_checksums": true,
+      "project_columns": true,
+      "meta_columns": true,
+      "full_equal": true
+     },
+     "ok": true
+    },
+    {
+     "name": "parquet_zstd",
+     "size_bytes": 34776987,
+     "footer_bytes": 785789,
+     "metadata_bytes": 785789,
+     "schema_bytes": null,
+     "parts": 1,
+     "write_ms": {
+      "cold": 738.463,
+      "median": 737.621,
+      "runs": [
+       738.463,
+       738.079,
+       737.621,
+       729.963,
+       745.842,
+       730.614
+      ]
+     },
+     "scan_ms": {
+      "cold": 327.759,
+      "median": 204.419,
+      "runs": [
+       327.759,
+       261.225,
+       204.419,
+       196.307,
+       259.377,
+       196.816
+      ]
+     },
+     "project_ms": {
+      "cold": 8.779,
+      "median": 6.37,
+      "runs": [
+       8.779,
+       7.938,
+       6.443,
+       6.37,
+       6.28,
+       6.245
+      ]
+     },
+     "meta_ms": {
+      "cold": 13.836,
+      "median": 8.634,
+      "runs": [
+       13.836,
+       10.678,
+       8.699,
+       8.634,
+       8.53,
+       8.405
+      ]
+     },
+     "scan_checksums": null,
+     "project_checksums": {
+      "row_id": "6602892080096809562",
+      "f00800": "903468717808669399",
+      "f01601": "1074986211884525257",
+      "f02402": "15254044737475050742",
+      "f03203": "1734155919320309528"
+     },
+     "checks": {
+      "rows": true,
+      "scan_checksums": true,
+      "project_checksums": true,
+      "project_columns": true,
+      "meta_columns": true,
+      "full_equal": true
+     },
+     "ok": true
+    }
+   ],
+   "ok": true
+  },
+  {
+   "name": "normal",
+   "rows": 1000000,
+   "columns": 8,
+   "arrow_bytes": 70698695,
+   "projection": [
+    "order_id",
+    "quantity"
+   ],
+   "source_checksums": {
+    "order_id": "3934538739295402669",
+    "quantity": "11482580406750592898"
+   },
+   "formats": [
+    {
+     "name": "nimble",
+     "size_bytes": 12563930,
+     "footer_bytes": 264,
+     "metadata_bytes": 1340,
+     "schema_bytes": 324,
+     "parts": 1,
+     "write_ms": {
+      "cold": 240.581,
+      "median": 240.527,
+      "runs": [
+       240.581,
+       240.527,
+       240.648,
+       227.412,
+       233.132,
+       244.51
+      ]
+     },
+     "scan_ms": {
+      "cold": 52.205,
+      "median": 47.607,
+      "runs": [
+       52.205,
+       47.706,
+       47.81,
+       47.422,
+       47.607,
+       46.825
+      ]
+     },
+     "project_ms": {
+      "cold": 8.15,
+      "median": 5.909,
+      "runs": [
+       8.15,
+       5.971,
+       5.9,
+       5.914,
+       5.909,
+       5.674
+      ]
+     },
+     "meta_ms": {
+      "cold": 1.202,
+      "median": 0.326,
+      "runs": [
+       1.202,
+       1.048,
+       0.325,
+       0.322,
+       0.326,
+       0.333
+      ]
+     },
+     "scan_checksums": {
+      "order_id": "3934538739295402669",
+      "user_id": "12651085119948688782",
+      "product": "4563569141147066950",
+      "category": "17481607325806389909",
+      "country": "12446187006597604982",
+      "quantity": "11482580406750592898",
+      "price": "12520508771203932831",
+      "ts": "1925779389204632224"
+     },
+     "project_checksums": {
+      "order_id": "3934538739295402669",
+      "quantity": "11482580406750592898"
+     },
+     "checks": {
+      "rows": true,
+      "scan_checksums": true,
+      "project_checksums": true,
+      "project_columns": true,
+      "meta_columns": true,
+      "full_equal": true
+     },
+     "ok": true
+    },
+    {
+     "name": "parquet_snappy",
+     "size_bytes": 17012598,
+     "footer_bytes": 1802,
+     "metadata_bytes": 1802,
+     "schema_bytes": null,
+     "parts": 1,
+     "write_ms": {
+      "cold": 103.259,
+      "median": 102.615,
+      "runs": [
+       103.259,
+       104.334,
+       102.49,
+       101.091,
+       102.629,
+       102.615
+      ]
+     },
+     "scan_ms": {
+      "cold": 67.919,
+      "median": 64.328,
+      "runs": [
+       67.919,
+       82.013,
+       68.189,
+       57.861,
+       62.64,
+       64.328
+      ]
+     },
+     "project_ms": {
+      "cold": 9.961,
+      "median": 9.269,
+      "runs": [
+       9.961,
+       9.528,
+       9.408,
+       9.269,
+       9.266,
+       9.168
+      ]
+     },
+     "meta_ms": {
+      "cold": 0.248,
+      "median": 0.039,
+      "runs": [
+       0.248,
+       0.064,
+       0.044,
+       0.038,
+       0.039,
+       0.036
+      ]
+     },
+     "scan_checksums": {
+      "order_id": "3934538739295402669",
+      "user_id": "12651085119948688782",
+      "product": "4563569141147066950",
+      "category": "17481607325806389909",
+      "country": "12446187006597604982",
+      "quantity": "11482580406750592898",
+      "price": "12520508771203932831",
+      "ts": "1925779389204632224"
+     },
+     "project_checksums": {
+      "order_id": "3934538739295402669",
+      "quantity": "11482580406750592898"
+     },
+     "checks": {
+      "rows": true,
+      "scan_checksums": true,
+      "project_checksums": true,
+      "project_columns": true,
+      "meta_columns": true,
+      "full_equal": true
+     },
+     "ok": true
+    },
+    {
+     "name": "parquet_zstd",
+     "size_bytes": 10662836,
+     "footer_bytes": 1802,
+     "metadata_bytes": 1802,
+     "schema_bytes": null,
+     "parts": 1,
+     "write_ms": {
+      "cold": 115.951,
+      "median": 116.548,
+      "runs": [
+       115.951,
+       116.082,
+       116.125,
+       116.548,
+       116.706,
+       118.912
+      ]
+     },
+     "scan_ms": {
+      "cold": 63.62,
+      "median": 61.077,
+      "runs": [
+       63.62,
+       80.817,
+       62.848,
+       59.404,
+       61.077,
+       52.23
+      ]
+     },
+     "project_ms": {
+      "cold": 9.294,
+      "median": 7.919,
+      "runs": [
+       9.294,
+       12.746,
+       8.056,
+       7.919,
+       7.888,
+       7.744
+      ]
+     },
+     "meta_ms": {
+      "cold": 0.276,
+      "median": 0.04,
+      "runs": [
+       0.276,
+       0.065,
+       0.044,
+       0.04,
+       0.039,
+       0.036
+      ]
+     },
+     "scan_checksums": {
+      "order_id": "3934538739295402669",
+      "user_id": "12651085119948688782",
+      "product": "4563569141147066950",
+      "category": "17481607325806389909",
+      "country": "12446187006597604982",
+      "quantity": "11482580406750592898",
+      "price": "12520508771203932831",
+      "ts": "1925779389204632224"
+     },
+     "project_checksums": {
+      "order_id": "3934538739295402669",
+      "quantity": "11482580406750592898"
+     },
+     "checks": {
+      "rows": true,
+      "scan_checksums": true,
+      "project_checksums": true,
+      "project_columns": true,
+      "meta_columns": true,
+      "full_equal": true
+     },
+     "ok": true
+    }
+   ],
+   "ok": true
+  }
+ ],
+ "sweep": [
+  {
+   "columns": 100,
+   "rows": 2000,
+   "formats": [
+    {
+     "name": "nimble",
+     "size_bytes": 181204,
+     "footer_bytes": 264,
+     "metadata_bytes": 5801,
+     "write_ms": {
+      "cold": 6.901,
+      "median": 6.0,
+      "runs": [
+       6.901,
+       6.116,
+       5.812,
+       6.0,
+       5.904,
+       6.07
+      ]
+     },
+     "project_ms": {
+      "cold": 0.23,
+      "median": 0.072,
+      "runs": [
+       0.23,
+       0.102,
+       0.072,
+       0.076,
+       0.058,
+       0.057
+      ]
+     },
+     "meta_ms": {
+      "cold": 0.1,
+      "median": 0.029,
+      "runs": [
+       0.1,
+       0.064,
+       0.032,
+       0.029,
+       0.028,
+       0.028
+      ]
+     },
+     "ok": true
+    },
+    {
+     "name": "parquet_snappy",
+     "size_bytes": 337152,
+     "footer_bytes": 19350,
+     "metadata_bytes": 19350,
+     "write_ms": {
+      "cold": 4.896,
+      "median": 4.594,
+      "runs": [
+       4.896,
+       4.445,
+       4.925,
+       4.306,
+       4.777,
+       4.594
+      ]
+     },
+     "project_ms": {
+      "cold": 1.216,
+      "median": 0.371,
+      "runs": [
+       1.216,
+       0.371,
+       0.455,
+       0.443,
+       0.323,
+       0.303
+      ]
+     },
+     "meta_ms": {
+      "cold": 0.499,
+      "median": 0.224,
+      "runs": [
+       0.499,
+       0.299,
+       0.239,
+       0.221,
+       0.224,
+       0.223
+      ]
+     },
+     "ok": true
+    },
+    {
+     "name": "parquet_zstd",
+     "size_bytes": 250250,
+     "footer_bytes": 19346,
+     "metadata_bytes": 19346,
+     "write_ms": {
+      "cold": 6.582,
+      "median": 5.977,
+      "runs": [
+       6.582,
+       5.977,
+       6.18,
+       5.942,
+       6.146,
+       5.92
+      ]
+     },
+     "project_ms": {
+      "cold": 2.174,
+      "median": 0.306,
+      "runs": [
+       2.174,
+       0.375,
+       0.396,
+       0.306,
+       0.291,
+       0.291
+      ]
+     },
+     "meta_ms": {
+      "cold": 0.555,
+      "median": 0.233,
+      "runs": [
+       0.555,
+       0.288,
+       0.233,
+       0.225,
+       0.225,
+       0.234
+      ]
+     },
+     "ok": true
+    }
+   ],
+   "ok": true
+  },
+  {
+   "columns": 1000,
+   "rows": 2000,
+   "formats": [
+    {
+     "name": "nimble",
+     "size_bytes": 1799260,
+     "footer_bytes": 264,
+     "metadata_bytes": 47597,
+     "write_ms": {
+      "cold": 65.82,
+      "median": 63.779,
+      "runs": [
+       65.82,
+       64.539,
+       65.149,
+       63.197,
+       63.779,
+       63.466
+      ]
+     },
+     "project_ms": {
+      "cold": 0.71,
+      "median": 0.305,
+      "runs": [
+       0.71,
+       0.453,
+       0.302,
+       0.302,
+       0.305,
+       0.321
+      ]
+     },
+     "meta_ms": {
+      "cold": 0.529,
+      "median": 0.273,
+      "runs": [
+       0.529,
+       0.423,
+       0.274,
+       0.257,
+       0.266,
+       0.273
+      ]
+     },
+     "ok": true
+    },
+    {
+     "name": "parquet_snappy",
+     "size_bytes": 3306584,
+     "footer_bytes": 192588,
+     "metadata_bytes": 192588,
+     "write_ms": {
+      "cold": 46.515,
+      "median": 41.72,
+      "runs": [
+       46.515,
+       42.804,
+       42.151,
+       41.72,
+       41.388,
+       41.454
+      ]
+     },
+     "project_ms": {
+      "cold": 2.73,
+      "median": 1.652,
+      "runs": [
+       2.73,
+       1.815,
+       1.652,
+       1.62,
+       1.614,
+       2.685
+      ]
+     },
+     "meta_ms": {
+      "cold": 2.557,
+      "median": 2.088,
+      "runs": [
+       2.557,
+       3.132,
+       2.114,
+       2.088,
+       2.038,
+       1.987
+      ]
+     },
+     "ok": true
+    },
+    {
+     "name": "parquet_zstd",
+     "size_bytes": 2478090,
+     "footer_bytes": 192340,
+     "metadata_bytes": 192340,
+     "write_ms": {
+      "cold": 60.266,
+      "median": 56.681,
+      "runs": [
+       60.266,
+       58.061,
+       56.464,
+       56.225,
+       56.681,
+       56.987
+      ]
+     },
+     "project_ms": {
+      "cold": 2.677,
+      "median": 1.748,
+      "runs": [
+       2.677,
+       1.762,
+       1.731,
+       1.647,
+       2.071,
+       1.748
+      ]
+     },
+     "meta_ms": {
+      "cold": 2.501,
+      "median": 2.081,
+      "runs": [
+       2.501,
+       2.783,
+       2.089,
+       2.081,
+       2.032,
+       2.046
+      ]
+     },
+     "ok": true
+    }
+   ],
+   "ok": true
+  },
+  {
+   "columns": 4000,
+   "rows": 2000,
+   "formats": [
+    {
+     "name": "nimble",
+     "size_bytes": 7090124,
+     "footer_bytes": 264,
+     "metadata_bytes": 100020,
+     "write_ms": {
+      "cold": 263.954,
+      "median": 255.84,
+      "runs": [
+       263.954,
+       261.469,
+       258.993,
+       249.461,
+       255.84,
+       253.196
+      ]
+     },
+     "project_ms": {
+      "cold": 2.286,
+      "median": 1.117,
+      "runs": [
+       2.286,
+       1.697,
+       1.177,
+       1.088,
+       1.117,
+       1.081
+      ]
+     },
+     "meta_ms": {
+      "cold": 2.287,
+      "median": 1.279,
+      "runs": [
+       2.287,
+       1.785,
+       1.279,
+       1.268,
+       1.283,
+       1.277
+      ]
+     },
+     "ok": true
+    },
+    {
+     "name": "parquet_snappy",
+     "size_bytes": 13197403,
+     "footer_bytes": 771589,
+     "metadata_bytes": 771589,
+     "write_ms": {
+      "cold": 171.461,
+      "median": 170.578,
+      "runs": [
+       171.461,
+       170.783,
+       170.44,
+       170.578,
+       171.441,
+       168.348
+      ]
+     },
+     "project_ms": {
+      "cold": 7.97,
+      "median": 6.159,
+      "runs": [
+       7.97,
+       7.736,
+       6.193,
+       6.129,
+       6.159,
+       6.123
+      ]
+     },
+     "meta_ms": {
+      "cold": 9.125,
+      "median": 8.542,
+      "runs": [
+       9.125,
+       10.275,
+       8.542,
+       8.503,
+       8.56,
+       8.495
+      ]
+     },
+     "ok": true
+    },
+    {
+     "name": "parquet_zstd",
+     "size_bytes": 9910754,
+     "footer_bytes": 771340,
+     "metadata_bytes": 771340,
+     "write_ms": {
+      "cold": 229.385,
+      "median": 230.305,
+      "runs": [
+       229.385,
+       233.661,
+       227.395,
+       228.159,
+       230.305,
+       232.687
+      ]
+     },
+     "project_ms": {
+      "cold": 8.574,
+      "median": 6.176,
+      "runs": [
+       8.574,
+       7.907,
+       6.283,
+       6.176,
+       6.161,
+       6.052
+      ]
+     },
+     "meta_ms": {
+      "cold": 8.611,
+      "median": 8.515,
+      "runs": [
+       8.611,
+       9.953,
+       8.462,
+       8.515,
+       8.35,
+       8.639
+      ]
+     },
+     "ok": true
+    }
+   ],
+   "ok": true
+  },
+  {
+   "columns": 10000,
+   "rows": 2000,
+   "formats": [
+    {
+     "name": "nimble",
+     "size_bytes": 17653879,
+     "footer_bytes": 280,
+     "metadata_bytes": 194150,
+     "write_ms": {
+      "cold": 2433.48,
+      "median": 648.018,
+      "runs": [
+       2433.48,
+       632.359,
+       648.018,
+       649.523,
+       649.538,
+       630.991
+      ]
+     },
+     "project_ms": {
+      "cold": 4.846,
+      "median": 2.605,
+      "runs": [
+       4.846,
+       3.526,
+       2.653,
+       2.605,
+       2.579,
+       2.554
+      ]
+     },
+     "meta_ms": {
+      "cold": 5.037,
+      "median": 3.108,
+      "runs": [
+       5.037,
+       3.719,
+       2.992,
+       2.98,
+       3.117,
+       3.108
+      ]
+     },
+     "ok": true
+    },
+    {
+     "name": "parquet_snappy",
+     "size_bytes": 32954910,
+     "footer_bytes": 1929590,
+     "metadata_bytes": 1929590,
+     "write_ms": {
+      "cold": 427.92,
+      "median": 418.542,
+      "runs": [
+       427.92,
+       425.424,
+       417.778,
+       417.561,
+       418.542,
+       421.044
+      ]
+     },
+     "project_ms": {
+      "cold": 22.41,
+      "median": 15.93,
+      "runs": [
+       22.41,
+       18.56,
+       16.075,
+       15.93,
+       15.74,
+       15.344
+      ]
+     },
+     "meta_ms": {
+      "cold": 24.143,
+      "median": 23.204,
+      "runs": [
+       24.143,
+       24.013,
+       22.001,
+       23.346,
+       23.204,
+       21.988
+      ]
+     },
+     "ok": true
+    },
+    {
+     "name": "parquet_zstd",
+     "size_bytes": 24750386,
+     "footer_bytes": 1929338,
+     "metadata_bytes": 1929338,
+     "write_ms": {
+      "cold": 573.965,
+      "median": 567.056,
+      "runs": [
+       573.965,
+       567.757,
+       570.768,
+       565.346,
+       563.525,
+       567.056
+      ]
+     },
+     "project_ms": {
+      "cold": 23.16,
+      "median": 16.065,
+      "runs": [
+       23.16,
+       17.576,
+       15.871,
+       15.65,
+       16.065,
+       16.104
+      ]
+     },
+     "meta_ms": {
+      "cold": 24.165,
+      "median": 22.22,
+      "runs": [
+       24.165,
+       23.289,
+       22.126,
+       21.988,
+       22.22,
+       23.423
+      ]
+     },
+     "ok": true
+    }
+   ],
+   "ok": true
+  }
+ ],
+ "all_ok": true
+}

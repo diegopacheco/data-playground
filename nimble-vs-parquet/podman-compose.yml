@@ -1,0 +1,46 @@
+name: t9-nimble-vs-parquet
+
+services:
+  t9-bench:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: t9-nimble-vs-parquet:latest
+    container_name: t9-bench
+    command: ["python", "bench.py"]
+    environment:
+      LAKE: /lake
+      RESULTS: /bench/results/results.json
+      ITERATIONS: "${ITERATIONS:-5}"
+      WIDE_ROWS: "${WIDE_ROWS:-10000}"
+      WIDE_COLS: "${WIDE_COLS:-4000}"
+      NORMAL_ROWS: "${NORMAL_ROWS:-1000000}"
+      SWEEP_ROWS: "${SWEEP_ROWS:-2000}"
+      SWEEP_COLS: "${SWEEP_COLS:-100,1000,4000,10000}"
+    mem_limit: 1536m
+    volumes:
+      - t9-lake:/lake
+      - ./results:/bench/results:Z
+
+  t9-ui:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: t9-nimble-vs-parquet:latest
+    container_name: t9-ui
+    restart: unless-stopped
+    command: ["python", "server.py"]
+    environment:
+      LAKE: /lake
+      RESULTS: /bench/results/results.json
+      UI_PORT: "8080"
+    mem_limit: 512m
+    ports:
+      - "${ui:-31800}:8080"
+    volumes:
+      - t9-lake:/lake
+      - ./results:/bench/results:Z
+
+volumes:
+  t9-lake:
+    name: t9-lake

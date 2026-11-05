@@ -1,0 +1,33 @@
+FROM docker.io/library/ubuntu:jammy-20261020 AS toolchain
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates git make libicu-dev clang-15 g++-12 ccache python3-pip pkg-config bison flex libfl-dev flatbuffers-compiler libflatbuffers-dev libgflags-dev libunwind-dev libgoogle-glog-dev libdouble-conversion-dev libevent-dev liblzo2-dev libelf-dev libdwarf-dev libsnappy-dev libssl-dev zlib1g-dev libzstd-dev liblz4-dev libbz2-dev liblzma-dev && rm -rf /var/lib/apt/lists/* && pip3 install --no-cache-dir cmake==3.31.10 ninja==1.13.2
+ENV CC=clang-15 CXX=clang++-15 CCACHE_DIR=/ccache CCACHE_MAXSIZE=6G
+
+FROM toolchain AS source
+ARG NIMBLE_COMMIT=acead744054eb006da753390ba80d3b6a29212ce
+RUN git init -q /src/nimble && cd /src/nimble && git remote add origin https://github.com/facebookincubator/nimble.git && git fetch -q --depth 1 origin $NIMBLE_COMMIT && git checkout -q FETCH_HEAD && echo $NIMBLE_COMMIT > /src/NIMBLE_COMMIT && git submodule update -q --init --depth 1 velox openzl && git -C velox rev-parse HEAD > /src/VELOX_COMMIT && git -C openzl submodule update -q --init --depth 1 deps/zstd deps/lz4
+
+FROM source AS libs
+ARG JOBS=3
+WORKDIR /src/nimble
+RUN --mount=type=cache,target=/ccache cmake -S . -B _build -GNinja -DCMAKE_BUILD_TYPE=Release -DVELOX_ENABLE_GEO=OFF -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_C_COMPILER_LAUNCHER=ccache > /tmp/configure.log 2>&1 || (tail -60 /tmp/configure.log; exit 1)
+RUN --mount=type=cache,target=/ccache ninja -C _build -j $JOBS velox nimble_velox_writer nimble_velox_reader nimble_tablet_reader > /tmp/build.log 2>&1 || (grep -B2 -A20 -m3 'FAILED\|error:' /tmp/build.log; tail -20 /tmp/build.log; exit 1)
+
+FROM libs AS bench
+ARG JOBS=3
+COPY native /src/nimble/nimblebench
+RUN echo 'add_subdirectory(nimblebench)' >> CMakeLists.txt
+RUN --mount=type=cache,target=/ccache cmake -S . -B _build > /tmp/configure2.log 2>&1 && ninja -C _build -j $JOBS nimble_bench > /tmp/build2.log 2>&1 || (grep -B2 -A30 -m3 'FAILED\|error' /tmp/build2.log /tmp/configure2.log; exit 1)
+RUN mkdir -p /out/lib && cp _build/nimblebench/nimble_bench /out/ && strip /out/nimble_bench && ldd /out/nimble_bench | awk '/=> \//{print $3}' | grep -v -E 'libc\.so|libm\.so|libpthread|libdl\.so|librt\.so|ld-linux|libstdc\+\+|libgcc_s' | xargs -r -I{} cp -L {} /out/lib/ && cp /src/NIMBLE_COMMIT /src/VELOX_COMMIT /out/
+
+FROM docker.io/library/python:3.14.10-slim-trixie
+WORKDIR /bench
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY --from=bench /out /opt/nimble
+ENV PYTHONUNBUFFERED=1 NIMBLE_BENCH=/opt/nimble/nimble_bench
+RUN LD_LIBRARY_PATH=/opt/nimble/lib /opt/nimble/nimble_bench version
+COPY app app
+COPY tests tests
+WORKDIR /bench/app
+CMD ["python", "server.py"]

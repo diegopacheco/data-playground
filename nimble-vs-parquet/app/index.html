@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nimble vs Parquet</title>
+<style>
+:root { --bg: #f6f7f9; --card: #fff; --ink: #1d2433; --muted: #667085; --line: #e4e7ec;
+  --nimble: #7b4fd6; --parquet_snappy: #3b6fd8; --parquet_zstd: #1f9d6b; --ok: #1f9d6b; --bad: #d64545; }
+* { box-sizing: border-box; }
+body { margin: 0; font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--ink); }
+header { padding: 18px 24px 0; }
+h1 { margin: 0; font-size: 22px; }
+.sub { color: var(--muted); margin-top: 4px; }
+nav { display: flex; gap: 4px; padding: 14px 24px 0; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+nav button { border: 0; background: none; padding: 10px 14px; font: inherit; color: var(--muted); cursor: pointer; border-bottom: 3px solid transparent; }
+nav button.on { color: var(--ink); border-bottom-color: var(--ink); font-weight: 600; }
+main { padding: 20px 24px 40px; max-width: 1200px; }
+.tab { display: none; }
+.tab.on { display: block; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 16px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px; overflow-x: auto; }
+.card h2 { margin: 0 0 4px; font-size: 15px; }
+.card p.note { margin: 0 0 12px; color: var(--muted); font-size: 12.5px; }
+.pill { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+.pill.ok { background: #e3f6ee; color: var(--ok); }
+.pill.bad { background: #fde8e8; color: var(--bad); }
+.legend { display: flex; gap: 14px; font-size: 12px; color: var(--muted); margin-bottom: 8px; flex-wrap: wrap; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+svg text { font-size: 12px; fill: var(--ink); }
+svg text.val { fill: var(--muted); }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+th { color: var(--muted); font-weight: 600; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.stat { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+.stat b { display: block; font-size: 20px; }
+.stat span { color: var(--muted); font-size: 12px; }
+form { display: flex; gap: 10px; align-items: end; flex-wrap: wrap; margin-bottom: 12px; }
+label { font-size: 12px; color: var(--muted); display: flex; flex-direction: column; gap: 4px; }
+input, select { font: inherit; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; width: 120px; background: #fff; }
+form button { font: inherit; padding: 7px 14px; border-radius: 6px; border: 0; background: var(--ink); color: #fff; cursor: pointer; }
+code { background: #eef1f5; padding: 1px 5px; border-radius: 4px; font-size: 12.5px; }
+.full { grid-column: 1 / -1; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Nimble vs Parquet</h1>
+  <div class="sub" id="sub">loading results</div>
+</header>
+<nav id="nav">
+  <button data-tab="wide" class="on">Wide table</button>
+  <button data-tab="normal">Normal table</button>
+  <button data-tab="sweep">Width sweep</button>
+  <button data-tab="live">Live reads</button>
+  <button data-tab="checks">Correctness</button>
+</nav>
+<main>
+  <section class="tab on" id="wide"></section>
+  <section class="tab" id="normal"></section>
+  <section class="tab" id="sweep"></section>
+  <section class="tab" id="live">
+    <div class="grid">
+      <div class="card">
+        <h2>Projection, live against the files on disk</h2>
+        <p class="note">Reads N columns spread over the table from each file (median of 3 runs, file open included) and checks every column checksum against the source data.</p>
+        <form id="projectForm">
+          <label>table<select name="table"><option>wide</option><option>normal</option></select></label>
+          <label>columns<input name="count" type="number" value="5" min="1" max="500"></label>
+          <button>Run projection</button>
+        </form>
+        <div id="projectOut"></div>
+      </div>
+      <div class="card">
+        <h2>Metadata read, live</h2>
+        <p class="note">Opens each file and reads its footer and schema without touching data (median of 3 runs).</p>
+        <form id="metaForm">
+          <label>table<select name="table"><option>wide</option><option>normal</option></select></label>
+          <button>Read metadata</button>
+        </form>
+        <div id="metaOut"></div>
+      </div>
+    </div>
+  </section>
+  <section class="tab" id="checks"></section>
+</main>
+<script>
+const LABEL = { nimble: "nimble", parquet_snappy: "parquet snappy", parquet_zstd: "parquet zstd" };
+const color = n => `var(--${n})`;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const mb = b => (b / 1e6).toFixed(b < 1e7 ? 2 : 1) + " MB";
+const kb = b => b < 1e6 ? (b / 1e3).toFixed(1) + " KB" : mb(b);
+const ms = v => v < 10 ? v.toFixed(2) + " ms" : v < 1000 ? v.toFixed(1) + " ms" : (v / 1000).toFixed(2) + " s";
+const pill = ok => `<span class="pill ${ok ? "ok" : "bad"}">${ok ? "OK" : "FAIL"}</span>`;
+
+function legend(names, extra) {
+  return `<div class="legend">${names.map(n => `<span><i style="background:${color(n)}"></i>${LABEL[n]}</span>`).join("")}${extra || ""}</div>`;
+}
+
+function bars(rows, fmt, opts = {}) {
+  const w = 520, rowH = opts.cold ? 40 : 30, left = 110, h = rows.length * rowH + 10;
+  const max = Math.max(...rows.map(r => Math.max(r.value, opts.cold ? r.cold : 0))) || 1;
+  const scale = v => (w - left - 90) * v / max;
+  let svg = `<svg viewBox="0 0 ${w} ${h}" width="100%">`;
+  rows.forEach((r, i) => {
+    const y = i * rowH + 6;
+    svg += `<text x="0" y="${y + 15}">${esc(LABEL[r.name] || r.name)}</text>`;
+    if (opts.cold) {
+      svg += `<rect x="${left}" y="${y}" width="${Math.max(scale(r.cold), 1)}" height="12" rx="2" fill="${color(r.name)}" opacity="0.35"/>`;
+      svg += `<text class="val" x="${left + scale(r.cold) + 6}" y="${y + 10}">cold ${fmt(r.cold)}</text>`;
+      svg += `<rect x="${left}" y="${y + 15}" width="${Math.max(scale(r.value), 1)}" height="14" rx="2" fill="${color(r.name)}"/>`;
+      svg += `<text class="val" x="${left + scale(r.value) + 6}" y="${y + 27}">${fmt(r.value)}</text>`;
+    } else {
+      svg += `<rect x="${left}" y="${y}" width="${Math.max(scale(r.value), 1)}" height="20" rx="2" fill="${color(r.name)}"/>`;
+      svg += `<text class="val" x="${left + scale(r.value) + 6}" y="${y + 15}">${fmt(r.value)}</text>`;
+    }
+  });
+  return svg + "</svg>";
+}
+
+function card(title, note, body, cls) {
+  return `<div class="card ${cls || ""}"><h2>${title}</h2><p class="note">${note}</p>${body}</div>`;
+}
+
+function timing(t, key) {
+  return bars(t.formats.map(f => ({ name: f.name, value: f[key].median, cold: f[key].cold })), ms, { cold: true });
+}
+
+function tableTab(t) {
+  const names = t.formats.map(f => f.name);
+  const nimble = t.formats.find(f => f.name === "nimble");
+  const zstd = t.formats.find(f => f.name === "parquet_zstd");
+  const stats = `<div class="stats">
+    <div class="stat"><b>${t.rows.toLocaleString()}</b><span>rows</span></div>
+    <div class="stat"><b>${t.columns.toLocaleString()}</b><span>columns</span></div>
+    <div class="stat"><b>${mb(t.arrow_bytes)}</b><span>Arrow in memory</span></div>
+    <div class="stat"><b>${t.projection.length}</b><span>columns in the projection</span></div>
+    <div class="stat"><b>${(zstd.project_ms.median / nimble.project_ms.median).toFixed(1)}x</b><span>parquet zstd / nimble projection time</span></div>
+  </div>`;
+  const cold = `<span><i style="background:#999;opacity:.35"></i>cold (first run, fresh process)</span><span><i style="background:#999"></i>warm median</span>`;
+  const rows = t.formats.map(f => `<tr><td>${LABEL[f.name]}</td><td class="num">${mb(f.size_bytes)}</td><td class="num">${(t.arrow_bytes / f.size_bytes).toFixed(2)}x</td>
+    <td class="num">${kb(f.metadata_bytes)}</td><td class="num">${f.parts}</td>
+    <td class="num">${ms(f.write_ms.median)}</td><td class="num">${ms(f.scan_ms.median)}</td><td class="num">${ms(f.project_ms.median)}</td><td class="num">${ms(f.meta_ms.median)}</td><td>${pill(f.ok)}</td></tr>`).join("");
+  return stats + legend(names, cold) + `<div class="grid">
+    ${card("File size", "Bytes on disk with each format's default encodings.", bars(t.formats.map(f => ({ name: f.name, value: f.size_bytes })), mb))}
+    ${card("Metadata size", "Parquet: the thrift FileMetaData footer (schema plus every column chunk of every row group). Nimble: flatbuffer footer + stripe metadata + optional sections (schema, column stats).", bars(t.formats.map(f => ({ name: f.name, value: f.metadata_bytes })), kb))}
+    ${card("Write", "From the in-memory table (Velox vectors for Nimble, Arrow for Parquet) to a local file.", timing(t, "write_ms"))}
+    ${card("Full scan", "Open the file and decode every column of every row, single threaded.", timing(t, "scan_ms"))}
+    ${card(`Projection of ${t.projection.length} of ${t.columns.toLocaleString()} columns`, `Columns: ${t.projection.map(c => `<code>${esc(c)}</code>`).join(" ")}. Open plus decode, single threaded.`, timing(t, "project_ms"))}
+    ${card("Metadata read", "Open the file and parse footer and schema, no data pages.", timing(t, "meta_ms"))}
+    ${card("All numbers (warm medians)", "", `<table><tr><th>format</th><th class="num">size</th><th class="num">ratio</th><th class="num">metadata</th><th class="num">stripes / row groups</th><th class="num">write</th><th class="num">scan</th><th class="num">projection</th><th class="num">metadata</th><th>checks</th></tr>${rows}</table>`, "full")}
+  </div>`;
+}
+
+function line(points, key, fmt, title) {
+  const w = 520, h = 240, l = 60, r = 20, t = 14, b = 34;
+  const xs = points.map(p => p.columns);
+  const lx = v => l + (w - l - r) * (Math.log10(v) - Math.log10(xs[0])) / ((Math.log10(xs[xs.length - 1]) - Math.log10(xs[0])) || 1);
+  const all = points.flatMap(p => p.formats.map(key));
+  const max = Math.max(...all) || 1;
+  const ly = v => h - b - (h - t - b) * v / max;
+  let svg = `<svg viewBox="0 0 ${w} ${h}" width="100%">`;
+  svg += `<line x1="${l}" y1="${h - b}" x2="${w - r}" y2="${h - b}" stroke="#ccd"/><line x1="${l}" y1="${t}" x2="${l}" y2="${h - b}" stroke="#ccd"/>`;
+  xs.forEach(x => { svg += `<text class="val" x="${lx(x)}" y="${h - b + 16}" text-anchor="middle">${x.toLocaleString()}</text>`; });
+  svg += `<text class="val" x="${(w + l) / 2}" y="${h - 4}" text-anchor="middle">columns in the file (log scale)</text>`;
+  [0, 0.5, 1].forEach(f => { svg += `<text class="val" x="${l - 6}" y="${ly(max * f) + 4}" text-anchor="end">${fmt(max * f)}</text>`; });
+  points[0].formats.forEach((f, i) => {
+    const pts = points.map(p => `${lx(p.columns)},${ly(key(p.formats[i]))}`).join(" ");
+    svg += `<polyline points="${pts}" fill="none" stroke="${color(f.name)}" stroke-width="2.5"/>`;
+    points.forEach(p => { svg += `<circle cx="${lx(p.columns)}" cy="${ly(key(p.formats[i]))}" r="3.5" fill="${color(f.name)}"/>`; });
+  });
+  return card(title, "", svg + "</svg>");
+}
+
+function sweepTab(r) {
+  const s = r.sweep;
+  const names = s[0].formats.map(f => f.name);
+  const head = `<tr><th class="num">columns</th>${names.map(n => `<th class="num">${LABEL[n]} metadata size</th><th class="num">${LABEL[n]} metadata read</th><th class="num">${LABEL[n]} projection</th>`).join("")}<th>checks</th></tr>`;
+  const rows = s.map(p => `<tr><td class="num">${p.columns.toLocaleString()}</td>${p.formats.map(f => `<td class="num">${kb(f.metadata_bytes)}</td><td class="num">${ms(f.meta_ms.median)}</td><td class="num">${ms(f.project_ms.median)}</td>`).join("")}<td>${pill(p.ok)}</td></tr>`).join("");
+  return `<p class="note">Same generator, ${s[0].rows.toLocaleString()} rows, only the number of columns changes. Projection always reads 5 columns. This is where the cost of a per-file schema and footer shows up.</p>` + legend(names) + `<div class="grid">
+    ${line(s, f => f.meta_ms.median, ms, "Metadata read time vs width")}
+    ${line(s, f => f.metadata_bytes, kb, "Metadata size vs width")}
+    ${line(s, f => f.project_ms.median, ms, "Projection of 5 columns vs width")}
+    ${line(s, f => f.size_bytes, mb, "File size vs width")}
+    ${card("Sweep numbers (warm medians)", "", `<table>${head}${rows}</table>`, "full")}
+  </div>`;
+}
+
+function checksTab(r) {
+  const tables = r.tables.map(t => {
+    const keys = Object.keys(t.formats[0].checks);
+    const rows = t.formats.map(f => `<tr><td>${LABEL[f.name]}</td>${keys.map(k => `<td>${pill(f.checks[k])}</td>`).join("")}</tr>`).join("");
+    const sums = t.projection.map(c => `<tr><td><code>${esc(c)}</code></td><td class="num">${t.source_checksums[c]}</td>${t.formats.map(f => `<td class="num">${f.project_checksums[c] === t.source_checksums[c] ? "match" : "DIFFERENT"}</td>`).join("")}</tr>`).join("");
+    return card(`${t.name} table`, "full_equal: Parquet read back equals the source Arrow table; Nimble read back is dumped to raw column files that must be byte identical to the source files.",
+      `<table><tr><th>format</th>${keys.map(k => `<th>${k}</th>`).join("")}</tr>${rows}</table><br><table><tr><th>projected column</th><th class="num">source checksum</th>${t.formats.map(f => `<th class="num">${LABEL[f.name]}</th>`).join("")}</tr>${sums}</table>`, "full");
+  }).join("");
+  const sweep = r.sweep.map(p => `<tr><td class="num">${p.columns.toLocaleString()}</td>${p.formats.map(f => `<td>${pill(f.ok)}</td>`).join("")}</tr>`).join("");
+  return `<div class="stats"><div class="stat"><b>${pill(r.all_ok)}</b><span>all checks</span></div></div><div class="grid">${tables}
+    ${card("Width sweep", "Projection checksums and column counts per sweep point.", `<table><tr><th class="num">columns</th>${r.sweep[0].formats.map(f => `<th>${LABEL[f.name]}</th>`).join("")}</tr>${sweep}</table>`, "full")}</div>`;
+}
+
+async function getJson(url) {
+  const res = await fetch(url);
+  const body = await res.json();
+  if (!res.ok) throw new Error(body.error || res.statusText);
+  return body;
+}
+
+async function load() {
+  try {
+    const r = await getJson("/api/results");
+    const v = r.versions;
+    document.getElementById("sub").textContent = `Nimble ${(v.nimble_commit || "").slice(0, 10)} (Velox ${(v.velox_commit || "").slice(0, 10)}) vs pyarrow ${v.pyarrow} Parquet, ${r.iterations} warm runs + 1 cold, ${r.cpus} CPUs, generated ${r.generated_at}`;
+    document.getElementById("wide").innerHTML = tableTab(r.tables.find(t => t.name === "wide"));
+    document.getElementById("normal").innerHTML = tableTab(r.tables.find(t => t.name === "normal"));
+    document.getElementById("sweep").innerHTML = sweepTab(r);
+    document.getElementById("checks").innerHTML = checksTab(r);
+  } catch (e) {
+    document.getElementById("sub").textContent = "no results: " + e.message;
+  }
+}
+
+function liveForm(formId, outId, url, render) {
+  const form = document.getElementById(formId);
+  form.addEventListener("submit", async ev => {
+    ev.preventDefault();
+    const out = document.getElementById(outId);
+    out.innerHTML = `<p class="note">running</p>`;
+    try {
+      out.innerHTML = render(await getJson(url + "?" + new URLSearchParams(new FormData(form))));
+    } catch (e) {
+      out.innerHTML = `<p class="note">${esc(e.message)}</p>`;
+    }
+  });
+}
+
+liveForm("projectForm", "projectOut", "/api/project", d =>
+  `<p class="note">${d.count} of ${d.of_columns.toLocaleString()} columns: ${d.columns.slice(0, 12).map(c => `<code>${esc(c)}</code>`).join(" ")}${d.columns.length > 12 ? " ..." : ""}</p>` +
+  bars(d.results.map(x => ({ name: x.name, value: x.ms })), ms) +
+  `<table><tr><th>format</th><th class="num">ms</th><th class="num">rows</th><th>matches source</th></tr>${d.results.map(x => `<tr><td>${LABEL[x.name]}</td><td class="num">${x.ms}</td><td class="num">${x.rows.toLocaleString()}</td><td>${pill(x.matches_source)}</td></tr>`).join("")}</table>`);
+
+liveForm("metaForm", "metaOut", "/api/meta", d =>
+  bars(d.results.map(x => ({ name: x.name, value: x.ms })), ms) +
+  `<table><tr><th>format</th><th class="num">ms</th><th class="num">columns</th><th class="num">metadata</th></tr>${d.results.map(x => `<tr><td>${LABEL[x.name]}</td><td class="num">${x.ms}</td><td class="num">${x.columns.toLocaleString()}</td><td class="num">${kb(x.metadata_bytes)}</td></tr>`).join("")}</table>`);
+
+document.getElementById("nav").addEventListener("click", ev => {
+  const tab = ev.target.dataset.tab;
+  if (!tab) return;
+  document.querySelectorAll("nav button").forEach(b => b.classList.toggle("on", b.dataset.tab === tab));
+  document.querySelectorAll(".tab").forEach(s => s.classList.toggle("on", s.id === tab));
+});
+
+load();
+</script>
+</body>
+</html>
