@@ -1,0 +1,10 @@
+apiVersion: numaflow.numaproj.io/v1alpha1
+kind: InterStepBufferService
+metadata:
+  name: default
+spec:
+  jetstream:
+    version: latest
+    replicas: 3
+    persistence:
+      volumeSize: 3Gi

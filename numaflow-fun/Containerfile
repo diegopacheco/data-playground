@@ -1,0 +1,7 @@
+FROM docker.io/library/python:3.15.2-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt \
+ && pip install --no-cache-dir --no-deps --ignore-requires-python pynumaflow==0.14.0
+COPY app/ .
+ENTRYPOINT ["python", "udf.py"]

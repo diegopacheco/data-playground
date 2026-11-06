@@ -1,0 +1,43 @@
+apiVersion: numaflow.numaproj.io/v1alpha1
+kind: Pipeline
+metadata:
+  name: orders
+spec:
+  vertices:
+    - name: in
+      source:
+        http:
+          service: true
+    - name: enrich
+      udf:
+        container:
+          image: localhost/numaflow-fun-udf:v1
+          imagePullPolicy: Never
+          args: ["map"]
+    - name: big
+      sink:
+        udsink:
+          container:
+            image: localhost/numaflow-fun-udf:v1
+            imagePullPolicy: Never
+            args: ["sink"]
+    - name: small
+      sink:
+        udsink:
+          container:
+            image: localhost/numaflow-fun-udf:v1
+            imagePullPolicy: Never
+            args: ["sink"]
+  edges:
+    - from: in
+      to: enrich
+    - from: enrich
+      to: big
+      conditions:
+        tags:
+          values: ["big"]
+    - from: enrich
+      to: small
+      conditions:
+        tags:
+          values: ["small"]
