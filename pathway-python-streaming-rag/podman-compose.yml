@@ -1,0 +1,57 @@
+name: t4-pathway-python-streaming-rag
+
+services:
+  t4-redpanda:
+    image: docker.io/redpandadata/redpanda:v26.2.6
+    container_name: t4-redpanda
+    hostname: t4-redpanda
+    command:
+      - redpanda
+      - start
+      - --smp=1
+      - --memory=400M
+      - --reserve-memory=0M
+      - --overprovisioned
+      - --mode=dev-container
+      - --kafka-addr=internal://0.0.0.0:9092,external://0.0.0.0:19092
+      - --advertise-kafka-addr=internal://t4-redpanda:9092,external://localhost:${kafka:-31302}
+    mem_limit: 640m
+    restart: unless-stopped
+    ports:
+      - "${kafka:-31302}:19092"
+    volumes:
+      - t4-redpanda-data:/var/lib/redpanda/data
+    networks:
+      - t4-net
+
+  t4-pathway:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: t4-pathway-python-streaming-rag:latest
+    container_name: t4-pathway
+    restart: unless-stopped
+    environment:
+      DATA_DIR: /data
+      UI_PORT: "8080"
+      RETRIEVE_PORT: "8001"
+      KAFKA_BROKERS: t4-redpanda:9092
+      KAFKA_TOPIC: orders
+    mem_limit: 1g
+    ports:
+      - "${ui:-31300}:8080"
+      - "${retrieve:-31301}:8001"
+    volumes:
+      - ./data:/data
+    networks:
+      - t4-net
+    depends_on:
+      - t4-redpanda
+
+volumes:
+  t4-redpanda-data:
+    name: t4-redpanda-data
+
+networks:
+  t4-net:
+    name: t4-net

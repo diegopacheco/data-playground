@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="600" viewBox="0 0 1200 600">
+  <defs>
+    <style>@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&amp;display=swap'); text { font-family: 'Caveat', 'Comic Sans MS', cursive; fill: #1f2933; }</style>
+    <filter id="wobble"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="3"/></filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1f2933"/></marker>
+  </defs>
+  <rect width="1200" height="600" fill="#ffffff"/>
+  <g filter="url(#wobble)" stroke="#1f2933" stroke-width="2">
+    <rect x="300" y="90" width="600" height="490" rx="14" fill="#f8f9fa" stroke-dasharray="8 6"/>
+    <rect x="20" y="110" width="230" height="80" rx="10" fill="#d3f9d8"/>
+    <rect x="20" y="220" width="230" height="80" rx="10" fill="#e5dbff"/>
+    <rect x="20" y="330" width="230" height="80" rx="10" fill="#d3f9d8"/>
+    <rect x="20" y="470" width="230" height="80" rx="10" fill="#d3f9d8"/>
+    <rect x="330" y="140" width="250" height="90" rx="10" fill="#d0ebff"/>
+    <rect x="330" y="290" width="250" height="90" rx="10" fill="#d0ebff"/>
+    <rect x="330" y="460" width="250" height="90" rx="10" fill="#d0ebff"/>
+    <rect x="620" y="140" width="250" height="90" rx="10" fill="#d0ebff"/>
+    <rect x="620" y="290" width="250" height="90" rx="10" fill="#fff3bf"/>
+    <rect x="620" y="460" width="250" height="90" rx="10" fill="#d0ebff"/>
+    <rect x="940" y="290" width="240" height="90" rx="10" fill="#ffd8a8"/>
+    <rect x="940" y="460" width="240" height="90" rx="10" fill="#ffdeeb"/>
+    <line x1="250" y1="150" x2="327" y2="165" marker-end="url(#arrow)"/>
+    <line x1="250" y1="260" x2="327" y2="190" marker-end="url(#arrow)"/>
+    <line x1="250" y1="365" x2="327" y2="215" marker-end="url(#arrow)"/>
+    <line x1="250" y1="510" x2="327" y2="505" marker-end="url(#arrow)"/>
+    <line x1="455" y1="230" x2="455" y2="287" marker-end="url(#arrow)"/>
+    <line x1="580" y1="320" x2="660" y2="233" marker-end="url(#arrow)"/>
+    <line x1="580" y1="505" x2="617" y2="505" marker-end="url(#arrow)"/>
+    <line x1="745" y1="230" x2="745" y2="287" marker-end="url(#arrow)"/>
+    <line x1="800" y1="380" x2="800" y2="457" marker-end="url(#arrow)"/>
+    <line x1="937" y1="335" x2="873" y2="335" marker-end="url(#arrow)"/>
+    <line x1="1060" y1="460" x2="1060" y2="383" marker-end="url(#arrow)" stroke-dasharray="6 5"/>
+  </g>
+  <text x="600" y="40" font-size="34" font-weight="700" text-anchor="middle">pathway-python-streaming-rag</text>
+  <text x="600" y="72" font-size="20" text-anchor="middle">incremental windows and joins plus a live top-k document index, one Pathway 0.33.0 dataflow</text>
+  <text x="600" y="118" font-size="21" text-anchor="middle">t4-pathway container (Python 3.13, mem 1 GB)</text>
+  <text x="135" y="143" font-size="22" text-anchor="middle">data/orders/*.csv</text>
+  <text x="135" y="170" font-size="17" text-anchor="middle">watched folder, edit / delete</text>
+  <text x="135" y="253" font-size="22" text-anchor="middle">t4-redpanda v26.2.6</text>
+  <text x="135" y="280" font-size="17" text-anchor="middle">Kafka topic orders (json)</text>
+  <text x="135" y="363" font-size="22" text-anchor="middle">data/regions/regions.csv</text>
+  <text x="135" y="390" font-size="17" text-anchor="middle">region, name, tax_pct</text>
+  <text x="135" y="503" font-size="22" text-anchor="middle">data/docs/*.md</text>
+  <text x="135" y="530" font-size="17" text-anchor="middle">add / edit / delete docs</text>
+  <text x="455" y="173" font-size="22" text-anchor="middle">concat_reindex + join</text>
+  <text x="455" y="200" font-size="17" text-anchor="middle">orders x regions, gross with tax</text>
+  <text x="455" y="323" font-size="22" text-anchor="middle">windowby tumbling 60 s</text>
+  <text x="455" y="350" font-size="17" text-anchor="middle">per region + groupby totals</text>
+  <text x="455" y="493" font-size="22" text-anchor="middle">hashing embedder 256 d</text>
+  <text x="455" y="520" font-size="17" text-anchor="middle">BruteForceKnn cosine DataIndex</text>
+  <text x="745" y="173" font-size="22" text-anchor="middle">pw.io.subscribe</text>
+  <text x="745" y="200" font-size="17" text-anchor="middle">LiveTable: windows, totals, docs</text>
+  <text x="745" y="323" font-size="22" text-anchor="middle">stdlib http.server :8080</text>
+  <text x="745" y="350" font-size="17" text-anchor="middle">UI + /api/* (host 31300)</text>
+  <text x="745" y="493" font-size="22" text-anchor="middle">rest_connector :8001</text>
+  <text x="745" y="520" font-size="17" text-anchor="middle">/v1/retrieve query_as_of_now</text>
+  <text x="1060" y="323" font-size="22" text-anchor="middle">browser UI</text>
+  <text x="1060" y="350" font-size="17" text-anchor="middle">4 tabs, polls every second</text>
+  <text x="1060" y="493" font-size="22" text-anchor="middle">tests (host unittest)</text>
+  <text x="1060" y="520" font-size="17" text-anchor="middle">write data/, rpk produce, recompute</text>
+  <text x="822" y="425" font-size="16">proxy /api/search</text>
+</svg>

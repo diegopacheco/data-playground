@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pathway Streaming RAG</title>
+<style>
+:root{--bg:#f7f8fa;--card:#fff;--ink:#1d2433;--muted:#667085;--line:#e4e7ec;--accent:#3a5bd9;--soft:#eef2ff;--good:#0f9d58}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+header{padding:18px 28px;background:var(--card);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+header h1{font-size:19px;margin:0}
+header .meta{color:var(--muted);font-size:13px}
+nav{display:flex;gap:6px;padding:14px 28px 0}
+nav button{border:1px solid var(--line);background:var(--card);padding:8px 16px;border-radius:8px 8px 0 0;cursor:pointer;font-size:14px;color:var(--muted)}
+nav button.active{background:var(--soft);color:var(--accent);border-color:var(--accent);font-weight:600}
+main{padding:18px 28px}
+section{display:none}
+section.active{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin-bottom:16px}
+.card h2{font-size:15px;margin:0 0 6px}
+.card p{margin:0 0 12px;color:var(--muted);font-size:13px}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font-weight:600;background:#fafbfc}
+td.num{text-align:right;font-variant-numeric:tabular-nums}
+.flash{animation:flash 1.2s ease-out}
+@keyframes flash{from{background:#fff3c4}to{background:transparent}}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+.tile{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:#fcfcfd}
+.tile .k{color:var(--muted);font-size:12px}
+.tile .v{font-size:22px;font-weight:600;margin-top:4px}
+.bar{height:8px;background:var(--soft);border-radius:4px;overflow:hidden;margin-top:8px}
+.bar span{display:block;height:100%;background:var(--accent)}
+form{display:flex;gap:8px;flex-wrap:wrap}
+input[type=text]{flex:1;min-width:220px;padding:9px 12px;border:1px solid var(--line);border-radius:8px;font-size:14px}
+input[type=number]{width:70px;padding:9px;border:1px solid var(--line);border-radius:8px}
+form button{padding:9px 18px;background:var(--accent);color:#fff;border:0;border-radius:8px;cursor:pointer}
+.hit{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--line)}
+.hit .name{width:200px;font-weight:600}
+.hit .bar{flex:1;margin:0}
+.hit .s{width:90px;text-align:right;font-variant-numeric:tabular-nums;color:var(--muted)}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--good);margin-right:6px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Pathway streaming pipeline and live document index</h1>
+  <span class="meta"><span class="dot"></span><span id="live">waiting for the engine</span></span>
+</header>
+<nav id="tabs">
+  <button data-tab="windows" class="active">Windows</button>
+  <button data-tab="totals">Region totals</button>
+  <button data-tab="docs">Documents</button>
+  <button data-tab="search">Search</button>
+</nav>
+<main>
+  <section id="windows" class="active">
+    <div class="card">
+      <h2>Tumbling 60 s windows per region</h2>
+      <p>Orders from data/orders/*.csv and the Kafka topic orders, joined with data/regions/regions.csv. Rows flash when Pathway updates them.</p>
+      <table><thead><tr><th>Region</th><th>Window start (UTC)</th><th class="num">Orders</th><th class="num">Revenue</th><th class="num">Gross with tax</th><th class="num">Max order</th></tr></thead><tbody id="windows-body"></tbody></table>
+    </div>
+  </section>
+  <section id="totals">
+    <div class="card">
+      <h2>Running totals per region</h2>
+      <p>Group by region over every joined order. Editing a tax rate in regions.csv recomputes gross through the join.</p>
+      <div class="grid" id="totals-grid"></div>
+    </div>
+  </section>
+  <section id="docs">
+    <div class="card">
+      <h2>Indexed documents</h2>
+      <p>Every *.md file in data/docs. Add, edit or delete a file and the list and the index follow within seconds.</p>
+      <table><thead><tr><th>Document</th><th class="num">Characters</th></tr></thead><tbody id="docs-body"></tbody></table>
+    </div>
+  </section>
+  <section id="search">
+    <div class="card">
+      <h2>Top-k retrieval</h2>
+      <p>Query is embedded with the same deterministic hashing embedder and matched by cosine similarity against the live index.</p>
+      <form id="search-form"><input type="text" id="q" value="how long does shipping to japan take"><input type="number" id="k" value="3" min="1" max="20"><button>Search</button></form>
+      <div id="hits" style="margin-top:14px"></div>
+    </div>
+  </section>
+</main>
+<script>
+const seen = {};
+const money = cents => (cents / 100).toLocaleString("en-US", {style: "currency", currency: "USD"});
+const time = ts => ts < 1e11 ? new Date(ts * 1000).toISOString().replace("T", " ").slice(0, 19) : String(ts);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+
+function flashRow(tab, key, row) {
+  const sig = JSON.stringify(row);
+  const changed = seen[tab] && seen[tab][key] !== undefined && seen[tab][key] !== sig;
+  seen[tab] = seen[tab] || {};
+  seen[tab][key] = sig;
+  return changed ? ' class="flash"' : "";
+}
+
+function renderWindows(data) {
+  const rows = data.rows.sort((a, b) => b.window_start - a.window_start || a.region.localeCompare(b.region));
+  document.getElementById("windows-body").innerHTML = rows.map(r =>
+    `<tr${flashRow("w", r.region + r.window_start, r)}><td>${esc(r.region)}</td><td>${time(r.window_start)}</td><td class="num">${r.orders}</td><td class="num">${money(r.revenue)}</td><td class="num">${money(r.gross)}</td><td class="num">${money(r.max_amount)}</td></tr>`).join("");
+}
+
+function renderTotals(data) {
+  const rows = data.rows.sort((a, b) => b.gross - a.gross);
+  const top = Math.max(1, ...rows.map(r => r.gross));
+  document.getElementById("totals-grid").innerHTML = rows.map(r =>
+    `<div class="tile"><div class="k">${esc(r.name)} (${esc(r.region)}), ${r.orders} orders</div><div class="v">${money(r.gross)}</div><div class="k">revenue ${money(r.revenue)}</div><div class="bar"><span style="width:${100 * r.gross / top}%"></span></div></div>`).join("");
+}
+
+function renderDocs(data) {
+  const rows = data.rows.sort((a, b) => a.doc.localeCompare(b.doc));
+  document.getElementById("docs-body").innerHTML = rows.map(r =>
+    `<tr${flashRow("d", r.doc, r)}><td>${esc(r.doc)}</td><td class="num">${r.chars}</td></tr>`).join("");
+}
+
+async function refresh() {
+  try {
+    const [w, t, d] = await Promise.all(["windows", "totals", "docs"].map(n => fetch("/api/" + n).then(r => r.json())));
+    renderWindows(w);
+    renderTotals(t);
+    renderDocs(d);
+    const last = Math.max(w.updated_at, t.updated_at, d.updated_at);
+    document.getElementById("live").textContent = `live, last engine update ${new Date(last * 1000).toLocaleTimeString()}`;
+  } catch (e) {
+    document.getElementById("live").textContent = "engine not reachable";
+  }
+}
+
+async function search(event) {
+  if (event) event.preventDefault();
+  const body = JSON.stringify({query: document.getElementById("q").value, k: Number(document.getElementById("k").value)});
+  const hits = await fetch("/api/search", {method: "POST", headers: {"Content-Type": "application/json"}, body}).then(r => r.json());
+  document.getElementById("hits").innerHTML = hits.map(h =>
+    `<div class="hit"><span class="name">${esc(h.doc)}</span><span class="bar"><span style="width:${Math.max(0, 100 * h.similarity)}%"></span></span><span class="s">${h.similarity.toFixed(4)}</span></div>`).join("");
+}
+
+document.getElementById("tabs").addEventListener("click", e => {
+  const tab = e.target.dataset.tab;
+  if (!tab) return;
+  document.querySelectorAll("nav button").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
+  document.querySelectorAll("section").forEach(s => s.classList.toggle("active", s.id === tab));
+  history.replaceState(null, "", "#" + tab);
+});
+document.getElementById("search-form").addEventListener("submit", search);
+const initial = location.hash.slice(1);
+if (initial) document.querySelector(`nav button[data-tab="${initial}"]`)?.click();
+refresh();
+search();
+setInterval(refresh, 1000);
+</script>
+</body>
+</html>
