@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="640" viewBox="0 0 1100 640">
+  <defs>
+    <style>@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&amp;display=swap');
+      text { font-family: 'Caveat', cursive; fill: #1e1e1e; }
+      .t { font-size: 26px; font-weight: 700; }
+      .s { font-size: 19px; }
+      .box { stroke: #1e1e1e; stroke-width: 2.2; filter: url(#wobble); }
+      .arrow { stroke: #1e1e1e; stroke-width: 2.2; fill: none; filter: url(#wobble); marker-end: url(#head); }
+    </style>
+    <filter id="wobble" filterUnits="userSpaceOnUse" x="0" y="0" width="1100" height="640"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="3"/><feDisplacementMap in="SourceGraphic" scale="3"/></filter>
+    <marker id="head" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M1,1 L10,6 L1,11" fill="none" stroke="#1e1e1e" stroke-width="2"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1100" height="640" fill="#ffffff"/>
+  <rect class="box" x="10" y="20" width="1080" height="420" rx="18" fill="none" stroke-dasharray="8 6"/>
+  <text class="s" x="30" y="50">kind cluster "apache-iggy-streaming" (podman, 1 node)</text>
+
+  <rect class="box" x="30" y="75" width="330" height="340" rx="12" fill="#a5d8ff"/>
+  <text class="t" x="195" y="112" text-anchor="middle">bench Job pod</text>
+  <text class="s" x="195" y="142" text-anchor="middle">java-bench (Java 25) or</text>
+  <text class="s" x="195" y="166" text-anchor="middle">python-bench (Python 3.15)</text>
+  <text class="s" x="195" y="200" text-anchor="middle">producer: fixed rate, payload =</text>
+  <text class="s" x="195" y="224" text-anchor="middle">seq + sent_at_us + padding</text>
+  <text class="s" x="195" y="248" text-anchor="middle">partition = seq % 3</text>
+  <text class="s" x="195" y="282" text-anchor="middle">consumers read all 3 partitions</text>
+  <text class="s" x="195" y="306" text-anchor="middle">Recorder: gaps, order, latency,</text>
+  <text class="s" x="195" y="330" text-anchor="middle">sent &lt;= broker ts &lt;= received</text>
+  <text class="s" x="195" y="364" text-anchor="middle">prints one RESULT json line</text>
+
+  <rect class="box" x="470" y="75" width="320" height="150" rx="12" fill="#b2f2bb"/>
+  <text class="t" x="630" y="112" text-anchor="middle">iggy-0 StatefulSet</text>
+  <text class="s" x="630" y="142" text-anchor="middle">apache/iggy:0.10.0, TCP 8090</text>
+  <text class="s" x="630" y="166" text-anchor="middle">2 shards (thread per core)</text>
+  <text class="s" x="630" y="190" text-anchor="middle">durability replicated, io_uring</text>
+  <text class="s" x="630" y="214" text-anchor="middle">seccomp Unconfined</text>
+
+  <rect class="box" x="470" y="255" width="320" height="160" rx="12" fill="#ffc9c9"/>
+  <text class="t" x="630" y="292" text-anchor="middle">kafka-0 StatefulSet</text>
+  <text class="s" x="630" y="322" text-anchor="middle">apache/kafka:4.4.0, KRaft</text>
+  <text class="s" x="630" y="346" text-anchor="middle">broker + controller, 9092</text>
+  <text class="s" x="630" y="370" text-anchor="middle">acks=all, RF 1, no fsync per write</text>
+  <text class="s" x="630" y="394" text-anchor="middle">LogAppendTime timestamps</text>
+
+  <rect class="box" x="850" y="100" width="220" height="100" rx="12" fill="#ffec99"/>
+  <text class="t" x="960" y="137" text-anchor="middle">PVC data-iggy-0</text>
+  <text class="s" x="960" y="167" text-anchor="middle">/data/local_data, 2Gi</text>
+
+  <rect class="box" x="850" y="285" width="220" height="100" rx="12" fill="#ffec99"/>
+  <text class="t" x="960" y="322" text-anchor="middle">PVC data-kafka-0</text>
+  <text class="s" x="960" y="352" text-anchor="middle">/var/lib/kafka/data, 2Gi</text>
+
+  <path class="arrow" d="M360,150 L466,150"/>
+  <text class="s" x="413" y="140" text-anchor="middle">send</text>
+  <path class="arrow" d="M466,180 L364,180"/>
+  <text class="s" x="413" y="205" text-anchor="middle">poll</text>
+  <path class="arrow" d="M360,320 L466,320"/>
+  <text class="s" x="413" y="310" text-anchor="middle">send</text>
+  <path class="arrow" d="M466,350 L364,350"/>
+  <text class="s" x="413" y="375" text-anchor="middle">fetch</text>
+  <path class="arrow" d="M790,150 L846,150"/>
+  <path class="arrow" d="M790,335 L846,335"/>
+
+  <rect class="box" x="30" y="480" width="520" height="140" rx="12" fill="#d0bfff"/>
+  <text class="t" x="290" y="517" text-anchor="middle">host: e2e (pytest, Python 3.15)</text>
+  <text class="s" x="290" y="547" text-anchor="middle">test-all.sh and bench.sh render k8s/bench-job.yaml,</text>
+  <text class="s" x="290" y="571" text-anchor="middle">kubectl apply, wait for Complete,</text>
+  <text class="s" x="290" y="595" text-anchor="middle">parse RESULT from the pod log, assert, tabulate</text>
+
+  <rect class="box" x="600" y="480" width="470" height="140" rx="12" fill="#e9ecef"/>
+  <text class="t" x="835" y="517" text-anchor="middle">port-forwards (start-all.sh)</text>
+  <text class="s" x="835" y="547" text-anchor="middle">27550 iggy TCP, 27551 iggy HTTP</text>
+  <text class="s" x="835" y="571" text-anchor="middle">27552 kafka EXTERNAL listener</text>
+  <text class="s" x="835" y="595" text-anchor="middle">for manual clients, not used by the bench</text>
+
+  <path class="arrow" d="M195,476 L195,419"/>
+</svg>

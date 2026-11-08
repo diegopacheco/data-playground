@@ -1,0 +1,49 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: $JOB_NAME
+  labels:
+    app: bench
+    broker: $BROKER
+    client: $CLIENT
+spec:
+  backoffLimit: 0
+  ttlSecondsAfterFinished: 3600
+  template:
+    metadata:
+      labels:
+        app: bench
+        broker: $BROKER
+        client: $CLIENT
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: bench
+          image: $IMAGE
+          imagePullPolicy: Never
+          env:
+            - name: BROKER
+              value: "$BROKER"
+            - name: IGGY_ADDRESS
+              value: iggy-0.iggy:8090
+            - name: KAFKA_BOOTSTRAP
+              value: kafka-0.kafka:9092
+            - name: TOPIC
+              value: "$TOPIC"
+            - name: RATE
+              value: "$RATE"
+            - name: SIZE
+              value: "$SIZE"
+            - name: SECONDS
+              value: "$SECONDS"
+            - name: WARMUP_SECONDS
+              value: "$WARMUP_SECONDS"
+            - name: PARTITIONS
+              value: "$PARTITIONS"
+          resources:
+            requests:
+              cpu: 500m
+              memory: 512Mi
+            limits:
+              cpu: "2"
+              memory: 1Gi

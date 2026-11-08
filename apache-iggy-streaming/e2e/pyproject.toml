@@ -1,0 +1,12 @@
+[project]
+name = "bench-e2e"
+version = "1.0.0"
+requires-python = ">=3.15"
+dependencies = ["pytest==9.2.0"]
+
+[dependency-groups]
+dev = ["ty==0.0.99"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
