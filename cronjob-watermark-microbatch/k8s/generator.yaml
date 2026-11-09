@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: generator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: generator
+  template:
+    metadata:
+      labels:
+        app: generator
+    spec:
+      terminationGracePeriodSeconds: 5
+      containers:
+        - name: generator
+          image: localhost/cronjob-watermark-microbatch-python:v1
+          imagePullPolicy: Never
+          args: ["generate"]
+          envFrom:
+            - secretRef:
+                name: postgres-credentials
+          env:
+            - name: DB_HOST
+              value: postgres
+            - name: DB_PORT
+              value: "5432"
+            - name: INSERTS_PER_TICK
+              value: "20"
+            - name: UPDATES_PER_TICK
+              value: "2"
+            - name: TICK_MS
+              value: "500"
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              memory: 128Mi

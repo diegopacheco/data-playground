@@ -1,0 +1,94 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: java-loader
+spec:
+  schedule: "* * * * *"
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 30
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      ttlSecondsAfterFinished: 600
+      template:
+        metadata:
+          labels:
+            app: java-loader
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: loader
+              image: localhost/cronjob-watermark-microbatch-java:v1
+              imagePullPolicy: Never
+              envFrom:
+                - secretRef:
+                    name: postgres-credentials
+              env:
+                - name: DB_HOST
+                  value: postgres
+                - name: DB_PORT
+                  value: "5432"
+                - name: DB_URL
+                  value: jdbc:postgresql://$(DB_HOST):$(DB_PORT)/$(DB_NAME)
+                - name: PAGE_SIZE
+                  value: "500"
+                - name: LAG_SECONDS
+                  value: "2"
+                - name: HOLD_BEFORE_COMMIT_MS
+                  value: "0"
+              resources:
+                requests:
+                  cpu: 250m
+                  memory: 256Mi
+                limits:
+                  memory: 512Mi
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: python-loader
+spec:
+  schedule: "* * * * *"
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 30
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      ttlSecondsAfterFinished: 600
+      template:
+        metadata:
+          labels:
+            app: python-loader
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: loader
+              image: localhost/cronjob-watermark-microbatch-python:v1
+              imagePullPolicy: Never
+              args: ["load"]
+              envFrom:
+                - secretRef:
+                    name: postgres-credentials
+              env:
+                - name: JOB
+                  value: python
+                - name: DB_HOST
+                  value: postgres
+                - name: DB_PORT
+                  value: "5432"
+                - name: PAGE_SIZE
+                  value: "500"
+                - name: LAG_SECONDS
+                  value: "2"
+                - name: HOLD_BEFORE_COMMIT_MS
+                  value: "0"
+              resources:
+                requests:
+                  cpu: 100m
+                  memory: 64Mi
+                limits:
+                  memory: 256Mi

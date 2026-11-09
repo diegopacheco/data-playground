@@ -1,0 +1,4 @@
+FROM docker.io/library/eclipse-temurin:25.0.4.1_1-jre-noble
+WORKDIR /app
+COPY target/java-loader.jar java-loader.jar
+ENTRYPOINT ["java", "-XX:TieredStopAtLevel=1", "-jar", "/app/java-loader.jar"]
