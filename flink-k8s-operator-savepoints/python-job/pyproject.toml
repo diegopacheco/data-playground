@@ -1,0 +1,22 @@
+[project]
+name = "clicks-py"
+version = "1.0.0"
+requires-python = "==3.12.*"
+dependencies = ["apache-flink==2.3.0"]
+
+[dependency-groups]
+dev = ["pytest==9.2.0", "ty==0.0.99"]
+
+[build-system]
+requires = ["setuptools>=80"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["clicks_py"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.uv]
+build-constraint-dependencies = ["setuptools<81"]

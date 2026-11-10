@@ -1,0 +1,43 @@
+apiVersion: flink.apache.org/v1beta1
+kind: FlinkDeployment
+metadata:
+  name: clicks-java
+  namespace: default
+spec:
+  image: localhost/flink-k8s-operator-savepoints-java:v1
+  imagePullPolicy: Never
+  flinkVersion: v2_3
+  serviceAccount: flink
+  flinkConfiguration:
+    taskmanager.numberOfTaskSlots: "2"
+    execution.checkpointing.interval: 5s
+    execution.checkpointing.dir: file:///flink-data/clicks-java/checkpoints
+    execution.checkpointing.savepoint-dir: file:///flink-data/clicks-java/savepoints
+    state.backend.type: hashmap
+  podTemplate:
+    spec:
+      containers:
+        - name: flink-main-container
+          volumeMounts:
+            - name: flink-state
+              mountPath: /flink-data
+      volumes:
+        - name: flink-state
+          persistentVolumeClaim:
+            claimName: flink-state
+  jobManager:
+    replicas: 1
+    resource:
+      memory: 1024m
+      cpu: 0.5
+  taskManager:
+    resource:
+      memory: 1280m
+      cpu: 0.5
+  job:
+    jarURI: local:///opt/flink/usrlib/clicks-job.jar
+    entryClass: clicks.ClickJob
+    args: ["--version", "v1", "--users", "10", "--rate", "20"]
+    parallelism: 1
+    upgradeMode: savepoint
+    state: running

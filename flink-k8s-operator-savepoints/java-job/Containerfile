@@ -1,0 +1,2 @@
+FROM docker.io/library/flink:2.3.0-scala_2.12-java21
+COPY --chown=flink:flink target/clicks-job.jar /opt/flink/usrlib/clicks-job.jar
