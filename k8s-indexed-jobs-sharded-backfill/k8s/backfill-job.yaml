@@ -1,0 +1,72 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: ${JOB_NAME}
+  labels:
+    app: backfill
+    worker: ${WORKER}
+spec:
+  completionMode: Indexed
+  completions: ${PARTITIONS}
+  parallelism: ${PARALLELISM}
+  backoffLimitPerIndex: 2
+  maxFailedIndexes: 3
+  podFailurePolicy:
+    rules:
+      - action: FailIndex
+        onExitCodes:
+          containerName: worker
+          operator: In
+          values: [3]
+      - action: Count
+        onExitCodes:
+          containerName: worker
+          operator: In
+          values: [42]
+      - action: Ignore
+        onPodConditions:
+          - type: DisruptionTarget
+  template:
+    metadata:
+      labels:
+        app: backfill
+        worker: ${WORKER}
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: worker
+          image: ${IMAGE}
+          imagePullPolicy: Never
+          envFrom:
+            - secretRef:
+                name: postgres
+          env:
+            - name: PGHOST
+              value: postgres
+            - name: PGPORT
+              value: "5432"
+            - name: WORKER
+              value: ${WORKER}
+            - name: START_DAY
+              value: "${START_DAY}"
+            - name: SUBRANGES
+              value: "${SUBRANGES}"
+            - name: FAIL_INDEX
+              value: "${FAIL_INDEX}"
+            - name: FATAL_INDEX
+              value: "${FATAL_INDEX}"
+            - name: RUN_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['batch.kubernetes.io/job-name']
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: INDEX_FAILURES
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.annotations['batch.kubernetes.io/job-index-failure-count']
+          resources:
+            requests: {cpu: 250m, memory: 256Mi}
+            limits: {memory: 768Mi}
