@@ -1,0 +1,33 @@
+FROM docker.io/library/maven:3.9.16-eclipse-temurin-25 AS maven
+
+FROM maven AS jar
+WORKDIR /src
+COPY pom.xml .
+COPY src src
+RUN --mount=type=cache,target=/root/.m2 mvn -q -B package -DskipTests
+
+FROM ghcr.io/graalvm/native-image-community:25i4-25.0.4.1.1-ol10-20260922 AS native-build
+COPY --from=maven /usr/share/maven /opt/maven
+WORKDIR /src
+COPY pom.xml .
+COPY src src
+RUN --mount=type=cache,target=/root/.m2 /opt/maven/bin/mvn -q -B -Pnative -DskipTests native:compile
+
+FROM docker.io/library/debian:trixie-20261104-slim AS native
+COPY --from=native-build /src/target/orders-service /app/orders-service
+USER 1000
+EXPOSE 8080
+ENTRYPOINT ["/app/orders-service"]
+
+FROM docker.io/library/eclipse-temurin:25.0.5_8-jre AS jvm
+COPY --from=jar /src/target/orders-service.jar /tmp/orders-service.jar
+RUN java -Djarmode=tools -jar /tmp/orders-service.jar extract --destination /app && rm /tmp/orders-service.jar
+USER 1000
+EXPOSE 8080
+ENTRYPOINT ["java", "-XX:+UseSerialGC", "-XX:MaxRAMPercentage=75", "-jar", "/app/orders-service.jar"]
+
+FROM jvm AS jvm-aot
+USER root
+RUN java -XX:+UseSerialGC -XX:AOTCacheOutput=/app/orders-service.aot -Dspring.context.exit=onRefresh -jar /app/orders-service.jar
+USER 1000
+ENTRYPOINT ["java", "-XX:+UseSerialGC", "-XX:MaxRAMPercentage=75", "-XX:AOTMode=on", "-XX:AOTCache=/app/orders-service.aot", "-jar", "/app/orders-service.jar"]

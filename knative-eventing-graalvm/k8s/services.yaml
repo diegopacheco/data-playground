@@ -1,0 +1,151 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: orders-native
+  labels:
+    app: orders
+    networking.knative.dev/visibility: cluster-local
+spec:
+  template:
+    metadata:
+      labels:
+        app: orders
+        variant: native
+      annotations:
+        autoscaling.knative.dev/min-scale: "0"
+        autoscaling.knative.dev/max-scale: "1"
+        autoscaling.knative.dev/window: "6s"
+        autoscaling.knative.dev/scale-to-zero-pod-retention-period: "0s"
+    spec:
+      enableServiceLinks: false
+      containers:
+        - image: kind.local/knative-eventing-graalvm-native:v1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          env:
+            - name: VARIANT
+              value: native
+            - name: LAB_URL
+              value: http://lab.default.svc.cluster.local:8080
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: "1"
+              memory: 512Mi
+---
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: orders-jvm
+  labels:
+    app: orders
+    networking.knative.dev/visibility: cluster-local
+spec:
+  template:
+    metadata:
+      labels:
+        app: orders
+        variant: jvm
+      annotations:
+        autoscaling.knative.dev/min-scale: "0"
+        autoscaling.knative.dev/max-scale: "1"
+        autoscaling.knative.dev/window: "6s"
+        autoscaling.knative.dev/scale-to-zero-pod-retention-period: "0s"
+    spec:
+      enableServiceLinks: false
+      containers:
+        - image: kind.local/knative-eventing-graalvm-jvm:v1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          env:
+            - name: VARIANT
+              value: jvm
+            - name: LAB_URL
+              value: http://lab.default.svc.cluster.local:8080
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: "1"
+              memory: 512Mi
+---
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: orders-jvm-aot
+  labels:
+    app: orders
+    networking.knative.dev/visibility: cluster-local
+spec:
+  template:
+    metadata:
+      labels:
+        app: orders
+        variant: jvm-aot
+      annotations:
+        autoscaling.knative.dev/min-scale: "0"
+        autoscaling.knative.dev/max-scale: "1"
+        autoscaling.knative.dev/window: "6s"
+        autoscaling.knative.dev/scale-to-zero-pod-retention-period: "0s"
+    spec:
+      enableServiceLinks: false
+      containers:
+        - image: kind.local/knative-eventing-graalvm-jvm-aot:v1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          env:
+            - name: VARIANT
+              value: jvm-aot
+            - name: LAB_URL
+              value: http://lab.default.svc.cluster.local:8080
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: "1"
+              memory: 512Mi
+---
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: orders-python
+  labels:
+    app: orders
+    networking.knative.dev/visibility: cluster-local
+spec:
+  template:
+    metadata:
+      labels:
+        app: orders
+        variant: python
+      annotations:
+        autoscaling.knative.dev/min-scale: "0"
+        autoscaling.knative.dev/max-scale: "1"
+        autoscaling.knative.dev/window: "6s"
+        autoscaling.knative.dev/scale-to-zero-pod-retention-period: "0s"
+    spec:
+      enableServiceLinks: false
+      containers:
+        - image: kind.local/knative-eventing-graalvm-python:v1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          env:
+            - name: VARIANT
+              value: python
+            - name: LAB_URL
+              value: http://lab.default.svc.cluster.local:8080
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: "1"
+              memory: 512Mi

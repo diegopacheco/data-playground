@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="720" viewBox="0 0 1100 720">
+  <defs>
+    <style>@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&amp;display=swap');
+      text { font-family: 'Caveat', cursive; fill: #1e1e1e; }
+      .t { font-size: 25px; font-weight: 700; }
+      .s { font-size: 19px; }
+      .box { stroke: #1e1e1e; stroke-width: 2.2; filter: url(#wobble); }
+      .arrow { stroke: #1e1e1e; stroke-width: 2.2; fill: none; filter: url(#wobble); marker-end: url(#head); }
+    </style>
+    <filter id="wobble" filterUnits="userSpaceOnUse" x="0" y="0" width="1100" height="720"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="5"/><feDisplacementMap in="SourceGraphic" scale="3"/></filter>
+    <marker id="head" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M1,1 L10,6 L1,11" fill="none" stroke="#1e1e1e" stroke-width="2"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1100" height="720" fill="#ffffff"/>
+
+  <rect class="box" x="10" y="270" width="170" height="160" rx="12" fill="#e9ecef"/>
+  <text class="t" x="95" y="305" text-anchor="middle">host</text>
+  <text class="s" x="95" y="335" text-anchor="middle">e2e pytest</text>
+  <text class="s" x="95" y="359" text-anchor="middle">coldstart.bench</text>
+  <text class="s" x="95" y="383" text-anchor="middle">port-forward</text>
+  <text class="s" x="95" y="407" text-anchor="middle">localhost:27630</text>
+
+  <rect class="box" x="200" y="15" width="890" height="690" rx="18" fill="none" stroke-dasharray="8 6"/>
+  <text class="s" x="220" y="44">kind cluster "knative-eventing-graalvm" (podman, 1 node)</text>
+
+  <rect class="box" x="225" y="65" width="215" height="175" rx="12" fill="#ffc9c9"/>
+  <text class="t" x="332" y="100" text-anchor="middle">kafka-0</text>
+  <text class="s" x="332" y="128" text-anchor="middle">apache/kafka 4.4.0 KRaft</text>
+  <text class="s" x="332" y="156" text-anchor="middle">orders-native</text>
+  <text class="s" x="332" y="178" text-anchor="middle">orders-jvm</text>
+  <text class="s" x="332" y="200" text-anchor="middle">orders-jvm-aot</text>
+  <text class="s" x="332" y="222" text-anchor="middle">orders-python</text>
+
+  <rect class="box" x="225" y="290" width="215" height="160" rx="12" fill="#b2f2bb"/>
+  <text class="t" x="332" y="325" text-anchor="middle">lab Deployment</text>
+  <text class="s" x="332" y="353" text-anchor="middle">Python 3.15 + Granian</text>
+  <text class="s" x="332" y="379" text-anchor="middle">POST /produce stamps</text>
+  <text class="s" x="332" y="401" text-anchor="middle">producedAtMs, sends</text>
+  <text class="s" x="332" y="427" text-anchor="middle">GET /records joins both</text>
+
+  <rect class="box" x="480" y="65" width="225" height="175" rx="12" fill="#a5d8ff"/>
+  <text class="t" x="592" y="100" text-anchor="middle">Knative Eventing</text>
+  <text class="s" x="592" y="128" text-anchor="middle">4 KafkaSources</text>
+  <text class="s" x="592" y="154" text-anchor="middle">kafka-source-dispatcher</text>
+  <text class="s" x="592" y="180" text-anchor="middle">record to CloudEvent</text>
+  <text class="s" x="592" y="206" text-anchor="middle">HTTP POST, 5 retries</text>
+
+  <rect class="box" x="480" y="290" width="225" height="175" rx="12" fill="#ffec99"/>
+  <text class="t" x="592" y="325" text-anchor="middle">Knative Serving</text>
+  <text class="s" x="592" y="353" text-anchor="middle">kourier-internal</text>
+  <text class="s" x="592" y="379" text-anchor="middle">activator holds the</text>
+  <text class="s" x="592" y="401" text-anchor="middle">request at zero, the</text>
+  <text class="s" x="592" y="427" text-anchor="middle">autoscaler adds a pod</text>
+
+  <rect class="box" x="755" y="60" width="315" height="120" rx="12" fill="#d0bfff"/>
+  <text class="t" x="912" y="94" text-anchor="middle">orders-native ksvc</text>
+  <text class="s" x="912" y="122" text-anchor="middle">Spring Boot 4.1 GraalVM native</text>
+  <text class="s" x="912" y="148" text-anchor="middle">debian slim, 0..1 pods</text>
+
+  <rect class="box" x="755" y="200" width="315" height="120" rx="12" fill="#d0bfff"/>
+  <text class="t" x="912" y="234" text-anchor="middle">orders-jvm ksvc</text>
+  <text class="s" x="912" y="262" text-anchor="middle">Spring Boot 4.1 on Temurin 25</text>
+  <text class="s" x="912" y="288" text-anchor="middle">extracted jar, 0..1 pods</text>
+
+  <rect class="box" x="755" y="340" width="315" height="120" rx="12" fill="#d0bfff"/>
+  <text class="t" x="912" y="374" text-anchor="middle">orders-jvm-aot ksvc</text>
+  <text class="s" x="912" y="402" text-anchor="middle">same jar + JDK 25 AOT cache</text>
+  <text class="s" x="912" y="428" text-anchor="middle">trained at image build</text>
+
+  <rect class="box" x="755" y="480" width="315" height="120" rx="12" fill="#ffd8a8"/>
+  <text class="t" x="912" y="514" text-anchor="middle">orders-python ksvc</text>
+  <text class="s" x="912" y="542" text-anchor="middle">Python 3.15 + Granian ASGI</text>
+  <text class="s" x="912" y="568" text-anchor="middle">same transform, 0..1 pods</text>
+
+  <path class="arrow" d="M180,350 L222,365"/>
+  <path class="arrow" d="M332,290 L332,244"/>
+  <text class="s" x="340" y="272">produce</text>
+  <path class="arrow" d="M440,150 L477,150"/>
+  <path class="arrow" d="M592,240 L592,287"/>
+  <text class="s" x="600" y="270">CloudEvent</text>
+  <path class="arrow" d="M705,330 L752,120"/>
+  <path class="arrow" d="M705,355 L752,260"/>
+  <path class="arrow" d="M705,385 L752,400"/>
+  <path class="arrow" d="M705,415 L752,535"/>
+
+  <path class="arrow" d="M912,600 L912,650 L332,650 L332,454"/>
+  <text class="s" x="460" y="640">every service POSTs /records: id, total, pod, startedAt, readyAt, handledAt, RSS, cgroup</text>
+</svg>

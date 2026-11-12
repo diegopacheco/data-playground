@@ -1,0 +1,91 @@
+apiVersion: sources.knative.dev/v1
+kind: KafkaSource
+metadata:
+  name: orders-native
+  labels:
+    app: orders
+spec:
+  consumerGroup: orders-native
+  bootstrapServers:
+    - kafka-0.kafka.default.svc.cluster.local:9092
+  topics:
+    - orders-native
+  initialOffset: earliest
+  delivery:
+    retry: 5
+    backoffPolicy: exponential
+    backoffDelay: PT0.5S
+  sink:
+    ref:
+      apiVersion: serving.knative.dev/v1
+      kind: Service
+      name: orders-native
+---
+apiVersion: sources.knative.dev/v1
+kind: KafkaSource
+metadata:
+  name: orders-jvm
+  labels:
+    app: orders
+spec:
+  consumerGroup: orders-jvm
+  bootstrapServers:
+    - kafka-0.kafka.default.svc.cluster.local:9092
+  topics:
+    - orders-jvm
+  initialOffset: earliest
+  delivery:
+    retry: 5
+    backoffPolicy: exponential
+    backoffDelay: PT0.5S
+  sink:
+    ref:
+      apiVersion: serving.knative.dev/v1
+      kind: Service
+      name: orders-jvm
+---
+apiVersion: sources.knative.dev/v1
+kind: KafkaSource
+metadata:
+  name: orders-jvm-aot
+  labels:
+    app: orders
+spec:
+  consumerGroup: orders-jvm-aot
+  bootstrapServers:
+    - kafka-0.kafka.default.svc.cluster.local:9092
+  topics:
+    - orders-jvm-aot
+  initialOffset: earliest
+  delivery:
+    retry: 5
+    backoffPolicy: exponential
+    backoffDelay: PT0.5S
+  sink:
+    ref:
+      apiVersion: serving.knative.dev/v1
+      kind: Service
+      name: orders-jvm-aot
+---
+apiVersion: sources.knative.dev/v1
+kind: KafkaSource
+metadata:
+  name: orders-python
+  labels:
+    app: orders
+spec:
+  consumerGroup: orders-python
+  bootstrapServers:
+    - kafka-0.kafka.default.svc.cluster.local:9092
+  topics:
+    - orders-python
+  initialOffset: earliest
+  delivery:
+    retry: 5
+    backoffPolicy: exponential
+    backoffDelay: PT0.5S
+  sink:
+    ref:
+      apiVersion: serving.knative.dev/v1
+      kind: Service
+      name: orders-python

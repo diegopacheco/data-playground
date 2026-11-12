@@ -1,0 +1,52 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: lab
+  labels:
+    app: lab
+spec:
+  selector:
+    app: lab
+  ports:
+    - name: http
+      port: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lab
+  labels:
+    app: lab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: lab
+  template:
+    metadata:
+      labels:
+        app: lab
+    spec:
+      enableServiceLinks: false
+      containers:
+        - name: lab
+          image: kind.local/knative-eventing-graalvm-lab:v1
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: BOOTSTRAP
+              value: kafka-0.kafka.default.svc.cluster.local:9092
+          ports:
+            - name: http
+              containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            periodSeconds: 2
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              cpu: "1"
+              memory: 256Mi
