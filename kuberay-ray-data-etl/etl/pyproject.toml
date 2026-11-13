@@ -1,0 +1,12 @@
+[project]
+name = "ray-data-etl"
+version = "1.0.0"
+requires-python = "==3.14.*"
+dependencies = ["ray[data]==2.60.0", "pyarrow==23.0.1", "pandas==2.3.3", "typing_extensions==4.16.0"]
+
+[dependency-groups]
+dev = ["pytest==9.2.0", "ty==0.0.99"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

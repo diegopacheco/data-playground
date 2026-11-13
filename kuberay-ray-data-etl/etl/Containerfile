@@ -1,0 +1,4 @@
+FROM docker.io/rayproject/ray:2.60.0-py314
+COPY --chown=ray:users etl /home/ray/app/etl
+ENV PYTHONPATH=/home/ray/app
+WORKDIR /home/ray/app

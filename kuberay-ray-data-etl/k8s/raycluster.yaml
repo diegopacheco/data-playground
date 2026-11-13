@@ -1,0 +1,79 @@
+apiVersion: ray.io/v1
+kind: RayCluster
+metadata:
+  name: etl
+spec:
+  rayVersion: "2.60.0"
+  enableInTreeAutoscaling: true
+  autoscalerOptions:
+    version: v2
+    upscalingMode: Default
+    idleTimeoutSeconds: 30
+    imagePullPolicy: IfNotPresent
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+  headGroupSpec:
+    rayStartParams:
+      num-cpus: "0"
+      dashboard-host: 0.0.0.0
+    template:
+      spec:
+        containers:
+          - name: ray-head
+            image: localhost/kuberay-ray-data-etl-etl:v1
+            imagePullPolicy: IfNotPresent
+            env:
+              - name: S3_ENDPOINT
+                value: minio:9000
+              - name: S3_BUCKET
+                value: events
+              - name: PARALLEL_BATCHES
+                value: "4"
+            envFrom:
+              - secretRef:
+                  name: s3-credentials
+            ports:
+              - containerPort: 6379
+                name: gcs
+              - containerPort: 8265
+                name: dashboard
+              - containerPort: 10001
+                name: client
+            resources:
+              requests:
+                cpu: 500m
+                memory: 2Gi
+              limits:
+                cpu: "2"
+                memory: 3Gi
+  workerGroupSpecs:
+    - groupName: cpu
+      replicas: 1
+      minReplicas: 1
+      maxReplicas: 3
+      rayStartParams:
+        num-cpus: "1"
+      template:
+        spec:
+          containers:
+            - name: ray-worker
+              image: localhost/kuberay-ray-data-etl-etl:v1
+              imagePullPolicy: IfNotPresent
+              env:
+                - name: S3_ENDPOINT
+                  value: minio:9000
+              envFrom:
+                - secretRef:
+                    name: s3-credentials
+              resources:
+                requests:
+                  cpu: 500m
+                  memory: 1536Mi
+                limits:
+                  cpu: "1"
+                  memory: 2Gi

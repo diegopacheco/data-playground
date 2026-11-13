@@ -1,0 +1,41 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: producer-burst
+  labels:
+    app: producer-burst
+spec:
+  backoffLimit: 0
+  ttlSecondsAfterFinished: 600
+  template:
+    metadata:
+      labels:
+        app: producer-burst
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: producer
+          image: localhost/kuberay-ray-data-etl-producer:v1
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: S3_ENDPOINT
+              value: http://minio:9000
+            - name: PRODUCER_MODE
+              value: burst
+            - name: RUN_ID
+              value: b0
+            - name: PRODUCER_BATCHES
+              value: "12"
+            - name: FILES_PER_BATCH
+              value: "8"
+            - name: EVENTS_PER_FILE
+              value: "5000"
+          envFrom:
+            - secretRef:
+                name: s3-credentials
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              memory: 768Mi

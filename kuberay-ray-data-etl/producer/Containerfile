@@ -1,0 +1,4 @@
+FROM docker.io/library/eclipse-temurin:25.0.4.1_1-jre-noble
+WORKDIR /app
+COPY target/producer.jar app.jar
+ENTRYPOINT ["java", "-XX:MaxRAMPercentage=75", "-jar", "app.jar"]

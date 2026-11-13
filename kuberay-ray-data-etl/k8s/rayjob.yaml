@@ -1,0 +1,9 @@
+apiVersion: ray.io/v1
+kind: RayJob
+metadata:
+  name: etl-driver
+spec:
+  entrypoint: python -m etl.driver
+  submissionMode: HTTPMode
+  clusterSelector:
+    ray.io/cluster: etl

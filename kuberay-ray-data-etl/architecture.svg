@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="620" viewBox="0 0 1100 620">
+  <defs>
+    <style>@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&amp;display=swap');
+      text { font-family: 'Caveat', cursive; fill: #1e1e1e; }
+      .t { font-size: 25px; font-weight: 700; }
+      .s { font-size: 19px; }
+      .box { stroke: #1e1e1e; stroke-width: 2.2; filter: url(#wobble); }
+      .arrow { stroke: #1e1e1e; stroke-width: 2.2; fill: none; filter: url(#wobble); marker-end: url(#head); }
+    </style>
+    <filter id="wobble" filterUnits="userSpaceOnUse" x="0" y="0" width="1100" height="620"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="7"/><feDisplacementMap in="SourceGraphic" scale="3"/></filter>
+    <marker id="head" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M1,1 L10,6 L1,11" fill="none" stroke="#1e1e1e" stroke-width="2"/></marker>
+  </defs>
+  <rect x="0" y="0" width="1100" height="620" fill="#ffffff"/>
+  <rect class="box" x="10" y="20" width="1080" height="580" rx="18" fill="none" stroke-dasharray="8 6"/>
+  <text class="s" x="30" y="50">kind cluster "kuberay-ray-data-etl" (podman)</text>
+
+  <rect class="box" x="30" y="80" width="230" height="170" rx="12" fill="#ffd8a8"/>
+  <text class="t" x="145" y="114" text-anchor="middle">Java 25 producer</text>
+  <text class="s" x="145" y="142" text-anchor="middle">Spring Boot 4.1, non-web</text>
+  <text class="s" x="145" y="168" text-anchor="middle">steady: 1 batch / 5 s</text>
+  <text class="s" x="145" y="194" text-anchor="middle">burst Job: 24 batches</text>
+  <text class="s" x="145" y="220" text-anchor="middle">virtual threads per file</text>
+
+  <rect class="box" x="330" y="80" width="250" height="210" rx="12" fill="#fff3bf"/>
+  <text class="t" x="455" y="114" text-anchor="middle">MinIO bucket events</text>
+  <text class="s" x="455" y="144" text-anchor="middle">input/&lt;batch&gt;/part-N.jsonl</text>
+  <text class="s" x="455" y="168" text-anchor="middle">input/&lt;batch&gt;/_READY</text>
+  <text class="s" x="455" y="202" text-anchor="middle">output/&lt;batch&gt;/events/*.parquet</text>
+  <text class="s" x="455" y="226" text-anchor="middle">output/&lt;batch&gt;/aggregates/</text>
+  <text class="s" x="455" y="250" text-anchor="middle">output/&lt;batch&gt;/_SUCCESS</text>
+
+  <rect class="box" x="650" y="70" width="420" height="400" rx="16" fill="#e7f5ff"/>
+  <text class="t" x="860" y="102" text-anchor="middle">RayCluster etl (Ray 2.60.0)</text>
+
+  <rect class="box" x="670" y="118" width="380" height="150" rx="12" fill="#a5d8ff"/>
+  <text class="t" x="860" y="150" text-anchor="middle">head pod (num-cpus 0)</text>
+  <text class="s" x="860" y="178" text-anchor="middle">RayJob etl-driver: poll _READY, 4 batches at once</text>
+  <text class="s" x="860" y="204" text-anchor="middle">GCS + dashboard :8265</text>
+  <text class="s" x="860" y="230" text-anchor="middle">autoscaler v2 sidecar, idle timeout 30 s</text>
+
+  <rect class="box" x="670" y="340" width="115" height="100" rx="12" fill="#b2f2bb"/>
+  <text class="t" x="727" y="378" text-anchor="middle">worker</text>
+  <text class="s" x="727" y="406" text-anchor="middle">min 1</text>
+  <rect class="box" x="802" y="340" width="115" height="100" rx="12" fill="#d3f9d8" stroke-dasharray="7 5"/>
+  <text class="t" x="859" y="378" text-anchor="middle">worker</text>
+  <text class="s" x="859" y="406" text-anchor="middle">on demand</text>
+  <rect class="box" x="935" y="340" width="115" height="100" rx="12" fill="#d3f9d8" stroke-dasharray="7 5"/>
+  <text class="t" x="992" y="378" text-anchor="middle">worker</text>
+  <text class="s" x="992" y="406" text-anchor="middle">max 3</text>
+
+  <path class="arrow" d="M860,268 L860,334"/>
+  <text class="s" x="870" y="296">read_json, map_batches,</text>
+  <text class="s" x="870" y="318">groupby, write_parquet</text>
+
+  <rect class="box" x="30" y="320" width="250" height="150" rx="12" fill="#d0bfff"/>
+  <text class="t" x="155" y="354" text-anchor="middle">KubeRay operator 1.7.2</text>
+  <text class="s" x="155" y="384" text-anchor="middle">reconciles RayCluster</text>
+  <text class="s" x="155" y="408" text-anchor="middle">and RayJob, applies the</text>
+  <text class="s" x="155" y="432" text-anchor="middle">autoscaler's replica count</text>
+
+  <rect class="box" x="330" y="400" width="260" height="170" rx="12" fill="#ffc9c9"/>
+  <text class="t" x="460" y="434" text-anchor="middle">e2e tests (Python 3.15)</text>
+  <text class="s" x="460" y="462" text-anchor="middle">ground truth from input</text>
+  <text class="s" x="460" y="486" text-anchor="middle">vs Parquet output</text>
+  <text class="s" x="460" y="510" text-anchor="middle">scaling timeline, pod kill</text>
+  <text class="s" x="460" y="534" text-anchor="middle">MinIO via localhost:27641</text>
+
+  <path class="arrow" d="M260,165 L324,165"/>
+  <text class="s" x="266" y="155">PUT</text>
+  <path class="arrow" d="M580,140 L664,140"/>
+  <text class="s" x="590" y="130">jsonl</text>
+  <path class="arrow" d="M664,240 L586,240"/>
+  <text class="s" x="590" y="230">parquet</text>
+  <path class="arrow" d="M280,352 L664,352"/>
+  <text class="s" x="300" y="342">create / delete worker pods</text>
+  <path class="arrow" d="M455,400 L455,296"/>
+  <text class="s" x="465" y="386">read both</text>
+  <path class="arrow" d="M590,500 L700,500 L725,446"/>
+  <text class="s" x="600" y="525">force delete a busy worker</text>
+</svg>

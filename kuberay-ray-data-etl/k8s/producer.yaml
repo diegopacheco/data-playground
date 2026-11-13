@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: producer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: producer
+  template:
+    metadata:
+      labels:
+        app: producer
+    spec:
+      containers:
+        - name: producer
+          image: localhost/kuberay-ray-data-etl-producer:v1
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: S3_ENDPOINT
+              value: http://minio:9000
+            - name: PRODUCER_MODE
+              value: steady
+            - name: PRODUCER_INTERVAL
+              value: 5s
+            - name: FILES_PER_BATCH
+              value: "4"
+            - name: EVENTS_PER_FILE
+              value: "250"
+          envFrom:
+            - secretRef:
+                name: s3-credentials
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              memory: 512Mi
