@@ -1,0 +1,140 @@
+apiVersion: kueue.x-k8s.io/v1beta2
+kind: ResourceFlavor
+metadata:
+  name: default-flavor
+---
+apiVersion: kueue.x-k8s.io/v1beta2
+kind: WorkloadPriorityClass
+metadata:
+  name: etl-low
+value: 100
+description: scheduled ETL that can wait and be preempted
+---
+apiVersion: kueue.x-k8s.io/v1beta2
+kind: WorkloadPriorityClass
+metadata:
+  name: etl-high
+value: 1000
+description: urgent ETL that preempts lower priority work
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: team-analytics
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: team-finance
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: team-reports
+---
+apiVersion: kueue.x-k8s.io/v1beta2
+kind: ClusterQueue
+metadata:
+  name: analytics-cq
+spec:
+  cohortName: etl
+  namespaceSelector:
+    matchLabels:
+      kubernetes.io/metadata.name: team-analytics
+  queueingStrategy: BestEffortFIFO
+  fairSharing:
+    weight: "1"
+  preemption:
+    reclaimWithinCohort: Any
+    withinClusterQueue: LowerPriority
+  resourceGroups:
+    - coveredResources: ["cpu", "memory"]
+      flavors:
+        - name: default-flavor
+          resources:
+            - name: cpu
+              nominalQuota: 500m
+              borrowingLimit: 500m
+            - name: memory
+              nominalQuota: 2Gi
+              borrowingLimit: 2Gi
+---
+apiVersion: kueue.x-k8s.io/v1beta2
+kind: ClusterQueue
+metadata:
+  name: finance-cq
+spec:
+  cohortName: etl
+  namespaceSelector:
+    matchLabels:
+      kubernetes.io/metadata.name: team-finance
+  queueingStrategy: BestEffortFIFO
+  fairSharing:
+    weight: "1"
+  preemption:
+    reclaimWithinCohort: Any
+    withinClusterQueue: LowerPriority
+  resourceGroups:
+    - coveredResources: ["cpu", "memory"]
+      flavors:
+        - name: default-flavor
+          resources:
+            - name: cpu
+              nominalQuota: 500m
+              borrowingLimit: 500m
+            - name: memory
+              nominalQuota: 2Gi
+              borrowingLimit: 2Gi
+---
+apiVersion: kueue.x-k8s.io/v1beta2
+kind: ClusterQueue
+metadata:
+  name: reports-cq
+spec:
+  cohortName: etl
+  namespaceSelector:
+    matchLabels:
+      kubernetes.io/metadata.name: team-reports
+  queueingStrategy: StrictFIFO
+  fairSharing:
+    weight: "1"
+  preemption:
+    reclaimWithinCohort: Never
+    withinClusterQueue: LowerPriority
+  resourceGroups:
+    - coveredResources: ["cpu", "memory"]
+      flavors:
+        - name: default-flavor
+          resources:
+            - name: cpu
+              nominalQuota: 500m
+              borrowingLimit: "0"
+              lendingLimit: "0"
+            - name: memory
+              nominalQuota: 2Gi
+              borrowingLimit: "0"
+              lendingLimit: "0"
+---
+apiVersion: kueue.x-k8s.io/v1beta2
+kind: LocalQueue
+metadata:
+  name: etl
+  namespace: team-analytics
+spec:
+  clusterQueue: analytics-cq
+---
+apiVersion: kueue.x-k8s.io/v1beta2
+kind: LocalQueue
+metadata:
+  name: etl
+  namespace: team-finance
+spec:
+  clusterQueue: finance-cq
+---
+apiVersion: kueue.x-k8s.io/v1beta2
+kind: LocalQueue
+metadata:
+  name: etl
+  namespace: team-reports
+spec:
+  clusterQueue: reports-cq

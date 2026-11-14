@@ -1,0 +1,4 @@
+FROM docker.io/library/python:3.15.2-slim
+WORKDIR /app
+COPY etl/ etl/
+ENTRYPOINT ["python", "-m", "etl.main"]

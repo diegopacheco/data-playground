@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kueue-kueueviz-frontend-env
+  namespace: kueue-system
+  labels:
+    app.kubernetes.io/component: dashboard
+    app.kubernetes.io/name: kueue
+data:
+  env.js: |
+    window.env = {
+      VITE_WEBSOCKET_URL: "${BACKEND_URL}",
+      REACT_APP_WEBSOCKET_URL: "${BACKEND_URL}"
+    };
