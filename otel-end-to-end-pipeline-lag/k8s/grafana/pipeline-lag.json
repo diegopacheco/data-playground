@@ -1,0 +1,92 @@
+{
+  "uid": "pipeline-lag",
+  "title": "Pipeline Lag and Freshness SLO",
+  "tags": ["otel", "kafka", "slo"],
+  "timezone": "browser",
+  "refresh": "5s",
+  "schemaVersion": 41,
+  "time": { "from": "now-15m", "to": "now" },
+  "panels": [
+    {
+      "id": 1, "type": "stat", "title": "SLO attainment (5m, target 99% within 2s)",
+      "gridPos": { "x": 0, "y": 0, "w": 6, "h": 5 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [{ "refId": "A", "expr": "pipeline:slo_attainment:ratio_rate5m" }],
+      "fieldConfig": { "defaults": { "unit": "percentunit", "decimals": 2, "min": 0, "max": 1,
+        "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 0.99 }] } } },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background" }
+    },
+    {
+      "id": 2, "type": "stat", "title": "Error budget remaining (5m)",
+      "gridPos": { "x": 6, "y": 0, "w": 6, "h": 5 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [{ "refId": "A", "expr": "pipeline:slo_error_budget_remaining:ratio_rate5m" }],
+      "fieldConfig": { "defaults": { "unit": "percentunit", "decimals": 0,
+        "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "orange", "value": 0 }, { "color": "green", "value": 0.5 }] } } },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background" }
+    },
+    {
+      "id": 3, "type": "stat", "title": "Burn rate (1m)",
+      "gridPos": { "x": 12, "y": 0, "w": 6, "h": 5 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [{ "refId": "A", "expr": "pipeline:slo_burn_rate:1m" }],
+      "fieldConfig": { "defaults": { "unit": "x", "decimals": 1,
+        "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "orange", "value": 6 }, { "color": "red", "value": 14.4 }] } } },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background" }
+    },
+    {
+      "id": 4, "type": "stat", "title": "Consumer group lag (messages)",
+      "gridPos": { "x": 18, "y": 0, "w": 6, "h": 5 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [{ "refId": "A", "expr": "pipeline:consumer_group_lag:sum" }],
+      "fieldConfig": { "defaults": { "unit": "none", "decimals": 0,
+        "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 200 }] } } },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background" }
+    },
+    {
+      "id": 5, "type": "timeseries", "title": "End-to-end lag, event time to sink commit (p50 / p95 / p99)",
+      "gridPos": { "x": 0, "y": 5, "w": 12, "h": 9 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "pipeline:lag_seconds:p50_1m", "legendFormat": "p50" },
+        { "refId": "B", "expr": "pipeline:lag_seconds:p95_1m", "legendFormat": "p95" },
+        { "refId": "C", "expr": "pipeline:lag_seconds:p99_1m", "legendFormat": "p99" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s", "custom": { "thresholdsStyle": { "mode": "dashed" } },
+        "thresholds": { "mode": "absolute", "steps": [{ "color": "transparent", "value": null }, { "color": "red", "value": 2 }] } } }
+    },
+    {
+      "id": 6, "type": "timeseries", "title": "Consumer group lag per partition (kafka_metrics receiver)",
+      "gridPos": { "x": 12, "y": 5, "w": 12, "h": 9 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [{ "refId": "A", "expr": "kafka_consumer_group_lag{group=\"lag-consumer\"}", "legendFormat": "{{topic}} p{{partition}}" }],
+      "fieldConfig": { "defaults": { "unit": "none" } }
+    },
+    {
+      "id": 7, "type": "timeseries", "title": "Error budget burn rate (30s / 1m / 5m)",
+      "gridPos": { "x": 0, "y": 14, "w": 12, "h": 9 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "pipeline:slo_burn_rate:30s", "legendFormat": "30s" },
+        { "refId": "B", "expr": "pipeline:slo_burn_rate:1m", "legendFormat": "1m" },
+        { "refId": "C", "expr": "pipeline:slo_burn_rate:5m", "legendFormat": "5m" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "x", "custom": { "thresholdsStyle": { "mode": "dashed" } },
+        "thresholds": { "mode": "absolute", "steps": [{ "color": "transparent", "value": null }, { "color": "orange", "value": 6 }, { "color": "red", "value": 14.4 }] } } }
+    },
+    {
+      "id": 8, "type": "timeseries", "title": "SLO attainment (5m) and messages sunk per second",
+      "gridPos": { "x": 12, "y": 14, "w": 12, "h": 9 },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "refId": "A", "expr": "pipeline:slo_attainment:ratio_rate5m", "legendFormat": "attainment" },
+        { "refId": "B", "expr": "sum(rate(pipeline_e2e_lag_seconds_count[1m]))", "legendFormat": "msgs/s" }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "percentunit", "min": 0, "max": 1 },
+        "overrides": [{ "matcher": { "id": "byName", "options": "msgs/s" },
+          "properties": [{ "id": "unit", "value": "none" }, { "id": "custom.axisPlacement", "value": "right" }, { "id": "min", "value": 0 }, { "id": "max" }] }]
+      }
+    }
+  ]
+}

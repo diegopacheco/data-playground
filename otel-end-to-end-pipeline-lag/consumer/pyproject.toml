@@ -1,0 +1,23 @@
+[project]
+name = "lag-consumer"
+version = "1.0.0"
+requires-python = ">=3.15"
+dependencies = [
+    "kafka-python==3.0.13",
+    "opentelemetry-sdk==1.45.2",
+    "opentelemetry-exporter-otlp-proto-http==1.45.2",
+    "pg8000==1.31.6",
+]
+
+[dependency-groups]
+dev = ["pytest==9.2.0", "ty==0.0.99"]
+
+[build-system]
+requires = ["uv_build>=0.10.4,<0.11"]
+build-backend = "uv_build"
+
+[project.scripts]
+lag-consumer = "lag_consumer.main:run"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

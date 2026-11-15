@@ -1,0 +1,98 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: order-producer
+  namespace: pipeline
+spec:
+  selector:
+    app: order-producer
+  ports:
+    - port: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-producer
+  namespace: pipeline
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: order-producer
+  template:
+    metadata:
+      labels:
+        app: order-producer
+    spec:
+      containers:
+        - name: producer
+          image: localhost/otel-lag-producer:v1
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          env:
+            - name: KAFKA_BOOTSTRAP
+              value: kafka:9092
+            - name: OTLP_TRACES_ENDPOINT
+              value: http://otel-collector:4318/v1/traces
+            - name: JAVA_TOOL_OPTIONS
+              value: -XX:MaxRAMPercentage=70
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            periodSeconds: 3
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+            limits:
+              memory: 768Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lag-consumer
+  namespace: pipeline
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: lag-consumer
+  template:
+    metadata:
+      labels:
+        app: lag-consumer
+    spec:
+      containers:
+        - name: consumer
+          image: localhost/otel-lag-consumer:v1
+          imagePullPolicy: Never
+          env:
+            - name: KAFKA_BOOTSTRAP
+              value: kafka:9092
+            - name: TOPIC
+              value: orders
+            - name: GROUP
+              value: lag-consumer
+            - name: PG_HOST
+              value: postgres
+            - name: PG_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres
+                  key: password
+            - name: SLOWDOWN_MS
+              value: "0"
+            - name: OTEL_SERVICE_NAME
+              value: lag-consumer
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://otel-collector:4318
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              memory: 512Mi

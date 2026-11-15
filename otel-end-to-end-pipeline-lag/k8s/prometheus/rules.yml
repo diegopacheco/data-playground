@@ -1,0 +1,60 @@
+groups:
+  - name: pipeline-freshness-slo
+    rules:
+      - record: pipeline:slo_target:ratio
+        expr: vector(0.99)
+
+      - record: pipeline:lag_seconds:p50_1m
+        expr: histogram_quantile(0.50, sum by (le) (rate(pipeline_e2e_lag_seconds_bucket[1m])))
+      - record: pipeline:lag_seconds:p95_1m
+        expr: histogram_quantile(0.95, sum by (le) (rate(pipeline_e2e_lag_seconds_bucket[1m])))
+      - record: pipeline:lag_seconds:p99_1m
+        expr: histogram_quantile(0.99, sum by (le) (rate(pipeline_e2e_lag_seconds_bucket[1m])))
+
+      - record: pipeline:slo_errors:ratio_rate30s
+        expr: 1 - sum(rate(pipeline_e2e_lag_seconds_bucket{le="2.0"}[30s])) / sum(rate(pipeline_e2e_lag_seconds_count[30s]))
+      - record: pipeline:slo_errors:ratio_rate1m
+        expr: 1 - sum(rate(pipeline_e2e_lag_seconds_bucket{le="2.0"}[1m])) / sum(rate(pipeline_e2e_lag_seconds_count[1m]))
+      - record: pipeline:slo_errors:ratio_rate5m
+        expr: 1 - sum(rate(pipeline_e2e_lag_seconds_bucket{le="2.0"}[5m])) / sum(rate(pipeline_e2e_lag_seconds_count[5m]))
+
+      - record: pipeline:slo_attainment:ratio_rate5m
+        expr: 1 - pipeline:slo_errors:ratio_rate5m
+      - record: pipeline:slo_error_budget_remaining:ratio_rate5m
+        expr: 1 - pipeline:slo_errors:ratio_rate5m / 0.01
+
+      - record: pipeline:slo_burn_rate:30s
+        expr: pipeline:slo_errors:ratio_rate30s / 0.01
+      - record: pipeline:slo_burn_rate:1m
+        expr: pipeline:slo_errors:ratio_rate1m / 0.01
+      - record: pipeline:slo_burn_rate:5m
+        expr: pipeline:slo_errors:ratio_rate5m / 0.01
+
+      - record: pipeline:consumer_group_lag:sum
+        expr: sum(kafka_consumer_group_lag{group="lag-consumer"})
+
+  - name: pipeline-freshness-alerts
+    rules:
+      - alert: PipelineFreshnessFastBurn
+        expr: pipeline:slo_burn_rate:1m > 14.4 and pipeline:slo_burn_rate:30s > 14.4
+        for: 10s
+        labels:
+          severity: page
+        annotations:
+          summary: Freshness SLO burning error budget over 14.4x, the 5 minute budget is gone in under 21 seconds
+
+      - alert: PipelineFreshnessSlowBurn
+        expr: pipeline:slo_burn_rate:5m > 6 and pipeline:slo_burn_rate:1m > 6
+        for: 30s
+        labels:
+          severity: ticket
+        annotations:
+          summary: Freshness SLO burning error budget over 6x on the 5 minute and 1 minute windows
+
+      - alert: PipelineConsumerGroupLagHigh
+        expr: pipeline:consumer_group_lag:sum > 200
+        for: 15s
+        labels:
+          severity: ticket
+        annotations:
+          summary: Consumer group lag-consumer is more than 200 messages behind

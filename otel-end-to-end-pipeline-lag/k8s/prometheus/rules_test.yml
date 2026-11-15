@@ -1,0 +1,96 @@
+rule_files:
+  - rules.yml
+
+evaluation_interval: 5s
+
+tests:
+  - interval: 5s
+    input_series:
+      - series: 'pipeline_e2e_lag_seconds_count{job="otel-collector"}'
+        values: '0+100x84'
+      - series: 'pipeline_e2e_lag_seconds_bucket{job="otel-collector",le="2.0"}'
+        values: '0+100x24 2400+0x23 2500+100x35'
+      - series: 'kafka_consumer_group_lag{group="lag-consumer",topic="orders",partition="0"}'
+        values: '0x24 50+50x23 0x35'
+
+    promql_expr_test:
+      - expr: pipeline:slo_burn_rate:1m
+        eval_time: 1m
+        exp_samples:
+          - labels: 'pipeline:slo_burn_rate:1m'
+            value: 0
+      - expr: pipeline:slo_burn_rate:1m
+        eval_time: 3m
+        exp_samples:
+          - labels: 'pipeline:slo_burn_rate:1m'
+            value: 100
+      - expr: pipeline:slo_attainment:ratio_rate5m
+        eval_time: 1m50s
+        exp_samples:
+          - labels: 'pipeline:slo_attainment:ratio_rate5m'
+            value: 1
+      - expr: pipeline:slo_error_budget_remaining:ratio_rate5m
+        eval_time: 1m50s
+        exp_samples:
+          - labels: 'pipeline:slo_error_budget_remaining:ratio_rate5m'
+            value: 1
+
+    alert_rule_test:
+      - alertname: PipelineFreshnessFastBurn
+        eval_time: 1m50s
+        exp_alerts: []
+      - alertname: PipelineFreshnessFastBurn
+        eval_time: 2m5s
+        exp_alerts: []
+      - alertname: PipelineFreshnessFastBurn
+        eval_time: 2m30s
+        exp_alerts:
+          - exp_labels:
+              severity: page
+            exp_annotations:
+              summary: Freshness SLO burning error budget over 14.4x, the 5 minute budget is gone in under 21 seconds
+      - alertname: PipelineFreshnessFastBurn
+        eval_time: 3m50s
+        exp_alerts:
+          - exp_labels:
+              severity: page
+            exp_annotations:
+              summary: Freshness SLO burning error budget over 14.4x, the 5 minute budget is gone in under 21 seconds
+      - alertname: PipelineFreshnessFastBurn
+        eval_time: 4m40s
+        exp_alerts: []
+      - alertname: PipelineFreshnessSlowBurn
+        eval_time: 3m
+        exp_alerts:
+          - exp_labels:
+              severity: ticket
+            exp_annotations:
+              summary: Freshness SLO burning error budget over 6x on the 5 minute and 1 minute windows
+      - alertname: PipelineFreshnessSlowBurn
+        eval_time: 5m15s
+        exp_alerts: []
+      - alertname: PipelineConsumerGroupLagHigh
+        eval_time: 3m30s
+        exp_alerts:
+          - exp_labels:
+              severity: ticket
+            exp_annotations:
+              summary: Consumer group lag-consumer is more than 200 messages behind
+      - alertname: PipelineConsumerGroupLagHigh
+        eval_time: 1m
+        exp_alerts: []
+
+  - interval: 5s
+    input_series:
+      - series: 'pipeline_e2e_lag_seconds_count{job="otel-collector"}'
+        values: '0+100x36'
+      - series: 'pipeline_e2e_lag_seconds_bucket{job="otel-collector",le="2.0"}'
+        values: '0+100x24 2400 2500+100x10'
+
+    alert_rule_test:
+      - alertname: PipelineFreshnessFastBurn
+        eval_time: 2m20s
+        exp_alerts: []
+      - alertname: PipelineFreshnessFastBurn
+        eval_time: 2m30s
+        exp_alerts: []
