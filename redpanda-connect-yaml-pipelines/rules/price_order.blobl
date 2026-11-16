@@ -1,0 +1,16 @@
+let pct = match this.customer.tier {
+  "gold" => 10,
+  "silver" => 5,
+  _ => 0
+}
+let total = this.qty * this.unit_price_cents
+let discount = ($total * $pct / 100).floor()
+let net = $total - $discount
+root = this.without("customer").assign({
+  "customer_name": this.customer.name,
+  "tier": this.customer.tier,
+  "total_cents": $total,
+  "discount_cents": $discount,
+  "net_cents": $net,
+  "priority": if $net >= 50000 { "high" } else { "normal" }
+})

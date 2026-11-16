@@ -1,0 +1,115 @@
+name: t5-redpanda-connect-yaml-pipelines
+
+services:
+  t5-redpanda:
+    image: docker.io/redpandadata/redpanda:v26.2.6
+    container_name: t5-redpanda
+    hostname: t5-redpanda
+    command:
+      - redpanda
+      - start
+      - --mode=dev-container
+      - --smp=1
+      - --memory=512M
+      - --reserve-memory=0M
+      - --overprovisioned
+      - --default-log-level=warn
+      - --kafka-addr=internal://0.0.0.0:9092,external://0.0.0.0:19092
+      - --advertise-kafka-addr=internal://t5-redpanda:9092,external://localhost:${kafka:-31402}
+      - --pandaproxy-addr=0.0.0.0:8082
+      - --advertise-pandaproxy-addr=t5-redpanda:8082
+      - --rpc-addr=t5-redpanda:33145
+      - --advertise-rpc-addr=t5-redpanda:33145
+    mem_limit: 768m
+    cpus: 1
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${kafka:-31402}:19092"
+      - "127.0.0.1:${proxy:-31403}:8082"
+    volumes:
+      - t5-redpanda-data:/var/lib/redpanda/data
+    networks:
+      - t5-net
+
+  t5-postgres:
+    image: docker.io/library/postgres:18.6-alpine
+    container_name: t5-postgres
+    hostname: t5-postgres
+    environment:
+      POSTGRES_USER: connect
+      POSTGRES_PASSWORD: connect
+      POSTGRES_DB: orders
+    mem_limit: 256m
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${postgres:-31404}:5432"
+    volumes:
+      - ./conf/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - t5-postgres-data:/var/lib/postgresql
+    networks:
+      - t5-net
+
+  t5-connect:
+    image: docker.io/redpandadata/connect:4.115.1
+    container_name: t5-connect
+    hostname: t5-connect
+    command: ["streams", "--bind-http", "--disable-telemetry", "-o", "/connect/conf/connect.yaml", "-r", "/connect/resources/*.yaml", "/connect/pipelines/orders.yaml", "/connect/pipelines/customers.yaml"]
+    environment:
+      PG_DSN: postgres://connect:connect@t5-postgres:5432/orders?sslmode=disable
+      KAFKA_BROKERS: t5-redpanda:9092
+    mem_limit: 256m
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${connect:-31401}:4195"
+    volumes:
+      - ./conf/connect.yaml:/connect/conf/connect.yaml:ro
+      - ./resources:/connect/resources:ro
+      - ./pipelines:/connect/pipelines:ro
+      - ./rules:/connect/rules:ro
+      - ./data:/connect/data:ro
+      - t5-connect-out:/connect/out
+    networks:
+      - t5-net
+    depends_on:
+      - t5-redpanda
+      - t5-postgres
+
+  t5-ui:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: t5-redpanda-connect-yaml-pipelines:latest
+    container_name: t5-ui
+    hostname: t5-ui
+    environment:
+      UI_PORT: "8080"
+      CONNECT_URL: http://t5-connect:4195
+      PROXY_URL: http://t5-redpanda:8082
+      PG_DSN: postgresql://connect:connect@t5-postgres:5432/orders
+      PIPELINES_DIR: /srv/pipelines
+      OUT_DIR: /srv/out
+    mem_limit: 256m
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${ui:-31400}:8080"
+    volumes:
+      - ./pipelines:/srv/pipelines:ro
+      - ./rules:/srv/rules:ro
+      - ./resources:/srv/resources:ro
+      - t5-connect-out:/srv/out:ro
+    networks:
+      - t5-net
+    depends_on:
+      - t5-connect
+
+volumes:
+  t5-redpanda-data:
+    name: t5-redpanda-data
+  t5-postgres-data:
+    name: t5-postgres-data
+  t5-connect-out:
+    name: t5-connect-out
+
+networks:
+  t5-net:
+    name: t5-net

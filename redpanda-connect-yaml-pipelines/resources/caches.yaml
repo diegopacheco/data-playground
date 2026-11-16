@@ -1,0 +1,4 @@
+cache_resources:
+  - label: seen_orders
+    memory:
+      default_ttl: 24h

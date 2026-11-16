@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Redpanda Connect YAML Pipelines</title>
+<style>
+:root{--bg:#f7f8fb;--card:#fff;--ink:#1d2433;--muted:#667085;--line:#e4e7ec;--accent:#e2401b;--ok:#12b76a;--bad:#f04438;--soft:#fff1ec}
+*{box-sizing:border-box}
+body{margin:0;font:14px/1.5 system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:var(--card);border-bottom:1px solid var(--line);padding:16px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+header h1{font-size:18px;margin:0}
+header .sub{color:var(--muted)}
+header button{margin-left:auto}
+nav{display:flex;gap:4px;padding:0 24px;background:var(--card);border-bottom:1px solid var(--line);overflow-x:auto}
+nav button{border:0;background:none;padding:12px 14px;font:inherit;color:var(--muted);border-bottom:2px solid transparent;cursor:pointer}
+nav button.on{color:var(--ink);border-color:var(--accent);font-weight:600}
+main{padding:20px 24px;max-width:1280px;margin:0 auto}
+section{display:none}
+section.on{display:block}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin-bottom:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:16px;min-width:0}
+.card h3{margin:0 0 4px;font-size:15px}
+.card p{margin:0 0 12px;color:var(--muted)}
+button.act{background:var(--accent);color:#fff;border:0;border-radius:6px;padding:8px 14px;font:inherit;cursor:pointer}
+button.act:disabled{opacity:.5}
+.kv{display:flex;gap:22px;flex-wrap:wrap;margin:6px 0}
+.kv div b{display:block;font-size:22px}
+.kv div span{color:var(--muted);font-size:12px}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{text-align:left;padding:5px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:500}
+td.n{text-align:right;font-variant-numeric:tabular-nums}
+.badge{display:inline-block;padding:1px 8px;border-radius:10px;font-size:12px}
+.b-ok{background:#d1f3e1;color:#067647}
+.b-bad{background:#fee4e2;color:#b42318}
+.b-info{background:#e8eefc;color:#1d4ed8}
+.b-warn{background:#fef0c7;color:#93370d}
+.files{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.files button{border:1px solid var(--line);background:var(--card);border-radius:6px;padding:5px 10px;font:inherit;font-size:13px;cursor:pointer}
+.files button.on{border-color:var(--accent);background:var(--soft)}
+pre{background:#0f172a;color:#e2e8f0;padding:14px;border-radius:8px;overflow:auto;max-height:520px;font-size:12.5px;margin:0}
+.flow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:8px 0 4px}
+.step{border:1px solid var(--line);border-radius:8px;padding:6px 10px;background:var(--soft);font-size:12px}
+.step b{display:block;font-size:16px}
+.arrow{color:var(--muted)}
+.scroll{max-height:380px;overflow:auto}
+.err{color:var(--bad);white-space:pre-wrap}
+code{background:#f2f4f7;padding:1px 5px;border-radius:4px}
+select{font:inherit;padding:6px;border-radius:6px;border:1px solid var(--line)}
+.bar{height:8px;background:var(--accent);border-radius:4px;min-width:2px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Redpanda Connect YAML Pipelines</h1>
+  <span class="sub">HTTP and file inputs, Bloblang rules, dedupe, enrichment, batching, topics, dead letters, Postgres and a file sink</span>
+  <button class="act" id="send">Send seeded batch</button>
+</header>
+<nav id="tabs">
+  <button data-tab="pipelines" class="on">Pipelines</button>
+  <button data-tab="metrics">Metrics</button>
+  <button data-tab="outputs">Outputs</button>
+</nav>
+<main>
+  <div id="error" class="err"></div>
+  <section id="pipelines" class="on"></section>
+  <section id="metrics"></section>
+  <section id="outputs"></section>
+</main>
+<script>
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+const money = (c) => (c / 100).toFixed(2);
+let currentFile = "pipelines/orders.yaml";
+let currentRun = null;
+
+async function api(path, method) {
+  const r = await fetch(path, {method: method || "GET"});
+  const body = await r.json();
+  if (!r.ok) throw new Error(body.error || r.statusText);
+  return body;
+}
+
+function stats(pairs) {
+  return `<div class="kv">${pairs.map(([k, v]) => `<div><b>${esc(v)}</b><span>${esc(k)}</span></div>`).join("")}</div>`;
+}
+
+function table(cols, rows) {
+  return `<table><tr>${cols.map((c) => `<th>${esc(c[0])}</th>`).join("")}</tr>${rows.map((r) =>
+    `<tr>${cols.map((c) => `<td class="${c[2] || ""}">${c[1](r)}</td>`).join("")}</tr>`).join("")}</table>`;
+}
+
+async function renderPipelines() {
+  const p = await api("/api/pipelines");
+  const cards = Object.entries(p.streams).map(([name, s]) => `<div class="card"><h3>stream <code>${esc(name)}</code></h3>
+    <p>${name === "orders" ? "http_server POST /orders/ingest to topics, Postgres and a file" : "file input reads data/customers.csv once into Postgres"}</p>
+    ${stats([["state", s.active ? "active" : "finished"], ["uptime", s.uptime_str.replace(/\.\d+s$/, "s")]])}
+    <span class="badge ${s.active ? "b-ok" : "b-info"}">${s.active ? "running" : "input drained, stream closed"}</span></div>`).join("");
+  const names = Object.keys(p.files);
+  $("pipelines").innerHTML = `<div class="grid">${cards}</div>
+    <div class="card"><h3>Configuration, all YAML and Bloblang</h3><p>Every pipeline is only these files, mounted read-only into <code>t5-connect</code>.</p>
+    <div class="files">${names.map((n) => `<button data-file="${esc(n)}" class="${n === currentFile ? "on" : ""}">${esc(n)}</button>`).join("")}</div>
+    <pre>${esc(p.files[currentFile] || "")}</pre></div>
+    <div class="card"><h3>Postgres <code>customers</code> (loaded by the file input stream)</h3>
+    ${table([["id", (r) => esc(r.id)], ["name", (r) => esc(r.name)], ["tier", (r) => esc(r.tier)], ["country", (r) => esc(r.country)]], p.customers)}</div>`;
+  document.querySelectorAll("[data-file]").forEach((b) => b.onclick = () => { currentFile = b.dataset.file; renderPipelines(); });
+}
+
+function find(rows, label) {
+  return rows.find((r) => r.label === label) || {};
+}
+
+async function renderMetrics() {
+  const rows = await api("/api/metrics");
+  const orders = rows.filter((r) => r.stream === "orders");
+  const v = (label, k) => find(orders, label)[k] || 0;
+  const flow = [
+    ["requests", v("orders_http", "received")],
+    ["split", v("validate", "received")],
+    ["valid", v("validate", "received") - v("validate", "error")],
+    ["not loadtest", v("drop_loadtest", "sent")],
+    ["unique", v("dedupe_by_id", "sent")],
+    ["enriched", v("enrich_customer", "sent") - v("enrich_customer", "error")],
+    ["to topic", v("clean_topic", "sent")],
+  ];
+  const max = Math.max(1, ...rows.map((r) => Math.max(r.received || 0, r.sent || 0)));
+  $("metrics").innerHTML = `<div class="card"><h3>orders stream, message counts from <code>/connect/metrics</code></h3>
+    <p>Prometheus counters of Redpanda Connect, labelled by the <code>label</code> of every component in the YAML.</p>
+    <div class="flow">${flow.map(([k, n], i) => `${i ? '<span class="arrow">&rarr;</span>' : ""}<div class="step"><b>${n}</b>${esc(k)}</div>`).join("")}</div>
+    ${stats([["dead letters", v("dead_letter_topic", "sent")], ["rows in postgres", v("postgres_orders", "sent")], ["lines in priority file", v("priority_file", "sent")],
+      ["duplicates dropped", v("dedupe_by_id", "received") - v("dedupe_by_id", "sent")], ["loadtest dropped", v("drop_loadtest", "received") - v("drop_loadtest", "sent")]])}</div>
+    <div class="card"><h3>Every component</h3>
+    ${table([["stream", (r) => esc(r.stream)], ["kind", (r) => `<span class="badge ${r.kind === "input" ? "b-info" : r.kind === "output" ? "b-ok" : "b-warn"}">${esc(r.kind)}</span>`],
+      ["label", (r) => `<code>${esc(r.label)}</code>`], ["path", (r) => esc(r.path.replace(/^root\./, ""))],
+      ["received", (r) => r.received ?? "", "n"], ["sent", (r) => r.sent ?? "", "n"], ["errors", (r) => r.error ? `<span class="badge b-bad">${r.error}</span>` : (r.error ?? ""), "n"],
+      ["", (r) => `<div class="bar" style="width:${Math.round(100 * Math.max(r.received || 0, r.sent || 0) / max)}px"></div>`]], rows)}</div>`;
+}
+
+async function renderOutputs() {
+  const runs = await api("/api/runs");
+  if (!currentRun && runs.length) currentRun = runs[0].run_id;
+  if (!currentRun) {
+    $("outputs").innerHTML = `<div class="card"><p>No run yet. Press <b>Send seeded batch</b>.</p></div>`;
+    return;
+  }
+  const o = await api(`/api/outputs?run=${encodeURIComponent(currentRun)}`);
+  const clean = o.clean_topic.map((r) => ({...r.value, partition: r.partition, offset: r.offset}));
+  const high = clean.filter((r) => r.priority === "high").length;
+  $("outputs").innerHTML = `<div class="card"><h3>Run <select id="run">${runs.map((r) =>
+      `<option ${r.run_id === currentRun ? "selected" : ""}>${esc(r.run_id)}</option>`).join("")}</select></h3>
+    ${stats([["orders-clean topic", o.clean_topic.length], ["orders-dlq topic", o.dead_letter_topic.length], ["postgres orders rows", o.postgres_orders.length],
+      ["priority file lines", o.priority_file.length], ["high in topic", high]])}</div>
+    <div class="grid">
+    <div class="card"><h3>Topic <code>orders-clean</code></h3><p>key = order id, 3 partitions, enriched and priced</p><div class="scroll">
+    ${table([["p/off", (r) => `${r.partition}/${r.offset}`], ["id", (r) => esc(r.id.split("-").pop())], ["customer", (r) => esc(r.customer_name)],
+      ["tier", (r) => esc(r.tier)], ["qty", (r) => r.qty, "n"], ["net", (r) => money(r.net_cents), "n"],
+      ["priority", (r) => `<span class="badge ${r.priority === "high" ? "b-warn" : "b-info"}">${r.priority}</span>`]], clean)}</div></div>
+    <div class="card"><h3>Topic <code>orders-dlq</code></h3><p>error from the failing step and the original payload</p><div class="scroll">
+    ${table([["id", (r) => esc((r.value.id || "(none)").split("-").pop())], ["error", (r) => `<span class="badge b-bad">${esc(r.value.error.replace(/^.*: /, ""))}</span>`],
+      ["payload", (r) => `<code>${esc(r.value.payload.slice(0, 70))}</code>`]], o.dead_letter_topic)}</div></div>
+    </div><div class="grid">
+    <div class="card"><h3>Postgres <code>orders</code></h3><p>sql_insert, batches of 50 or every 1 s</p><div class="scroll">
+    ${table([["id", (r) => esc(r.id.split("-").pop())], ["customer", (r) => esc(r.customer_id)], ["country", (r) => esc(r.country)], ["total", (r) => money(r.total_cents), "n"],
+      ["discount", (r) => money(r.discount_cents), "n"], ["net", (r) => money(r.net_cents), "n"]], o.postgres_orders)}</div></div>
+    <div class="card"><h3>File <code>out/priority/${esc(currentRun)}.jsonl</code></h3><p>net of 500.00 or more, one JSON line each</p><div class="scroll">
+    ${table([["id", (r) => esc(r.id.split("-").pop())], ["customer", (r) => esc(r.customer_name)], ["email", (r) => esc(r.email)], ["net", (r) => money(r.net_cents), "n"]], o.priority_file)}</div></div>
+    </div>`;
+  $("run").onchange = (e) => { currentRun = e.target.value; renderOutputs(); };
+}
+
+const renderers = {pipelines: renderPipelines, metrics: renderMetrics, outputs: renderOutputs};
+let active = "pipelines";
+
+async function render() {
+  try {
+    $("error").textContent = "";
+    await renderers[active]();
+  } catch (e) {
+    $("error").textContent = e.message;
+  }
+}
+
+document.querySelectorAll("#tabs button").forEach((b) => b.onclick = () => {
+  document.querySelectorAll("#tabs button, section").forEach((x) => x.classList.remove("on"));
+  b.classList.add("on");
+  active = b.dataset.tab;
+  $(active).classList.add("on");
+  history.replaceState(null, "", `#${active}`);
+  render();
+});
+
+$("send").onclick = async () => {
+  $("send").disabled = true;
+  try {
+    const r = await api("/api/send", "POST");
+    currentRun = r.run_id;
+  } catch (e) {
+    $("error").textContent = e.message;
+  }
+  $("send").disabled = false;
+  render();
+};
+
+const start = location.hash.slice(1);
+if (renderers[start]) document.querySelector(`[data-tab="${start}"]`).click(); else render();
+</script>
+</body>
+</html>

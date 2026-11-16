@@ -1,0 +1,17 @@
+root = match {
+  this.type() != "object" => throw("record is not a json object"),
+  this.id.or("") == "" => throw("missing id"),
+  !this.customer_id.or("").string().re_match("^c[0-9]{3}$") => throw("invalid customer_id"),
+  this.qty.type() != "number" => throw("qty must be an integer between 1 and 100"),
+  this.qty < 1 || this.qty > 100 || this.qty.round() != this.qty => throw("qty must be an integer between 1 and 100"),
+  this.unit_price_cents.type() != "number" => throw("unit_price_cents must be a positive integer"),
+  this.unit_price_cents < 1 || this.unit_price_cents.round() != this.unit_price_cents => throw("unit_price_cents must be a positive integer"),
+  !this.email.or("").string().contains("@") => throw("invalid email"),
+  !["US", "BR", "DE", "JP"].contains(this.country.or("").string().uppercase()) => throw("unsupported country"),
+  _ => this.assign({
+    "email": this.email.trim().lowercase(),
+    "country": this.country.uppercase(),
+    "sku": this.sku.or("UNKNOWN"),
+    "channel": this.channel.or("web")
+  })
+}

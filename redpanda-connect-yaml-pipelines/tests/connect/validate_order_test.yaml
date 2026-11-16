@@ -1,0 +1,47 @@
+tests:
+  - name: a valid order is normalized, email lowercased, country uppercased, defaults filled
+    target_mapping: ../../rules/validate_order.blobl
+    input_batch:
+      - content: '{"id":"o-1","run_id":"r","customer_id":"c001","qty":2,"unit_price_cents":1500,"email":"  Ana@Mail.COM ","country":"br"}'
+    output_batches:
+      - - json_equals: {"id":"o-1","run_id":"r","customer_id":"c001","qty":2,"unit_price_cents":1500,"email":"ana@mail.com","country":"BR","sku":"UNKNOWN","channel":"web"}
+
+  - name: a missing id is rejected before any other rule
+    target_mapping: ../../rules/validate_order.blobl
+    input_batch:
+      - content: '{"customer_id":"bad","qty":0,"unit_price_cents":0,"email":"x","country":"FR"}'
+    output_batches:
+      - - bloblang: 'errored() && error().contains("missing id")'
+
+  - name: a customer id outside the c000 pattern is rejected
+    target_mapping: ../../rules/validate_order.blobl
+    input_batch:
+      - content: '{"id":"o-2","customer_id":"C1","qty":1,"unit_price_cents":100,"email":"a@b.c","country":"US"}'
+    output_batches:
+      - - bloblang: 'errored() && error().contains("invalid customer_id")'
+
+  - name: qty must be a whole number between 1 and 100
+    target_mapping: ../../rules/validate_order.blobl
+    input_batch:
+      - content: '{"id":"o-3","customer_id":"c001","qty":0,"unit_price_cents":100,"email":"a@b.c","country":"US"}'
+      - content: '{"id":"o-4","customer_id":"c001","qty":101,"unit_price_cents":100,"email":"a@b.c","country":"US"}'
+      - content: '{"id":"o-5","customer_id":"c001","qty":1.5,"unit_price_cents":100,"email":"a@b.c","country":"US"}'
+      - content: '{"id":"o-6","customer_id":"c001","qty":"3","unit_price_cents":100,"email":"a@b.c","country":"US"}'
+      - content: '{"id":"o-7","customer_id":"c001","qty":100,"unit_price_cents":100,"email":"a@b.c","country":"US"}'
+    output_batches:
+      - - bloblang: 'errored() && error().contains("qty must be")'
+        - bloblang: 'errored() && error().contains("qty must be")'
+        - bloblang: 'errored() && error().contains("qty must be")'
+        - bloblang: 'errored() && error().contains("qty must be")'
+        - bloblang: '!errored() && this.qty == 100'
+
+  - name: price, email and country rules are checked in that order
+    target_mapping: ../../rules/validate_order.blobl
+    input_batch:
+      - content: '{"id":"o-8","customer_id":"c001","qty":1,"unit_price_cents":0,"email":"nope","country":"FR"}'
+      - content: '{"id":"o-9","customer_id":"c001","qty":1,"unit_price_cents":10,"email":"nope","country":"FR"}'
+      - content: '{"id":"o-10","customer_id":"c001","qty":1,"unit_price_cents":10,"email":"a@b.c","country":"FR"}'
+    output_batches:
+      - - bloblang: 'errored() && error().contains("unit_price_cents must be a positive integer")'
+        - bloblang: 'errored() && error().contains("invalid email")'
+        - bloblang: 'errored() && error().contains("unsupported country")'

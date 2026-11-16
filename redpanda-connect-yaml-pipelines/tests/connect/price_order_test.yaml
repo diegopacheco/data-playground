@@ -1,0 +1,28 @@
+tests:
+  - name: gold gets 10 percent off, rounded down to the cent, and crosses the high priority line at 50000
+    target_mapping: ../../rules/price_order.blobl
+    input_batch:
+      - content: '{"id":"o-1","qty":3,"unit_price_cents":18519,"customer":{"name":"Ana Souza","tier":"gold"}}'
+    output_batches:
+      - - json_equals: {"id":"o-1","qty":3,"unit_price_cents":18519,"customer_name":"Ana Souza","tier":"gold","total_cents":55557,"discount_cents":5555,"net_cents":50002,"priority":"high"}
+
+  - name: the same total under silver gets 5 percent off
+    target_mapping: ../../rules/price_order.blobl
+    input_batch:
+      - content: '{"id":"o-2","qty":3,"unit_price_cents":18519,"customer":{"name":"Bruno Lima","tier":"silver"}}'
+    output_batches:
+      - - json_equals: {"id":"o-2","qty":3,"unit_price_cents":18519,"customer_name":"Bruno Lima","tier":"silver","total_cents":55557,"discount_cents":2777,"net_cents":52780,"priority":"high"}
+
+  - name: bronze has no discount and a net just under 50000 stays normal
+    target_mapping: ../../rules/price_order.blobl
+    input_batch:
+      - content: '{"id":"o-3","qty":1,"unit_price_cents":49999,"customer":{"name":"Carla Mendes","tier":"bronze"}}'
+    output_batches:
+      - - json_equals: {"id":"o-3","qty":1,"unit_price_cents":49999,"customer_name":"Carla Mendes","tier":"bronze","total_cents":49999,"discount_cents":0,"net_cents":49999,"priority":"normal"}
+
+  - name: a discount can push a high total under the priority line
+    target_mapping: ../../rules/price_order.blobl
+    input_batch:
+      - content: '{"id":"o-4","qty":2,"unit_price_cents":26000,"customer":{"name":"Dave Miller","tier":"gold"}}'
+    output_batches:
+      - - json_contains: {"total_cents":52000,"discount_cents":5200,"net_cents":46800,"priority":"normal"}

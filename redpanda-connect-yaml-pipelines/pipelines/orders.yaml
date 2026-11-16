@@ -1,0 +1,96 @@
+input:
+  label: orders_http
+  http_server:
+    path: /ingest
+    allowed_verbs: [POST]
+    timeout: 30s
+
+pipeline:
+  threads: 1
+  processors:
+    - label: split_batch
+      unarchive:
+        format: json_array
+    - label: guard
+      try:
+        - label: validate
+          mapping: 'from "/connect/rules/validate_order.blobl"'
+        - label: drop_loadtest
+          mapping: 'root = if this.channel == "loadtest" { deleted() } else { this }'
+        - label: dedupe_by_id
+          dedupe:
+            cache: seen_orders
+            key: '${! json("id") }'
+        - label: enrich_customer
+          branch:
+            request_map: 'root = [this.customer_id]'
+            processors:
+              - label: lookup_customer
+                sql_select:
+                  driver: postgres
+                  dsn: ${PG_DSN}
+                  table: customers
+                  columns: [name, tier]
+                  where: id = $1
+                  args_mapping: 'root = this'
+            result_map: 'root.customer = if this.length() == 0 { throw("unknown customer") } else { this.index(0) }'
+        - label: price
+          mapping: 'from "/connect/rules/price_order.blobl"'
+
+output:
+  label: route
+  switch:
+    cases:
+      - check: errored()
+        output:
+          label: dead_letter_topic
+          redpanda:
+            seed_brokers: [${KAFKA_BROKERS}]
+            topic: orders-dlq
+            key: '${! json("id").catch("") }'
+            batching:
+              count: 50
+              period: 500ms
+          processors:
+            - label: dead_letter_envelope
+              mapping: |
+                root.id = this.id.catch(null)
+                root.run_id = this.run_id.catch(null)
+                root.error = error()
+                root.payload = content().string()
+      - output:
+          label: valid_fan_out
+          broker:
+            pattern: fan_out
+            outputs:
+              - label: clean_topic
+                redpanda:
+                  seed_brokers: [${KAFKA_BROKERS}]
+                  topic: orders-clean
+                  key: '${! json("id") }'
+                  batching:
+                    count: 50
+                    period: 500ms
+              - label: postgres_orders
+                sql_insert:
+                  driver: postgres
+                  dsn: ${PG_DSN}
+                  table: orders
+                  columns: [id, run_id, customer_id, customer_name, tier, sku, qty, unit_price_cents, total_cents, discount_cents, net_cents, priority, country, email, channel]
+                  args_mapping: 'root = [this.id, this.run_id, this.customer_id, this.customer_name, this.tier, this.sku, this.qty, this.unit_price_cents, this.total_cents, this.discount_cents, this.net_cents, this.priority, this.country, this.email, this.channel]'
+                  suffix: ON CONFLICT (id) DO NOTHING
+                  batching:
+                    count: 50
+                    period: 1s
+              - label: priority_router
+                switch:
+                  cases:
+                    - check: this.priority == "high"
+                      output:
+                        label: priority_file
+                        file:
+                          path: '/connect/out/priority/${! json("run_id") }.jsonl'
+                          codec: lines
+                    - output:
+                        label: normal_skips_file
+                        drop: {}

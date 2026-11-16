@@ -1,0 +1,53 @@
+tests:
+  - name: one request is split, filtered, deduped, enriched and priced, failures stay in place flagged
+    target_processors: ../../pipelines/orders.yaml#/pipeline/processors
+    environment:
+      PG_DSN: postgres://unused
+      KAFKA_BROKERS: unused:9092
+    mocks:
+      lookup_customer:
+        mapping: |
+          root = match this.index(0) {
+            "c001" => [{"name": "Ana Souza", "tier": "gold"}],
+            "c003" => [{"name": "Carla Mendes", "tier": "bronze"}],
+            _ => []
+          }
+    input_batch:
+      - content: |
+          [
+            {"id":"u-1","run_id":"u","customer_id":"c001","sku":"SKU-01","qty":3,"unit_price_cents":18519,"email":"Ana@Mail.com","country":"br","channel":"web"},
+            {"id":"u-2","run_id":"u","customer_id":"c003","sku":"SKU-02","qty":0,"unit_price_cents":100,"email":"c@mail.com","country":"BR","channel":"web"},
+            {"id":"u-3","run_id":"u","customer_id":"c003","sku":"SKU-03","qty":1,"unit_price_cents":100,"email":"c@mail.com","country":"BR","channel":"loadtest"},
+            {"id":"u-1","run_id":"u","customer_id":"c001","sku":"SKU-01","qty":9,"unit_price_cents":1,"email":"ana@mail.com","country":"BR","channel":"web"},
+            {"id":"u-4","run_id":"u","customer_id":"c099","sku":"SKU-04","qty":1,"unit_price_cents":100,"email":"z@mail.com","country":"JP","channel":"mobile"},
+            {"id":"u-5","run_id":"u","customer_id":"c003","sku":"SKU-05","qty":2,"unit_price_cents":1250,"email":"c@mail.com","country":"br","channel":"mobile"}
+          ]
+    output_batches:
+      - - json_equals: {"id":"u-1","run_id":"u","customer_id":"c001","sku":"SKU-01","qty":3,"unit_price_cents":18519,"email":"ana@mail.com","country":"BR","channel":"web","customer_name":"Ana Souza","tier":"gold","total_cents":55557,"discount_cents":5555,"net_cents":50002,"priority":"high"}
+        - bloblang: 'errored() && error().contains("qty must be") && this.id == "u-2"'
+        - bloblang: 'errored() && error().contains("unknown customer") && this.id == "u-4"'
+        - json_equals: {"id":"u-5","run_id":"u","customer_id":"c003","sku":"SKU-05","qty":2,"unit_price_cents":1250,"email":"c@mail.com","country":"BR","channel":"mobile","customer_name":"Carla Mendes","tier":"bronze","total_cents":2500,"discount_cents":0,"net_cents":2500,"priority":"normal"}
+
+  - name: a body that is not a json array fails at the split and keeps the raw bytes for the dead letter topic
+    target_processors: ../../pipelines/orders.yaml#/pipeline/processors
+    environment:
+      PG_DSN: postgres://unused
+      KAFKA_BROKERS: unused:9092
+    mocks:
+      lookup_customer:
+        mapping: 'root = []'
+    input_batch:
+      - content: '{"id": "broken", oops'
+    output_batches:
+      - - content_equals: '{"id": "broken", oops'
+          bloblang: 'errored()'
+
+  - name: the dead letter envelope keeps the reason, the failing processor and the original payload
+    target_processors: ../../pipelines/orders.yaml#/output/switch/cases/0/output/processors
+    environment:
+      PG_DSN: postgres://unused
+      KAFKA_BROKERS: unused:9092
+    input_batch:
+      - content: '{"id":"d-1","run_id":"d","qty":0}'
+    output_batches:
+      - - json_contains: {"id":"d-1","run_id":"d","payload":"{\"id\":\"d-1\",\"run_id\":\"d\",\"qty\":0}"}

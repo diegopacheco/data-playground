@@ -1,0 +1,28 @@
+input:
+  label: customers_csv
+  file:
+    paths: [/connect/data/customers.csv]
+    scanner:
+      csv: {}
+
+pipeline:
+  processors:
+    - label: normalize_customer
+      mapping: |
+        root.id = this.id.trim().lowercase()
+        root.name = this.name.trim()
+        root.tier = this.tier.trim().lowercase()
+        root.country = this.country.trim().uppercase()
+
+output:
+  label: postgres_customers
+  sql_insert:
+    driver: postgres
+    dsn: ${PG_DSN}
+    table: customers
+    columns: [id, name, tier, country]
+    args_mapping: 'root = [this.id, this.name, this.tier, this.country]'
+    suffix: ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, tier = EXCLUDED.tier, country = EXCLUDED.country
+    batching:
+      count: 100
+      period: 1s
