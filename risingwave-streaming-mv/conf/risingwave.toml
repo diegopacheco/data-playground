@@ -1,0 +1,7 @@
+[server]
+telemetry_enabled = false
+
+[storage]
+compactor_memory_limit_mb = 700
+meta_cache_capacity_mb = 64
+block_cache_capacity_mb = 64

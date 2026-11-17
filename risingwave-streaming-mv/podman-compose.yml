@@ -1,0 +1,90 @@
+name: t1-risingwave-streaming-mv
+
+services:
+  t1-redpanda:
+    image: docker.io/redpandadata/redpanda:v26.2.6
+    container_name: t1-redpanda
+    hostname: t1-redpanda
+    command:
+      - redpanda
+      - start
+      - --mode
+      - dev-container
+      - --smp
+      - "1"
+      - --memory
+      - 256M
+      - --reserve-memory
+      - 0M
+      - --overprovisioned
+      - --kafka-addr
+      - internal://0.0.0.0:9092
+      - --advertise-kafka-addr
+      - internal://t1-redpanda:9092
+    mem_limit: 400m
+    cpus: 1
+    restart: unless-stopped
+    ports:
+      - "${admin:-31003}:9644"
+    volumes:
+      - t1-redpanda-data:/var/lib/redpanda/data
+    networks:
+      - t1-net
+
+  t1-risingwave:
+    image: docker.io/risingwavelabs/risingwave:v3.1.0
+    container_name: t1-risingwave
+    hostname: t1-risingwave
+    command:
+      - single_node
+      - --config-path
+      - /etc/risingwave/risingwave.toml
+      - --store-directory
+      - /data
+      - --total-memory-bytes
+      - "1073741824"
+      - --parallelism
+      - "2"
+    mem_limit: 1280m
+    cpus: 2
+    restart: unless-stopped
+    ports:
+      - "${risingwave:-31001}:4566"
+      - "${dashboard:-31002}:5691"
+    volumes:
+      - ./conf/risingwave.toml:/etc/risingwave/risingwave.toml:ro
+      - t1-risingwave-data:/data
+    networks:
+      - t1-net
+    depends_on:
+      - t1-redpanda
+
+  t1-app:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: t1-risingwave-streaming-mv:latest
+    container_name: t1-app
+    restart: unless-stopped
+    environment:
+      RW_DSN: postgresql://root@t1-risingwave:4566/dev
+      KAFKA_BOOTSTRAP: t1-redpanda:9092
+      UI_PORT: "8080"
+    mem_limit: 192m
+    ports:
+      - "${ui:-31000}:8080"
+    networks:
+      - t1-net
+    depends_on:
+      - t1-redpanda
+      - t1-risingwave
+
+volumes:
+  t1-redpanda-data:
+    name: t1-redpanda-data
+  t1-risingwave-data:
+    name: t1-risingwave-data
+
+networks:
+  t1-net:
+    name: t1-net

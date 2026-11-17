@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="560" viewBox="0 0 1100 560">
+  <defs>
+    <style>@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&amp;display=swap'); text { font-family: 'Caveat', 'Comic Sans MS', cursive; fill: #1f2933; }</style>
+    <filter id="wobble"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="3"/></filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1f2933"/></marker>
+  </defs>
+  <rect width="1100" height="560" fill="#ffffff"/>
+  <g filter="url(#wobble)" stroke="#1f2933" stroke-width="2">
+    <rect x="600" y="40" width="480" height="130" rx="14" fill="#d0ebff"/>
+    <rect x="600" y="230" width="480" height="290" rx="14" fill="#f8f9fa" stroke-dasharray="8 6"/>
+    <rect x="620" y="290" width="135" height="200" rx="10" fill="#d3f9d8"/>
+    <rect x="785" y="290" width="150" height="200" rx="10" fill="#e5dbff"/>
+    <rect x="960" y="330" width="100" height="110" rx="10" fill="#fcc2d7"/>
+    <rect x="260" y="200" width="250" height="170" rx="10" fill="#ffd8a8"/>
+    <rect x="20" y="120" width="190" height="90" rx="10" fill="#d3f9d8"/>
+    <rect x="20" y="420" width="210" height="100" rx="10" fill="#e5dbff"/>
+    <line x1="210" y1="170" x2="257" y2="225" marker-end="url(#arrow)"/>
+    <line x1="230" y1="460" x2="330" y2="373" marker-end="url(#arrow)" stroke-dasharray="6 5"/>
+    <line x1="510" y1="225" x2="597" y2="120" marker-end="url(#arrow)"/>
+    <line x1="687" y1="170" x2="687" y2="287" marker-end="url(#arrow)"/>
+    <line x1="755" y1="390" x2="782" y2="390" marker-end="url(#arrow)"/>
+    <line x1="935" y1="385" x2="957" y2="385" marker-end="url(#arrow)"/>
+    <line x1="1010" y1="330" x2="1010" y2="173" marker-end="url(#arrow)"/>
+    <line x1="510" y1="320" x2="617" y2="360" marker-end="url(#arrow)"/>
+  </g>
+  <text x="250" y="48" font-size="32" font-weight="700" text-anchor="middle">risingwave-streaming-mv</text>
+  <text x="250" y="80" font-size="19" text-anchor="middle">Kafka topics into incremental materialized views</text>
+  <text x="840" y="72" font-size="24" text-anchor="middle">t1-redpanda (Redpanda 26.2.6)</text>
+  <text x="840" y="102" font-size="18" text-anchor="middle">topics: orders, payments, region_revenue</text>
+  <text x="840" y="128" font-size="17" text-anchor="middle">1 partition each, recreated on every reset</text>
+  <text x="848" y="264" font-size="22" text-anchor="middle">t1-risingwave (3.1.0 single_node)</text>
+  <text x="687" y="318" font-size="20" text-anchor="middle">inputs</text>
+  <text x="687" y="348" font-size="16" text-anchor="middle">orders TABLE</text>
+  <text x="687" y="368" font-size="16" text-anchor="middle">pk order_id</text>
+  <text x="687" y="400" font-size="16" text-anchor="middle">payments</text>
+  <text x="687" y="420" font-size="16" text-anchor="middle">SOURCE</text>
+  <text x="687" y="452" font-size="16" text-anchor="middle">customers</text>
+  <text x="687" y="472" font-size="16" text-anchor="middle">TABLE (SQL)</text>
+  <text x="860" y="318" font-size="20" text-anchor="middle">materialized views</text>
+  <text x="860" y="348" font-size="16" text-anchor="middle">revenue per minute</text>
+  <text x="860" y="372" font-size="16" text-anchor="middle">orders enriched (join)</text>
+  <text x="860" y="396" font-size="16" text-anchor="middle">order payments (join)</text>
+  <text x="860" y="420" font-size="16" text-anchor="middle">region revenue (cascade)</text>
+  <text x="860" y="444" font-size="16" text-anchor="middle">region minute (cascade)</text>
+  <text x="860" y="474" font-size="15" text-anchor="middle">updated every 1 s barrier</text>
+  <text x="1010" y="370" font-size="20" text-anchor="middle">SINK</text>
+  <text x="1010" y="395" font-size="15" text-anchor="middle">upsert json</text>
+  <text x="1010" y="418" font-size="15" text-anchor="middle">key region</text>
+  <text x="385" y="232" font-size="24" text-anchor="middle">t1-app: server.py</text>
+  <text x="385" y="258" font-size="17" text-anchor="middle">Python 3.15, stdlib http.server</text>
+  <text x="385" y="282" font-size="17" text-anchor="middle">seeded producer (kafka-python)</text>
+  <text x="385" y="306" font-size="17" text-anchor="middle">DDL + queries (psycopg)</text>
+  <text x="385" y="330" font-size="17" text-anchor="middle">before / after snapshots</text>
+  <text x="385" y="354" font-size="17" text-anchor="middle">REST API + UI</text>
+  <text x="115" y="158" font-size="22" text-anchor="middle">browser UI</text>
+  <text x="115" y="185" font-size="17" text-anchor="middle">5 tabs, polls every 1 s</text>
+  <text x="125" y="455" font-size="22" text-anchor="middle">tests/test_mvs.py</text>
+  <text x="125" y="482" font-size="17" text-anchor="middle">expected answers recomputed</text>
+  <text x="125" y="503" font-size="17" text-anchor="middle">from app/data.py</text>
+  <text x="520" y="150" font-size="17" text-anchor="middle">produce orders,</text>
+  <text x="520" y="170" font-size="17" text-anchor="middle">payments</text>
+  <text x="745" y="205" font-size="17" text-anchor="middle">consume</text>
+  <text x="1048" y="210" font-size="17" text-anchor="middle">emit</text>
+  <text x="555" y="380" font-size="17" text-anchor="middle">SQL :4566</text>
+  <text x="380" y="432" font-size="17" text-anchor="middle">run-all, query</text>
+  <text x="550" y="545" font-size="19" text-anchor="middle">late and updated rows flow through every MV and the sink without recomputation</text>
+</svg>

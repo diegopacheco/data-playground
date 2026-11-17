@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RisingWave Streaming MVs</title>
+<style>
+:root{--bg:#f7f8fb;--card:#fff;--ink:#1d2433;--muted:#667085;--line:#e4e7ec;--accent:#1d4ed8;--soft:#eef2ff;--ok:#12b76a;--warn:#f79009;--bad:#f04438}
+*{box-sizing:border-box}
+body{margin:0;font:14px/1.5 system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:var(--card);border-bottom:1px solid var(--line);padding:16px 24px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+header h1{font-size:18px;margin:0}
+header .sub{color:var(--muted)}
+header .btns{margin-left:auto;display:flex;gap:8px}
+nav{display:flex;gap:4px;padding:0 24px;background:var(--card);border-bottom:1px solid var(--line);overflow-x:auto}
+nav button{border:0;background:none;padding:12px 14px;font:inherit;color:var(--muted);border-bottom:2px solid transparent;cursor:pointer}
+nav button.on{color:var(--ink);border-color:var(--accent);font-weight:600}
+main{padding:20px 24px;max-width:1240px;margin:0 auto}
+section{display:none}
+section.on{display:block}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:16px}
+.grid.wide{grid-template-columns:repeat(auto-fit,minmax(560px,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:16px}
+.card h3{margin:0 0 4px;font-size:15px}
+.card p{margin:0 0 12px;color:var(--muted)}
+button.act{background:var(--accent);color:#fff;border:0;border-radius:6px;padding:8px 14px;font:inherit;cursor:pointer}
+button.alt{background:#fff;color:var(--accent);border:1px solid var(--accent)}
+button.act:disabled{opacity:.5}
+.status{display:flex;gap:22px;flex-wrap:wrap;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin-bottom:16px}
+.status div b{display:block;font-size:18px}
+.status div span{color:var(--muted);font-size:12px}
+.bar{height:8px;background:#f2f4f7;border-radius:4px;overflow:hidden;width:220px}
+.bar i{display:block;height:100%;background:var(--accent);transition:width .3s}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{text-align:left;padding:5px 8px;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font-weight:500}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+.scroll{max-height:420px;overflow:auto}
+.badge{display:inline-block;padding:1px 8px;border-radius:10px;font-size:12px}
+.b-ok{background:#d1f3e1;color:#067647}
+.b-warn{background:#fef0c7;color:#93370d}
+.b-bad{background:#fee4e2;color:#b42318}
+.b-info{background:var(--soft);color:var(--accent)}
+@keyframes flash{from{background:#fde68a}to{background:transparent}}
+tr.flash td{animation:flash 1.6s ease-out}
+.dag{display:flex;gap:14px;align-items:stretch;overflow-x:auto;padding:4px 0}
+.col{display:flex;flex-direction:column;gap:8px;justify-content:center;min-width:170px}
+.col h4{margin:0;color:var(--muted);font-weight:500;font-size:12px;text-transform:uppercase}
+.obj{border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:#fff}
+.obj b{display:block;font-size:13px}
+.obj span{color:var(--muted);font-size:12px}
+.obj.topic{background:#fff7ed}
+.obj.table,.obj.source{background:#ecfdf3}
+.obj.mv{background:var(--soft)}
+.obj.sink{background:#fdf2fa}
+.arrow{align-self:center;color:var(--muted);font-size:20px}
+pre{background:#f8fafc;border:1px solid var(--line);border-radius:8px;padding:10px;font-size:12px;overflow:auto;margin:6px 0 12px}
+.bars{display:flex;align-items:flex-end;gap:6px;height:180px;border-bottom:1px solid var(--line);padding-top:10px}
+.bars div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%}
+.bars i{display:block;width:100%;background:var(--accent);border-radius:4px 4px 0 0;transition:height .4s}
+.bars small{font-size:11px;color:var(--muted)}
+.heat td.c{text-align:center;font-variant-numeric:tabular-nums;min-width:44px}
+.regions{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.region{border:1px solid var(--line);border-radius:8px;padding:10px}
+.region b{display:block;font-size:20px}
+.region span{color:var(--muted);font-size:12px}
+.log{font-size:12px;color:var(--muted);max-height:220px;overflow:auto}
+.err{color:var(--bad);white-space:pre-wrap}
+del{color:#b42318}
+ins{color:#067647;text-decoration:none}
+code{background:#f2f4f7;padding:1px 5px;border-radius:4px}
+</style>
+</head>
+<body>
+<header>
+  <h1>RisingWave Streaming MVs</h1>
+  <span class="sub">Kafka topics into incrementally maintained materialized views, joins, a cascade and a sink</span>
+  <div class="btns">
+    <button class="act" id="live">Stream live</button>
+    <button class="act alt" id="instant">Run instantly</button>
+  </div>
+</header>
+<nav id="tabs">
+  <button data-tab="pipeline" class="on">Pipeline</button>
+  <button data-tab="windows">Windows</button>
+  <button data-tab="joins">Joins</button>
+  <button data-tab="cascade">Cascade and Sink</button>
+  <button data-tab="corrections">Corrections</button>
+</nav>
+<main>
+  <div class="status" id="status"></div>
+  <section id="pipeline" class="on"></section>
+  <section id="windows"></section>
+  <section id="joins"></section>
+  <section id="cascade"></section>
+  <section id="corrections"></section>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const money = c => (c / 100).toLocaleString("en-US", {style: "currency", currency: "USD"});
+const hhmm = t => t.slice(11, 16);
+const seen = {};
+let live = {}, sink = null, snaps = null, ddl = [];
+
+async function api(path, method) {
+  const r = await fetch(path, {method: method || "GET"});
+  return r.json();
+}
+
+function rowsHtml(name, rows, keys, cols) {
+  const old = seen[name] || {};
+  const now = {};
+  const body = rows.map(r => {
+    const k = keys.map(f => r[f]).join("|");
+    const v = JSON.stringify(r);
+    now[k] = v;
+    const cls = old[k] !== undefined && old[k] !== v || (Object.keys(old).length && old[k] === undefined) ? "flash" : "";
+    return `<tr class="${cls}">${cols.map(c => `<td class="${c.n ? "n" : ""}">${c.f ? c.f(r[c.k], r) : r[c.k]}</td>`).join("")}</tr>`;
+  }).join("");
+  seen[name] = now;
+  return `<table><tr>${cols.map(c => `<th class="${c.n ? "n" : ""}">${c.t}</th>`).join("")}</tr>${body}</table>`;
+}
+
+function status() {
+  const t = live.target || {}, i = live.ingested || {}, s = live.sent || {};
+  const want = (t.orders || 0) + (t.payments || 0), got = (i.orders || 0) + (i.payments || 0);
+  const pct = want ? Math.min(100, Math.round(100 * got / want)) : 0;
+  const badge = {done: "b-ok", failed: "b-bad", empty: "b-info", ready: "b-info"}[live.phase] || "b-warn";
+  $("status").innerHTML = `
+    <div><span>phase</span><b><span class="badge ${badge}">${live.phase || "..."}</span></b></div>
+    <div><span>sent to Kafka</span><b>${s.orders || 0} orders, ${s.payments || 0} payments</b></div>
+    <div><span>ingested by RisingWave</span><b>${i.orders ?? "-"} orders (version sum ${i.versions ?? "-"}), ${i.payments ?? "-"} payments</b></div>
+    <div><span>waiting for ${t.orders ?? "-"} / ${t.versions ?? "-"} / ${t.payments ?? "-"}</span><div class="bar"><i style="width:${pct}%"></i></div></div>
+    ${live.error && live.phase !== "resetting" ? `<div class="err">${live.error.split("\n")[0]}</div>` : ""}`;
+  const busy = !["done", "failed", "empty", undefined].includes(live.phase);
+  $("live").disabled = busy;
+  $("instant").disabled = busy;
+}
+
+function pipeline() {
+  const count = n => (live.mvs && live.mvs[n] ? live.mvs[n].length + " rows" : "");
+  const obj = (cls, name, kind) => `<div class="obj ${cls}"><b>${name}</b><span>${kind} ${count(name)}</span></div>`;
+  $("pipeline").innerHTML = `
+  <div class="card"><h3>Dataflow</h3><p>Every box after the topics is kept up to date by RisingWave on each barrier (1 s). Arrows are reads.</p>
+  <div class="dag">
+    <div class="col"><h4>Redpanda topics</h4>${obj("topic", "orders", "topic")}${obj("topic", "payments", "topic")}</div>
+    <div class="arrow">&rarr;</div>
+    <div class="col"><h4>Inputs</h4>${obj("table", "orders", "table, primary key order_id")}${obj("source", "payments", "source, append only")}${obj("table", "customers", "table, SQL insert/update")}</div>
+    <div class="arrow">&rarr;</div>
+    <div class="col"><h4>Materialized views</h4>${obj("mv", "mv_revenue_per_minute", "tumble 1 min")}${obj("mv", "mv_orders_enriched", "orders join customers")}${obj("mv", "mv_order_payments", "orders join payments")}</div>
+    <div class="arrow">&rarr;</div>
+    <div class="col"><h4>Cascading MVs</h4>${obj("mv", "mv_region_revenue", "on mv_orders_enriched")}${obj("mv", "mv_region_minute", "tumble on mv_orders_enriched")}</div>
+    <div class="arrow">&rarr;</div>
+    <div class="col"><h4>Sink</h4>${obj("sink", "region_revenue_sink", "upsert json")}${obj("topic", "region_revenue", "topic")}</div>
+  </div></div>
+  <div class="grid">
+    <div class="card"><h3>DDL</h3><p>Run in this order by the app on every reset.</p>${ddl.map(o => `<b>${o.kind}: ${o.name}</b><pre>${o.sql}</pre>`).join("")}</div>
+    <div class="card"><h3>Event log</h3><div class="log">${(live.log || []).map(l => `<div>${l.at.slice(11, 23)} ${l.message}</div>`).join("") || "nothing yet, press Stream live"}</div></div>
+  </div>`;
+}
+
+function windows() {
+  const mvs = live.mvs || {};
+  const per = mvs.mv_revenue_per_minute || [];
+  const max = Math.max(1, ...per.map(r => r.revenue_cents));
+  const rm = mvs.mv_region_minute || [];
+  const minutes = [...new Set(rm.map(r => r.window_start))].sort();
+  const regions = [...new Set(rm.map(r => r.region))].sort();
+  const cell = {};
+  rm.forEach(r => cell[r.region + r.window_start] = r);
+  const hmax = Math.max(1, ...rm.map(r => r.revenue_cents));
+  $("windows").innerHTML = `
+  <div class="card"><h3>mv_revenue_per_minute</h3><p>TUMBLE(orders, event_time, 1 minute): order count and revenue per event-time window. No watermark, so a late order reopens its old window.</p>
+    <div class="bars">${per.map(r => `<div><small>${money(r.revenue_cents)}</small><i style="height:${Math.round(150 * r.revenue_cents / max)}px"></i><small>${hhmm(r.window_start)}</small></div>`).join("")}</div>
+    ${rowsHtml("w", per, ["window_start"], [{k: "window_start", t: "window_start"}, {k: "orders", t: "orders", n: 1}, {k: "revenue_cents", t: "revenue", n: 1, f: money}])}
+  </div>
+  <div class="card"><h3>mv_region_minute</h3><p>A tumbling window on top of the enriched MV: revenue per region and minute.</p>
+    <table class="heat"><tr><th>region</th>${minutes.map(m => `<th class="n">${hhmm(m)}</th>`).join("")}</tr>
+    ${regions.map(g => `<tr><td>${g}</td>${minutes.map(m => { const r = cell[g + m]; const a = r ? r.revenue_cents / hmax : 0;
+      return `<td class="c" style="background:rgba(29,78,216,${(a * 0.6).toFixed(2)});color:${a > .5 ? "#fff" : "inherit"}">${r ? r.orders : ""}</td>`; }).join("")}</tr>`).join("")}</table>
+  </div>`;
+}
+
+function joins() {
+  const mvs = live.mvs || {};
+  const due = v => `<span class="badge ${v === 0 ? "b-ok" : "b-warn"}">${v === 0 ? "paid" : money(v) + " due"}</span>`;
+  $("joins").innerHTML = `<div class="grid">
+  <div class="card"><h3>mv_orders_enriched</h3><p>Stream-table join: every order with its customer name and region. Changing a customer row rewrites its joined rows.</p>
+    <div class="scroll">${rowsHtml("e", mvs.mv_orders_enriched || [], ["order_id"], [{k: "order_id", t: "order"}, {k: "name", t: "customer"}, {k: "region", t: "region"}, {k: "product", t: "product"}, {k: "amount_cents", t: "amount", n: 1, f: money}, {k: "event_time", t: "event time", f: hhmm}])}</div></div>
+  <div class="card"><h3>mv_order_payments</h3><p>Stream-stream join of the orders table and the payments source, aggregated per order. Unpaid orders are absent (inner join).</p>
+    <div class="scroll">${rowsHtml("p", mvs.mv_order_payments || [], ["order_id"], [{k: "order_id", t: "order"}, {k: "amount_cents", t: "amount", n: 1, f: money}, {k: "payments", t: "payments", n: 1}, {k: "paid_cents", t: "paid", n: 1, f: money}, {k: "due_cents", t: "status", f: due}])}</div></div>
+  </div>`;
+}
+
+function cascade() {
+  const mv = (live.mvs || {}).mv_region_revenue || [];
+  const compacted = sink ? sink.compacted : [];
+  const norm = rows => JSON.stringify(rows.map(r => [r.region, r.orders, r.revenue_cents]));
+  const same = sink && norm(compacted) === norm(mv);
+  $("cascade").innerHTML = `
+  <div class="card"><h3>mv_region_revenue</h3><p>Cascading MV: a GROUP BY on mv_orders_enriched, itself an MV.</p>
+    <div class="regions">${mv.map(r => `<div class="region"><span>${r.region}</span><b>${money(r.revenue_cents)}</b><span>${r.orders} orders</span></div>`).join("")}</div></div>
+  <div class="grid">
+    <div class="card"><h3>Topic region_revenue (sink output)</h3><p>CREATE SINK ... FORMAT UPSERT ENCODE JSON: one record per changed region per barrier, key is the region.</p>
+      <div class="scroll">${sink ? `<table><tr><th>offset</th><th>key</th><th>value</th></tr>${sink.records.slice().reverse().map(r => `<tr><td>${r.offset}</td><td>${r.key ? r.key.region : ""}</td><td><code>${r.value ? JSON.stringify(r.value) : "tombstone"}</code></td></tr>`).join("")}</table>` : "reading..."}</div></div>
+    <div class="card"><h3>Topic compacted by key vs the MV</h3><p>The last value per key in the sink topic must equal the MV. <span class="badge ${same ? "b-ok" : "b-warn"}">${same ? "equal" : "catching up"}</span></p>
+      ${rowsHtml("s", compacted, ["region"], [{k: "region", t: "region"}, {k: "orders", t: "orders", n: 1}, {k: "revenue_cents", t: "revenue", n: 1, f: money}])}</div>
+  </div>`;
+}
+
+function corrections() {
+  if (!snaps || !snaps.before) { $("corrections").innerHTML = `<div class="card">No base snapshot yet. Press Stream live or Run instantly.</div>`; return; }
+  const parts = Object.keys(snaps.keys).map(name => {
+    const key = r => snaps.keys[name].map(f => r[f]).join(" ");
+    const b = Object.fromEntries(snaps.before[name].map(r => [key(r), r]));
+    const a = snaps.after ? Object.fromEntries(snaps.after[name].map(r => [key(r), r])) : {};
+    const keys = [...new Set([...Object.keys(b), ...Object.keys(a)])].sort();
+    const diffs = snaps.after ? keys.filter(k => JSON.stringify(a[k]) !== JSON.stringify(b[k])) : [];
+    const fmt = (r, other) => r ? Object.entries(r).filter(([f, v]) => !snaps.keys[name].includes(f) && (!other || other[f] !== v)).map(([f, v]) => `${f}=${v}`).join(", ") : "absent";
+    return `<div class="card"><h3>${name} <span class="badge b-info">${diffs.length} rows changed</span></h3>
+      <div class="scroll"><table><tr><th>key</th><th>before corrections</th><th>after corrections</th></tr>
+      ${diffs.map(k => `<tr><td>${k.replace("2026-10-01 ", "")}</td><td><del>${fmt(b[k], a[k])}</del></td><td><ins>${fmt(a[k], b[k])}</ins></td></tr>`).join("")}</table></div></div>`;
+  }).join("");
+  $("corrections").innerHTML = `<div class="card"><h3>What the corrections were</h3><p>After the base 120 orders were ingested: 5 orders re-sent with a new amount (same order_id, version 2), 4 late orders with an event time in the first 3 minutes, 3 late payments for unpaid orders, and customer 3 moved from east to west with a SQL UPDATE. Each MV below shows only the rows that changed.</p></div>
+  <div class="grid wide">${parts}</div>`;
+}
+
+const renders = {pipeline, windows, joins, cascade, corrections};
+const active = () => document.querySelector("nav button.on").dataset.tab;
+
+async function tick() {
+  try {
+    live = await api("/api/live");
+    if (active() === "cascade") sink = await api("/api/sink");
+    if (active() === "corrections") snaps = await api("/api/snapshots");
+  } catch (e) { live = {phase: "unreachable", error: String(e)}; }
+  status();
+  renders[active()]();
+}
+
+document.querySelectorAll("nav button").forEach(b => b.onclick = () => {
+  document.querySelectorAll("nav button, section").forEach(x => x.classList.remove("on"));
+  b.classList.add("on");
+  $(b.dataset.tab).classList.add("on");
+  tick();
+});
+$("live").onclick = async () => { await api("/api/start-live", "POST"); tick(); };
+$("instant").onclick = async () => { $("instant").disabled = true; await api("/api/run-all", "POST"); tick(); };
+
+api("/api/pipeline").then(d => { ddl = d; tick(); setInterval(tick, 1000); });
+</script>
+</body>
+</html>
