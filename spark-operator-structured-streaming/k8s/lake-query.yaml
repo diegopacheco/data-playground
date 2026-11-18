@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lake-query
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: lake-query
+  template:
+    metadata:
+      labels:
+        app: lake-query
+    spec:
+      terminationGracePeriodSeconds: 1
+      containers:
+        - name: spark
+          image: localhost/spark-operator-structured-streaming-spark:v1
+          imagePullPolicy: Never
+          command: ["sleep", "infinity"]
+          resources:
+            requests: {cpu: 100m, memory: 512Mi}
+            limits: {cpu: "2", memory: 1536Mi}

@@ -1,0 +1,61 @@
+apiVersion: sparkoperator.k8s.io/v1beta2
+kind: SparkApplication
+metadata:
+  name: events-java
+spec:
+  type: Java
+  mode: cluster
+  sparkVersion: 4.1.4
+  image: localhost/spark-operator-structured-streaming-spark:v1
+  imagePullPolicy: Never
+  mainClass: events.StreamJob
+  mainApplicationFile: local:///opt/jobs/java/events-job.jar
+  arguments:
+    - --table
+    - lake.db.events_java
+    - --checkpoint
+    - s3a://checkpoints/events_java
+    - --trigger-seconds
+    - "5"
+    - --starting-offsets
+    - latest
+  sparkConf:
+    spark.sql.extensions: "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions"
+    spark.sql.session.timeZone: "UTC"
+    spark.sql.shuffle.partitions: "2"
+    spark.sql.catalog.lake: "org.apache.iceberg.spark.SparkCatalog"
+    spark.sql.catalog.lake.type: "jdbc"
+    spark.sql.catalog.lake.uri: "jdbc:postgresql://postgres:5432/iceberg"
+    spark.sql.catalog.lake.jdbc.user: "iceberg"
+    spark.sql.catalog.lake.jdbc.password: "iceberg"
+    spark.sql.catalog.lake.jdbc.schema-version: "V1"
+    spark.sql.catalog.lake.warehouse: "s3://lake/warehouse"
+    spark.sql.catalog.lake.io-impl: "org.apache.iceberg.aws.s3.S3FileIO"
+    spark.sql.catalog.lake.s3.endpoint: "http://minio:9000"
+    spark.sql.catalog.lake.s3.path-style-access: "true"
+    spark.sql.catalog.lake.s3.access-key-id: "lakeadmin"
+    spark.sql.catalog.lake.s3.secret-access-key: "lakeadmin-secret"
+    spark.sql.catalog.lake.client.region: "us-east-1"
+    spark.sql.catalog.lake.cache-enabled: "false"
+    spark.hadoop.fs.s3a.endpoint: "http://minio:9000"
+    spark.hadoop.fs.s3a.endpoint.region: "us-east-1"
+    spark.hadoop.fs.s3a.path.style.access: "true"
+    spark.hadoop.fs.s3a.connection.ssl.enabled: "false"
+    spark.hadoop.fs.s3a.access.key: "lakeadmin"
+    spark.hadoop.fs.s3a.secret.key: "lakeadmin-secret"
+    spark.hadoop.fs.s3a.aws.credentials.provider: "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider"
+    spark.sql.streaming.metricsEnabled: "true"
+  restartPolicy:
+    type: Always
+    onFailureRetryInterval: 5
+    onSubmissionFailureRetryInterval: 5
+  driver:
+    cores: 1
+    coreRequest: 500m
+    memory: 768m
+    serviceAccount: spark-operator-spark
+  executor:
+    instances: 1
+    cores: 1
+    coreRequest: 500m
+    memory: 768m

@@ -1,0 +1,19 @@
+FROM docker.io/apache/spark:4.1.4-scala2.13-java21-python3-ubuntu
+USER root
+COPY --from=ghcr.io/astral-sh/uv:0.13.5 /uv /usr/local/bin/uv
+ENV UV_PYTHON_INSTALL_DIR=/opt/python
+RUN uv venv /opt/venv --python 3.14.7 && chmod -R a+rX /opt/python /opt/venv
+ADD --chmod=644 https://repo1.maven.org/maven2/org/apache/iceberg/iceberg-spark-runtime-4.1_2.13/1.12.0/iceberg-spark-runtime-4.1_2.13-1.12.0.jar /opt/spark/jars/
+ADD --chmod=644 https://repo1.maven.org/maven2/org/apache/iceberg/iceberg-aws-bundle/1.12.0/iceberg-aws-bundle-1.12.0.jar /opt/spark/jars/
+ADD --chmod=644 https://repo1.maven.org/maven2/org/postgresql/postgresql/42.7.14/postgresql-42.7.14.jar /opt/spark/jars/
+ADD --chmod=644 https://repo1.maven.org/maven2/org/apache/spark/spark-sql-kafka-0-10_2.13/4.1.4/spark-sql-kafka-0-10_2.13-4.1.4.jar /opt/spark/jars/
+ADD --chmod=644 https://repo1.maven.org/maven2/org/apache/spark/spark-token-provider-kafka-0-10_2.13/4.1.4/spark-token-provider-kafka-0-10_2.13-4.1.4.jar /opt/spark/jars/
+ADD --chmod=644 https://repo1.maven.org/maven2/org/apache/kafka/kafka-clients/3.9.1/kafka-clients-3.9.1.jar /opt/spark/jars/
+ADD --chmod=644 https://repo1.maven.org/maven2/org/apache/commons/commons-pool2/2.12.1/commons-pool2-2.12.1.jar /opt/spark/jars/
+ADD --chmod=644 https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.4.2/hadoop-aws-3.4.2.jar /opt/spark/jars/
+ADD --chmod=644 https://repo1.maven.org/maven2/software/amazon/awssdk/s3-transfer-manager/2.54.17/s3-transfer-manager-2.54.17.jar /opt/spark/jars/
+ADD --chmod=644 https://repo1.maven.org/maven2/software/amazon/awssdk/apache-client/2.54.17/apache-client-2.54.17.jar /opt/spark/jars/
+COPY java-job/target/events-job.jar /opt/jobs/java/events-job.jar
+COPY python-job/streamjob /opt/jobs/python/streamjob
+ENV PYSPARK_PYTHON=/opt/venv/bin/python PYSPARK_DRIVER_PYTHON=/opt/venv/bin/python PYTHONPATH=/opt/jobs/python
+USER 185

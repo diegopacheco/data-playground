@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: producer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: producer
+  template:
+    metadata:
+      labels:
+        app: producer
+    spec:
+      terminationGracePeriodSeconds: 5
+      containers:
+        - name: producer
+          image: localhost/spark-operator-structured-streaming-producer:v1
+          imagePullPolicy: Never
+          env:
+            - {name: BOOTSTRAP, value: "kafka-0.kafka:9092"}
+            - {name: TOPIC, value: events}
+            - {name: RATE, value: "50"}
+          resources:
+            requests: {cpu: 50m, memory: 64Mi}
+            limits: {cpu: 500m, memory: 256Mi}
