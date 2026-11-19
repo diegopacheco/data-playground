@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-producer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: order-producer
+  template:
+    metadata:
+      labels:
+        app: order-producer
+    spec:
+      containers:
+        - name: producer
+          image: localhost/strimzi-order-producer:v1
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+          env:
+            - name: KAFKA_BOOTSTRAP
+              value: orders-cluster-kafka-bootstrap:9092
+            - name: KAFKA_JAAS
+              valueFrom:
+                secretKeyRef:
+                  name: order-producer
+                  key: sasl.jaas.config
+            - name: JAVA_TOOL_OPTIONS
+              value: -Xmx256m
+          readinessProbe:
+            httpGet:
+              path: /runs
+              port: 8080
+            periodSeconds: 2
+          resources:
+            requests:
+              memory: 384Mi
+              cpu: 100m
+            limits:
+              memory: 512Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: order-producer
+spec:
+  selector:
+    app: order-producer
+  ports:
+    - port: 8080
+      targetPort: 8080
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-consumer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: order-consumer
+  template:
+    metadata:
+      labels:
+        app: order-consumer
+    spec:
+      containers:
+        - name: consumer
+          image: localhost/strimzi-order-consumer:v1
+          imagePullPolicy: Never
+          env:
+            - name: KAFKA_BOOTSTRAP
+              value: orders-cluster-kafka-bootstrap:9092
+            - name: KAFKA_USER
+              value: order-consumer
+            - name: KAFKA_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: order-consumer
+                  key: password
+            - name: KAFKA_TOPIC
+              value: orders
+            - name: KAFKA_GROUP
+              value: order-counter
+          resources:
+            requests:
+              memory: 96Mi
+              cpu: 100m
+            limits:
+              memory: 256Mi

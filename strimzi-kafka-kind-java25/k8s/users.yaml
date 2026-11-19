@@ -1,0 +1,74 @@
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaUser
+metadata:
+  name: order-producer
+  labels:
+    strimzi.io/cluster: orders-cluster
+spec:
+  authentication:
+    type: scram-sha-512
+  authorization:
+    type: simple
+    acls:
+      - resource:
+          type: topic
+          name: orders
+          patternType: literal
+        operations:
+          - Describe
+          - Write
+        host: "*"
+---
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaUser
+metadata:
+  name: order-consumer
+  labels:
+    strimzi.io/cluster: orders-cluster
+spec:
+  authentication:
+    type: scram-sha-512
+  authorization:
+    type: simple
+    acls:
+      - resource:
+          type: topic
+          name: orders
+          patternType: literal
+        operations:
+          - Describe
+          - Read
+        host: "*"
+      - resource:
+          type: group
+          name: order-counter
+          patternType: literal
+        operations:
+          - Read
+        host: "*"
+---
+apiVersion: kafka.strimzi.io/v1
+kind: KafkaUser
+metadata:
+  name: cluster-inspector
+  labels:
+    strimzi.io/cluster: orders-cluster
+spec:
+  authentication:
+    type: scram-sha-512
+  authorization:
+    type: simple
+    acls:
+      - resource:
+          type: topic
+          name: "*"
+          patternType: literal
+        operations:
+          - Describe
+          - DescribeConfigs
+        host: "*"
+      - resource:
+          type: cluster
+        operations:
+          - Describe
+        host: "*"

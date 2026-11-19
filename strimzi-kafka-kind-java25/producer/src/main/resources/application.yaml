@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: order-producer
+  threads:
+    virtual:
+      enabled: true
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP:localhost:9092}
+    producer:
+      acks: all
+      properties:
+        enable.idempotence: true
+        linger.ms: 5
+        delivery.timeout.ms: 180000
+        request.timeout.ms: 15000
+    properties:
+      security.protocol: SASL_PLAINTEXT
+      sasl.mechanism: SCRAM-SHA-512
+      sasl.jaas.config: ${KAFKA_JAAS:}
+orders:
+  topic: orders
