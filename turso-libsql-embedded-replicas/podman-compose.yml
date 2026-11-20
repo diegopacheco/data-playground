@@ -1,0 +1,87 @@
+name: t6-turso-libsql-embedded-replicas
+
+x-replica: &replica
+  image: t6-libsql-app:latest
+  command: ["node", "app/replica.js"]
+  mem_limit: 128m
+  restart: unless-stopped
+  networks:
+    - t6-net
+  depends_on:
+    - t6-sqld
+
+services:
+  t6-sqld:
+    image: ghcr.io/tursodatabase/libsql-server:v0.24.33
+    container_name: t6-sqld
+    hostname: t6-sqld
+    environment:
+      SQLD_NODE: primary
+    mem_limit: 256m
+    restart: unless-stopped
+    ports:
+      - "${primary:-31501}:8080"
+    volumes:
+      - t6-sqld-data:/var/lib/sqld
+    networks:
+      - t6-net
+
+  t6-replica-1:
+    <<: *replica
+    container_name: t6-replica-1
+    hostname: t6-replica-1
+    environment:
+      NAME: replica-1
+      PRIMARY_URL: http://t6-sqld:8080
+      SYNC_INTERVAL: "0"
+    ports:
+      - "${replica1:-31511}:8080"
+
+  t6-replica-2:
+    <<: *replica
+    container_name: t6-replica-2
+    hostname: t6-replica-2
+    environment:
+      NAME: replica-2
+      PRIMARY_URL: http://t6-sqld:8080
+      SYNC_INTERVAL: "0"
+    ports:
+      - "${replica2:-31512}:8080"
+
+  t6-replica-3:
+    <<: *replica
+    container_name: t6-replica-3
+    hostname: t6-replica-3
+    environment:
+      NAME: replica-3
+      PRIMARY_URL: http://t6-sqld:8080
+      SYNC_INTERVAL: "2"
+    ports:
+      - "${replica3:-31513}:8080"
+
+  t6-console:
+    image: t6-libsql-app:latest
+    container_name: t6-console
+    hostname: t6-console
+    command: ["node", "app/console.js"]
+    environment:
+      PRIMARY_URL: http://t6-sqld:8080
+      REPLICA_URLS: replica-1=http://t6-replica-1:8080,replica-2=http://t6-replica-2:8080,replica-3=http://t6-replica-3:8080
+    mem_limit: 128m
+    restart: unless-stopped
+    ports:
+      - "${ui:-31500}:8080"
+    networks:
+      - t6-net
+    depends_on:
+      - t6-replica-1
+      - t6-replica-2
+      - t6-replica-3
+
+volumes:
+  t6-sqld-data:
+    name: t6-sqld-data
+
+networks:
+  t6-net:
+    name: t6-net

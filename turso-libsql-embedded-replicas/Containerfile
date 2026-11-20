@@ -1,0 +1,8 @@
+FROM docker.io/library/node:26.13.0-slim
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates && rm -rf /var/lib/apt/lists/*
+WORKDIR /srv
+COPY package.json package-lock.json ./
+RUN npm ci --no-audit --no-fund && mkdir -p /data
+COPY app app
+COPY tests tests
+CMD ["node", "app/console.js"]

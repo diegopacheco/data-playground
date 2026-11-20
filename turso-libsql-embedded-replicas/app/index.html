@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>libSQL Embedded Replicas</title>
+<style>
+:root{--bg:#f7f8fb;--card:#fff;--ink:#1d2433;--muted:#667085;--line:#e4e7ec;--ok:#12b76a;--bad:#f04438}
+*{box-sizing:border-box}
+body{margin:0;font:14px/1.5 system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:var(--card);border-bottom:1px solid var(--line);padding:16px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+header h1{font-size:18px;margin:0}
+header .sub{color:var(--muted)}
+header button{margin-left:auto}
+nav{display:flex;gap:4px;padding:0 24px;background:var(--card);border-bottom:1px solid var(--line);overflow-x:auto}
+nav button{border:0;background:none;padding:12px 14px;font:inherit;color:var(--muted);border-bottom:2px solid transparent;cursor:pointer}
+nav button.on{color:var(--ink);border-color:#14b8a6;font-weight:600}
+main{padding:20px 24px;max-width:1200px;margin:0 auto}
+section{display:none}
+section.on{display:block}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:16px}
+.card h3{margin:0 0 4px;font-size:15px}
+.card p{margin:0 0 12px;color:var(--muted)}
+button.act{background:#14b8a6;color:#fff;border:0;border-radius:6px;padding:8px 14px;font:inherit;cursor:pointer}
+button.act:disabled{opacity:.5}
+.kv{display:flex;gap:18px;flex-wrap:wrap;margin:6px 0}
+.kv div b{display:block;font-size:20px}
+.kv div span{color:var(--muted);font-size:12px}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:500}
+.badge{display:inline-block;padding:1px 8px;border-radius:10px;font-size:12px}
+.b-ok{background:#d1f3e1;color:#067647}
+.b-bad{background:#fee4e2;color:#b42318}
+.b-info{background:#ccfbef;color:#0b5c4d}
+.b-warn{background:#fef0c7;color:#93370d}
+.bar{height:14px;border-radius:4px;display:inline-block;vertical-align:middle;margin-right:6px}
+.bar.local{background:#14b8a6}
+.bar.remote{background:#f79009}
+.err{color:var(--bad);white-space:pre-wrap}
+.small{color:var(--muted);font-size:12px}
+code{background:#f2f4f7;padding:1px 5px;border-radius:4px}
+</style>
+</head>
+<body>
+<header>
+  <h1>libSQL Embedded Replicas</h1>
+  <span class="sub">sqld primary, 3 app processes with a local SQLite file synced from it</span>
+  <button class="act" id="runAll">Run all scenarios</button>
+</header>
+<nav id="tabs">
+  <button data-tab="replicas" class="on">Replicas</button>
+  <button data-tab="latency">Latency</button>
+  <button data-tab="writes">Writes</button>
+  <button data-tab="consistency">Consistency</button>
+  <button data-tab="outage">Outage</button>
+</nav>
+<main>
+  <div id="error" class="err"></div>
+  <section id="replicas" class="on"></section>
+  <section id="latency"></section>
+  <section id="writes"></section>
+  <section id="consistency"></section>
+  <section id="outage"></section>
+</main>
+<script>
+const $ = (id) => document.getElementById(id);
+let results = {};
+
+const esc = (v) => String(v ?? "").replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]);
+const badge = (ok, yes, no) => `<span class="badge ${ok ? "b-ok" : "b-bad"}">${ok ? yes : no}</span>`;
+const stats = (pairs) => `<div class="kv">${pairs.map(([k, v]) => `<div><b>${esc(v)}</b><span>${esc(k)}</span></div>`).join("")}</div>`;
+const us = (v) => `${Math.round(v).toLocaleString()} us`;
+const ran = (r) => (r && r.ran_at ? `<p class="small">ran at ${esc(r.ran_at)}</p>` : "");
+const missing = (name) => `<div class="card"><p>No result yet. <button class="act" data-run="${name}">Run ${name}</button></p></div>`;
+
+function digestRow(name, d, target, extra = "") {
+  return `<tr><td>${esc(name)}</td><td>${d.count}</td><td>${d.cents.toLocaleString()}</td><td>${d.max_id}</td><td><code>${esc(d.sha)}</code></td><td>${target ? badge(d.sha === target.sha, "equal", "differs") : ""}</td><td>${extra}</td></tr>`;
+}
+const digestHead = `<tr><th>node</th><th>rows</th><th>sum cents</th><th>max id</th><th>sha256 of rows</th><th>vs primary</th><th></th></tr>`;
+
+async function renderReplicas() {
+  let t;
+  try {
+    t = await (await fetch("/api/topology")).json();
+  } catch (e) {
+    $("replicas").innerHTML = `<div class="err">${esc(e.message)}</div>`;
+    return;
+  }
+  const p = t.primary;
+  const target = p.digest;
+  const cards = t.replicas.map((r) => {
+    if (!r.ok) return `<div class="card"><h3>${esc(r.name)}</h3>${badge(false, "", "unreachable")}<p class="err">${esc(r.error)}</p></div>`;
+    const s = r.value;
+    const ls = s.last_sync || {};
+    return `<div class="card"><h3>${esc(s.name)} <span class="badge b-info">${esc(s.sync_mode)}</span></h3>
+      <p>local file <code>${esc(s.file)}</code></p>
+      ${stats([["local rows", s.local.count], ["frame_no at last sync() call", ls.frame_no ?? "-"], ["explicit syncs", s.syncs], ["forwarded writes", s.writes]])}
+      <p>local read of all rows: ${us(s.local.read_us)} · sha <code>${esc(s.local.sha)}</code> ${target ? badge(s.local.sha === target.sha, "same as primary", "stale") : badge(true, "serving from local file", "")}</p>
+      <p class="small">sync errors ${s.sync_errors} · write errors ${s.write_errors} · last sync ${esc(ls.at || "-")} (${esc(ls.reason || "")})</p></div>`;
+  }).join("");
+  $("replicas").innerHTML = `<div class="card"><h3>Primary <code>t6-sqld</code> ${badge(p.up, "UP", "DOWN")}</h3>
+    <p>${esc(p.version || p.error)}</p>
+    ${target ? stats([["rows", target.count], ["sum cents", target.cents.toLocaleString()], ["max id", target.max_id], ["sha", target.sha]]) : `<p class="err">${esc(p.digest_error || "primary is not reachable, replicas still answer reads from their local files")}</p>`}</div>
+    <div class="grid">${cards}</div><p class="small">refreshes every 2 s</p>`;
+}
+
+function renderLatency() {
+  const r = results.latency;
+  if (!r) return ($("latency").innerHTML = missing("latency"));
+  const max = Math.max(...r.replicas.map((x) => x.remote.p95));
+  const rows = r.replicas.map((x) => {
+    const line = (k, s) => `<tr><td>${esc(x.name)}</td><td>${k}</td><td><span class="bar ${k}" style="width:${Math.max(2, (s.p50 / max) * 360)}px"></span>${us(s.p50)}</td><td>${us(s.p95)}</td><td>${us(s.p99)}</td><td>${us(s.mean)}</td><td>${us(s.min)}</td></tr>`;
+    return line("local", x.local) + line("remote", x.remote);
+  }).join("");
+  const w = results.writes;
+  const writes = w ? [...w.write_us].sort((a, b) => a - b) : [];
+  $("latency").innerHTML = `<div class="card"><h3>Point read by id, 300 reads per replica</h3>
+    <p>local = the embedded replica file inside the app process, remote = the same query over HTTP to the sqld primary. Rows compared on every read: ${r.replicas.map((x) => `${esc(x.name)} ${badge(!x.mismatches.length, "identical", x.mismatches.length + " mismatches")}`).join(" ")}</p>
+    ${stats(r.replicas.map((x) => [`${x.name} remote p50 / local p50`, `${(x.remote.p50 / x.local.p50).toFixed(1)}x`]))}
+    <table><tr><th>replica</th><th>path</th><th>p50</th><th>p95</th><th>p99</th><th>mean</th><th>min</th></tr>${rows}</table>${ran(r)}</div>
+    ${w ? `<div class="card"><h3>Forwarded writes</h3><p>an INSERT on replica-1 is executed by the primary, so it pays the network round trip</p>${stats([["median", us(writes[Math.floor(writes.length / 2)])], ["min", us(writes[0])], ["max", us(writes.at(-1))], ["writes", writes.length]])}</div>` : ""}`;
+}
+
+function renderWrites() {
+  const w = results.writes;
+  if (!w) return ($("writes").innerHTML = missing("writes"));
+  const detail = (e) => Object.entries(e).filter(([k]) => !["t_ms", "replica", "action"].includes(k)).map(([k, v]) => `${k}=${Array.isArray(v) ? `${v[0]}..${v.at(-1)}` : v}`).join(" ");
+  const tone = (e) => (e.replica === "primary" ? "b-warn" : "b-info");
+  const u = w.update;
+  $("writes").innerHTML = `<div class="grid">
+    <div class="card"><h3>Read your writes</h3><p>replica-1 inserted ids ${w.inserted_ids[0]}..${w.inserted_ids.at(-1)} and read them back at once</p>${stats([["rows on replica-1", w.read_your_writes.count], ["rows on primary", w.primary.count], ["last row cents", w.read_your_writes.last_row?.cents]])}</div>
+    <div class="card"><h3>Staleness before sync</h3><p>replica-2 (on demand) kept the old snapshot until <code>sync()</code></p>${stats([["before sync", w.stale.count], ["frames synced", w.after_sync.sync.frames_synced], ["after sync", w.after_sync.count]])}</div>
+    <div class="card"><h3>Periodic sync</h3><p>replica-3 (every 2 s) caught up with no call</p>${stats([["first read", w.periodic.first_count], ["converged", w.periodic.count], ["waited", w.periodic.waited_ms + " ms"]])}</div>
+    <div class="card"><h3>Stale value</h3><p>note ${u.id}: ${esc(u.writer)} added 1000 cents</p>${stats([["before", u.before], [`${u.writer} sees`, u.writer_sees], [`${u.other} before sync`, u.other_before_sync], [`${u.other} after sync`, u.other_after_sync]])}</div>
+  </div>
+  <div class="card"><h3>Timeline</h3><table><tr><th>t</th><th>node</th><th>what happened</th><th>detail</th></tr>
+  ${w.timeline.map((e) => `<tr><td>${e.t_ms} ms</td><td><span class="badge ${tone(e)}">${esc(e.replica)}</span></td><td>${esc(e.action)}</td><td>${esc(detail(e))}</td></tr>`).join("")}</table>${ran(w)}</div>`;
+}
+
+function renderConsistency() {
+  const c = results.consistency;
+  if (!c) return ($("consistency").innerHTML = missing("consistency"));
+  const rows = c.replicas.map((x) => digestRow(x.name, x.digest, c.primary, x.sync ? `sync frames ${x.sync.frames_synced}, frame_no ${x.sync.frame_no}` : `periodic, converged after ${x.waited_ms} ms`)).join("");
+  $("consistency").innerHTML = `<div class="card"><h3>${c.ops} mixed writes spread round robin over the 3 replicas</h3>
+    <p>every write is forwarded to the primary, then each replica syncs and is compared row by row through a sha256 of all rows</p>
+    ${stats([["inserts", c.by_kind.insert], ["updates", c.by_kind.update], ["deletes", c.by_kind.delete], ["rows affected", c.rows_affected]])}
+    <table>${digestHead}${digestRow("primary", c.primary)}${rows}</table>${ran(c)}</div>`;
+}
+
+function renderOutage() {
+  const o = results.outage || {};
+  if (!o.before) return ($("outage").innerHTML = `<div class="card"><p>No outage run yet. <code>scripts/test-all.sh</code> stops <code>t6-sqld</code> with podman and drives the three phases.</p></div>`);
+  const before = `<div class="card"><h3>1. Before: all in sync</h3><table>${digestHead}${digestRow("primary", o.before.primary)}${o.before.replicas.map((x) => digestRow(x.name, x.digest, o.before.primary)).join("")}</table></div>`;
+  const d = o.during;
+  const during = d ? `<div class="card"><h3>2. During: <code>t6-sqld</code> stopped</h3>
+    <table><tr><th>operation</th><th>result</th><th>detail</th></tr>
+    <tr><td>remote read on the primary</td><td>${badge(d.primary_read.ok, "ok", "failed")}</td><td class="small">${esc(d.primary_read.error)}</td></tr>
+    ${d.reads.map((x) => `<tr><td>local read on ${esc(x.name)}</td><td>${badge(x.ok, "ok", "failed")}</td><td>${x.ok ? `${x.value.count} rows, sha <code>${esc(x.value.sha)}</code>, ${us(x.value.read_us)}` : esc(x.error)}</td></tr>`).join("")}
+    <tr><td>write through ${esc(d.write.name)}</td><td>${badge(d.write.ok, "ok", "failed")}</td><td class="small">${esc((d.write.error || "").split("\n")[0])}</td></tr>
+    <tr><td>sync on ${esc(d.sync.name)}</td><td>${badge(d.sync.ok, "ok", "failed")}</td><td class="small">${esc(d.sync.error)} after ${d.sync.ms} ms</td></tr></table></div>` : "";
+  const a = o.after;
+  const after = a ? `<div class="card"><h3>3. After: primary back, ${a.inserted_ids.length} new rows through ${esc(a.writer.name)}</h3>
+    <p>writes accepted again ${a.recovered_ms} ms after the phase started</p>
+    <table><tr><th>node</th><th>rows</th><th>sha</th><th>vs primary</th><th></th></tr>
+    <tr><td>primary</td><td>${a.primary.count}</td><td><code>${esc(a.primary.sha)}</code></td><td></td><td></td></tr>
+    <tr><td>${esc(a.writer.name)} (writer)</td><td>${a.writer.count}</td><td><code>${esc(a.writer.sha)}</code></td><td>${badge(a.writer.sha === a.primary.sha, "equal", "differs")}</td><td>read your writes</td></tr>
+    <tr><td>${esc(a.stale.name)} before sync</td><td>${a.stale.count}</td><td><code>${esc(a.stale.sha)}</code></td><td>${badge(a.stale.sha === a.primary.sha, "equal", "stale")}</td><td>still the pre outage snapshot</td></tr>
+    <tr><td>${esc(a.caught_up.name)} after sync</td><td>${a.caught_up.count}</td><td><code>${esc(a.caught_up.sha)}</code></td><td>${badge(a.caught_up.sha === a.primary.sha, "equal", "differs")}</td><td>${a.caught_up.sync.frames_synced} frames synced</td></tr>
+    <tr><td>${esc(a.periodic.name)} periodic</td><td>${a.periodic.count}</td><td><code>${esc(a.periodic.sha)}</code></td><td>${badge(a.periodic.sha === a.primary.sha, "equal", "differs")}</td><td>caught up ${a.periodic.waited_ms} ms after the writes</td></tr></table></div>` : "";
+  $("outage").innerHTML = before + during + after;
+}
+
+function render() {
+  renderLatency();
+  renderWrites();
+  renderConsistency();
+  renderOutage();
+}
+
+async function load() {
+  results = await (await fetch("/api/results")).json();
+  render();
+}
+
+async function post(path) {
+  $("error").textContent = "";
+  const res = await fetch(path, { method: "POST" });
+  const body = await res.json();
+  if (!res.ok) $("error").textContent = body.error;
+  await load();
+}
+
+$("tabs").addEventListener("click", (e) => {
+  const tab = e.target.dataset.tab;
+  if (!tab) return;
+  document.querySelectorAll("nav button").forEach((b) => b.classList.toggle("on", b.dataset.tab === tab));
+  document.querySelectorAll("section").forEach((s) => s.classList.toggle("on", s.id === tab));
+  history.replaceState(null, "", `#${tab}`);
+});
+document.body.addEventListener("click", (e) => {
+  if (e.target.dataset.run) post(`/api/run/${e.target.dataset.run}`);
+});
+$("runAll").addEventListener("click", async (e) => {
+  e.target.disabled = true;
+  await post("/api/run-all");
+  e.target.disabled = false;
+});
+
+const start = location.hash.slice(1);
+if (start) document.querySelector(`nav button[data-tab="${start}"]`)?.click();
+load();
+renderReplicas();
+setInterval(renderReplicas, 2000);
+</script>
+</body>
+</html>

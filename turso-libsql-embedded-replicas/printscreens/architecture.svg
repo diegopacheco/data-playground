@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="620" viewBox="0 0 1200 620">
+  <defs>
+    <style>@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&amp;display=swap'); text { font-family: 'Caveat', 'Comic Sans MS', cursive; fill: #1f2933; }</style>
+    <filter id="wobble"><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="3"/></filter>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1f2933"/></marker>
+  </defs>
+  <rect width="1200" height="620" fill="#ffffff"/>
+  <g filter="url(#wobble)" stroke="#1f2933" stroke-width="2">
+    <rect x="530" y="90" width="290" height="440" rx="14" fill="#f8f9fa" stroke-dasharray="8 6"/>
+    <rect x="550" y="125" width="250" height="110" rx="10" fill="#d0ebff"/>
+    <rect x="550" y="255" width="250" height="110" rx="10" fill="#d0ebff"/>
+    <rect x="550" y="385" width="250" height="110" rx="10" fill="#d0ebff"/>
+    <rect x="900" y="230" width="270" height="170" rx="10" fill="#fff3bf"/>
+    <rect x="270" y="200" width="210" height="130" rx="10" fill="#ffd8a8"/>
+    <rect x="20" y="215" width="180" height="90" rx="10" fill="#d3f9d8"/>
+    <rect x="20" y="400" width="210" height="100" rx="10" fill="#e5dbff"/>
+    <line x1="200" y1="260" x2="267" y2="260" marker-end="url(#arrow)"/>
+    <line x1="230" y1="430" x2="300" y2="333" marker-end="url(#arrow)"/>
+    <line x1="480" y1="235" x2="547" y2="180" marker-end="url(#arrow)"/>
+    <line x1="480" y1="265" x2="547" y2="310" marker-end="url(#arrow)"/>
+    <line x1="480" y1="295" x2="547" y2="440" marker-end="url(#arrow)"/>
+    <line x1="800" y1="180" x2="897" y2="270" marker-end="url(#arrow)"/>
+    <line x1="800" y1="310" x2="897" y2="315" marker-end="url(#arrow)"/>
+    <line x1="800" y1="440" x2="897" y2="360" marker-end="url(#arrow)"/>
+    <path d="M375,330 L375,570 L1035,570 L1035,403" fill="none" marker-end="url(#arrow)" stroke-dasharray="6 5"/>
+  </g>
+  <text x="20" y="45" font-size="32" font-weight="700">turso-libsql-embedded-replicas</text>
+  <text x="20" y="75" font-size="19">self hosted libSQL primary, 3 app processes with local replicas</text>
+  <text x="675" y="115" font-size="19" text-anchor="middle">app processes on t6-net</text>
+  <text x="675" y="160" font-size="24" text-anchor="middle">t6-replica-1</text>
+  <text x="675" y="185" font-size="17" text-anchor="middle">file replica-1.db, sync on demand</text>
+  <text x="675" y="210" font-size="17" text-anchor="middle">host :31511</text>
+  <text x="675" y="290" font-size="24" text-anchor="middle">t6-replica-2</text>
+  <text x="675" y="315" font-size="17" text-anchor="middle">file replica-2.db, sync on demand</text>
+  <text x="675" y="340" font-size="17" text-anchor="middle">host :31512</text>
+  <text x="675" y="420" font-size="24" text-anchor="middle">t6-replica-3</text>
+  <text x="675" y="445" font-size="17" text-anchor="middle">file replica-3.db, periodic sync 2 s</text>
+  <text x="675" y="470" font-size="17" text-anchor="middle">host :31513</text>
+  <text x="1035" y="268" font-size="24" text-anchor="middle">t6-sqld (primary)</text>
+  <text x="1035" y="295" font-size="17" text-anchor="middle">libsql-server 0.24.33</text>
+  <text x="1035" y="320" font-size="17" text-anchor="middle">HTTP 8080, host :31501</text>
+  <text x="1035" y="345" font-size="17" text-anchor="middle">WAL frames on volume</text>
+  <text x="1035" y="370" font-size="17" text-anchor="middle">t6-sqld-data</text>
+  <text x="1035" y="185" font-size="18" text-anchor="middle">sync(): pull new WAL frames</text>
+  <text x="1035" y="208" font-size="18" text-anchor="middle">writes: delegated to the primary</text>
+  <text x="375" y="235" font-size="24" text-anchor="middle">t6-console</text>
+  <text x="375" y="262" font-size="17" text-anchor="middle">scenarios + UI, node:http</text>
+  <text x="375" y="287" font-size="17" text-anchor="middle">host :31500</text>
+  <text x="375" y="312" font-size="17" text-anchor="middle">calls replicas over HTTP</text>
+  <text x="110" y="255" font-size="22" text-anchor="middle">browser</text>
+  <text x="110" y="282" font-size="17" text-anchor="middle">5 tabs</text>
+  <text x="125" y="435" font-size="22" text-anchor="middle">test-all.sh</text>
+  <text x="125" y="460" font-size="17" text-anchor="middle">node --test in t6-console</text>
+  <text x="125" y="483" font-size="17" text-anchor="middle">host: podman stop t6-sqld</text>
+  <text x="705" y="598" font-size="18" text-anchor="middle">remote reads, seeding and digests on the primary over HTTP (Hrana)</text>
+</svg>
